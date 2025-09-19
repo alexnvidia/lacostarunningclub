@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>LA COSTA RUNNING CLUB</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="assets/logo.png" type="image/x-icon">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/logo.png">
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="brand-badge" aria-hidden="true"></div>
+      <div>
+        <h1>LA COSTA RUNNING CLUB</h1>
+        <div class="tagline">Running social en Fuengirola</div>
+      </div>
+    </div>
+    <nav class="nav-links">
+      <ul>
+        <li><a href="#nosotros">Sobre Nosotros</a></li>
+        <li><a href="#locations">Ubicaciones</a></li>
+        <li><a href="#performance-crew">Performance Crew</a></li>
+        <li><a href="#camisetas">Camisetas</a></li>
+      </ul>
+    </nav>
+
+  </header>
+
+  <main>
+    <section aria-label="Carrusel de fotos" class="carousel" id="carousel">
+      <div class="track" id="track" style="--x:0%">
+        <!-- Reemplazar las imágenes por las del club -->
+        <article class="slide">
+          <img src="assets/people.jpg" alt="Forma parte de la comunidad" />
+          <div class="caption">Forma parte de la comunidad</div>
+        </article>
+        <article class="slide">
+          <img src="assets/staff.jpg" alt="Calentamientos hechos por nenes riquisimos" />
+          <div class="caption">Calentamientos hechos por nenes riquisimos</div>
+        </article>
+        <article class="slide">
+          <img src="assets/paseo.jpg" alt="Ruta por paseo marítimo" />
+          <div class="caption">Rutas por el paseo marítimo</div>
+        </article>
+      </div>
+
+      <div class="controls" aria-hidden="false">
+        <button class="btn" id="prev" aria-label="Anterior" title="Anterior">❮</button>
+        <button class="btn" id="next" aria-label="Siguiente" title="Siguiente">❯</button>
+      </div>
+
+      <!-- Sustituimos los dots -->
+		<div class="runner-indicator" aria-label="Indicador carrusel">
+		  <video class="runner-video" src="assets/runner.webm" autoplay loop muted playsinline></video>
+		</div>
+
+
+
+    </section>
+
+    <section id="nosotros" class="hero">
+      <h2 class="gradient-text">Sobre nosotros</h2>
+      <p class="hero-summary">Corre, conecta y disfruta</p>
+      <p>
+        Nuestra pasión es el movimiento compartido, y en La Costa del Sol hemos creado algo más que un grupo para correr: somos una comunidad de corredores sociales que disfrutan del deporte, la energía positiva y las conexiones reales con otros. Creemos que el running es mucho más que un ejercicio físico; es una forma de unir personas, de crear vínculos y de apoyarnos mutuamente en cada paso.
+      </p>
+      <p>
+        Nuestra filosofía es simple pero poderosa: que nadie se sienta solo en su camino. Aquí siempre encontrarás un grupo dispuesto a compartir kilómetros, sonrisas y momentos únicos. Organizamos quedadas, actividades y experiencias que giran en torno a nuestra pasión común: ¡el movimiento que nos conecta!
+      </p>
+      <p>
+        Queremos fomentar un ambiente inclusivo, motivador y alegre, donde cada miembro se sienta acompañado y energizado. Si decides apoyarnos con un café, estarás contribuyendo a que esta comunidad siga creciendo y fortaleciendo ese espacio de compañerismo y salud para todos. ¡Gracias por ser parte de este proyecto y por hacer que cada paso cuente!
+      </p>
+    </section>
+	
+	<section id="locations" class="locations">
+  <div class="loc-head">
+    <h3>Ubicaciones</h3>
+    <p>Quedadas en puntos habituales de la costa. Consulta el detalle en los canales oficiales del club.</p>
+  </div>
+
+  <div class="loc-grid">
+    <!-- Paseo Marítimo de Fuengirola (La Peseta) -->
+    <a class="loc-card"
+       href="https://www.google.com/maps/search/?api=1&query=Paseo%20Mar%C3%ADtimo%20Fuengirola%20La%20Peseta"
+       target="_blank" rel="noopener">
+      <figure class="loc-media">
+        <img src="assets/loc-fuengirola.webp" alt="Paseo Marítimo de Fuengirola, zona La Peseta" loading="lazy">
+      </figure>
+      <div class="loc-body">
+        <h4>Paseo Marítimo (La Peseta)</h4>
+        <p>Punto clásico en Fuengirola con trazado llano junto al mar.</p>
+        <span class="loc-link">Ver en Google Maps →</span>
+      </div>
+    </a>
+
+    <!-- El Torreón, La Cala de Mijas -->
+    <a class="loc-card"
+       href="https://www.google.com/maps/search/?api=1&query=El%20Torre%C3%B3n%20La%20Cala%20de%20Mijas"
+       target="_blank" rel="noopener">
+      <figure class="loc-media">
+        <img src="assets/loc-torreon.jpg" alt="El Torreón en La Cala de Mijas" loading="lazy">
+      </figure>
+      <div class="loc-body">
+        <h4>El Torreón (La Cala de Mijas)</h4>
+        <p>Salida habitual hacia el paseo litoral, con vistas abiertas.</p>
+        <span class="loc-link">Ver en Google Maps →</span>
+      </div>
+    </a>
+  </div>
+
+  <p class="loc-note">
+    El social run se realiza un domingo sí y otro no, normalmente a las 8:00. Confirmar horarios por los canales oficiales de Instagram y WhatsApp indicados en el pie. 
+  </p>
+</section>
+
+	
+	<section id="performance-crew" class="reveal">
+	  <div class="pc-wrap">
+		<h3>Performance Crew</h3>
+		<p>Sesiones de técnica y carrera cada miércoles para mejorar eficiencia, economía y velocidad. Orientado a todos los niveles con enfoque técnico y progresivo.</p>
+		<!-- Botón existente en Performance Crew -->
+		<a id="pc-open" class="pc-cta" href="#performance-crew" role="button">Saber más</a>
+
+		<!-- Modal accesible -->
+		<dialog id="pc-modal" aria-labelledby="pc-title" aria-modal="true">
+		  <form method="dialog" class="pc-modal__content">
+			<header class="pc-modal__header">
+			  <h3 id="pc-title">Performance Crew</h3>
+			  <button type="submit" class="pc-modal__close" aria-label="Cerrar">✕</button>
+			</header>
+
+			<p class="pc-modal__intro">
+			  Sesiones de técnica y carrera cada miércoles: calentamiento, drills, bloques de velocidad/ritmo y vuelta a la calma. Orientado a todos los niveles.
+			</p>
+
+			<div class="pc-form">
+			  <label>
+				<span>Nombre</span>
+				<input type="text" name="name" placeholder="Nombre completo" autocomplete="name">
+			  </label>
+			  <label>
+				<span>Email</span>
+				<input type="email" name="email" placeholder="correo@ejemplo.com" autocomplete="email">
+			  </label>
+			  <label>
+				<span>Teléfono</span>
+				<input type="tel" name="phone" placeholder="+34 600 000 000" autocomplete="tel">
+			  </label>
+			  <div class="pc-actions">
+				<button type="submit" class="btn-shoe" aria-label="Enviar (mock)">
+				  <!-- Zapatilla como SVG inline para estilizar -->
+				  <svg viewBox="0 0 24 24" class="shoe" aria-hidden="true">
+					<path d="M3 16c3 0 5-1 7-3l3 2c3 2 4 1 6 1h1v3H3v-3zM10 9l1 2-2 2-2-1 3-3z" fill="currentColor"/>
+				  </svg>
+				  <span class="btn-text">Apuntarme</span>
+				</button>
+				<button type="submit" class="btn-ghost">Cancelar</button>
+			  </div>
+			  <small class="pc-hint">Mockup: los datos no se envían.</small>
+			</div>
+		  </form>
+		</dialog>
+
+	  </div>
+	</section>
+
+  </main>
+
+  <section id="camisetas" class="reveal">
+    <div class="pc-wrap">
+    <h2 class="gradient-text">Nuestros Diseños de Camisetas</h2>
+    
+    <div class="t-shirt-gallery">
+      <figure class="tshirt-card">
+        <img src="assets/chicoFaceTsh.PNG" alt="Original - Chico - Azul parte Frontal" loading="lazy" class="front-img" />
+        <img src="assets/chicoBackTsh.PNG" alt="Original - Chico - Azul parte Trasera" loading="lazy" class="back-img" style="display:none;"/>
+        <figcaption>Camiseta Unisex Azul</figcaption>
+        <button class="view-back-btn" aria-label="Ver vista trasera de la camiseta" type="button" title="Ver vista trasera">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 .9-.24 1.74-.66 2.48l1.46 1.46C19.66 14.02 20 13.04 20 12c0-4.42-3.58-8-8-8zm-6.34 2.52L4.21 7.54C3.34 8.98 3 10.22 3 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3c-3.31 0-6-2.69-6-6 0-.9.24-1.74.66-2.48z" fill="#4285F4"/>
+          </svg>
+        </button>
+      </figure>
+      <figure class="tshirt-card">
+        <img src="assets/chicaFaceTsh.PNG" alt="Chica - Azul parte Frontal" loading="lazy" class="front-img" />
+        <img src="assets/chicaBackTsh.PNG" alt="Chica - Azul parte Trasera" loading="lazy" class="back-img" style="display:none;"/>
+        <figcaption>Camiseta Chica Azul</figcaption>
+        <button class="view-back-btn" aria-label="Ver vista trasera de la camiseta" type="button" title="Ver vista trasera">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 .9-.24 1.74-.66 2.48l1.46 1.46C19.66 14.02 20 13.04 20 12c0-4.42-3.58-8-8-8zm-6.34 2.52L4.21 7.54C3.34 8.98 3 10.22 3 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3c-3.31 0-6-2.69-6-6 0-.9.24-1.74.66-2.48z" fill="#4285F4"/>
+          </svg>
+        </button>
+      </figure>
+      <figure>
+        <img src="assets/blockT.png" alt="Stay tuned" loading="lazy" />
+      </figure>
+    </div>
+    <button id="tshirt-open" class="btn-shoe" aria-haspopup="dialog">
+      <svg viewBox="0 0 24 24" class="shoe" aria-hidden="true" fill="currentColor">
+        <path d="M3 16c3 0 5-1 7-3l3 2c3 2 4 1 6 1h1v3H3v-3zM10 9l1 2-2 2-2-1 3-3z" />
+      </svg>
+      <span>Pedir camiseta</span>
+    </button> 
+    </div>
+  </section>
+
+  <dialog id="tshirt-modal" aria-labelledby="tshirt-modal-title" aria-modal="true">
+    <form method="dialog" class="pc-modal__content" onsubmit="event.preventDefault(); alert('Gracias por tu pedido. Nos pondremos en contacto contigo pronto.');">
+      <header class="pc-modal__header">
+        <h3 id="tshirt-modal-title">Haz tu pedido de camiseta</h3>
+        <button type="submit" class="pc-modal__close" aria-label="Cerrar modal">✕</button>
+      </header>
+      <div class="pc-form">
+        <label>
+          Nombre completo:
+          <input type="text" name="nombre" required placeholder="Tu nombre" autocomplete="name" />
+        </label>
+        <label>
+          Correo electrónico:
+          <input type="email" name="email" required placeholder="correo@ejemplo.com" autocomplete="email" />
+        </label>
+        <label>
+          Modelo de camiseta:
+          <select name="modelo" required>
+            <option value="">Selecciona un modelo</option>
+            <option value="clasico">Unisex</option>
+            <option value="moderno">Chica</option>
+            <option value="retro" disabled>Soon</option>
+          </select>
+        </label>
+        <label>
+          Talla:
+          <select name="talla" required>
+            <option value="">Selecciona una talla</option>
+            <option value="s">S</option>
+            <option value="m">M</option>
+            <option value="l">L</option>
+            <option value="xl">XL</option>
+          </select>
+        </label>
+        <label>
+          Cantidad:
+          <input type="number" name="cantidad" min="1" max="10" value="1" required />
+        </label>
+        <div class="pc-actions">
+          <button type="submit" class="btn-shoe" aria-label="Enviar pedido">
+            <svg viewBox="0 0 24 24" class="shoe" aria-hidden="true" fill="currentColor">
+              <path d="M3 16c3 0 5-1 7-3l3 2c3 2 4 1 6 1h1v3H3v-3zM10 9l1 2-2 2-2-1 3-3z" />
+            </svg>
+            <span class="btn-text">Enviar pedido</span>
+          </button>
+          <button type="submit" class="btn-ghost">Cancelar</button>
+        </div>
+        <small class="pc-hint">Mockup: el pedido no se envía realmente.</small>
+      </div>
+    </form>
+  </dialog>
+  <section id="bmc-section" class="bmc-section" aria-label="Apóyanos en BuyMeACoffee">
+    <a href="https://www.buymeacoffee.com/lacostarunningclub" target="_blank" rel="noopener" class="bmc-btn" aria-label="Donar en Buy Me a Coffee">
+      <img src="assets/coffe.gif" alt="" class="bmc-icon" aria-hidden="true" />
+      <span>Apóyanos en BuyMeACoffee para mejorar las sesiones y sacar nueva línea de camisetas.</span>
+    </a>
+  </section>
+
+  
+
+
+  <footer>
+    <small>© <span id="year"></span> LA COSTA RUNNING CLUB</small>
+	<p class="tagline">
+	<span class="gradient-text">Join the run</span> 🏃 <span class="gradient-text">Join the fun</span> 😄
+	</p>
+
+    <div class="links" aria-label="Redes sociales">
+      <!-- Sustituir los href por los enlaces reales -->
+      <a class="icon-link" href="https://instagram.com/lacosta_rc" aria-label="Instagram" target="_blank" rel="noopener">
+        <!-- Instagram SVG -->
+        <img src="assets/instagram.svg" alt="Instagram" class="icon" />
+      </a>
+      <a class="icon-link" href="https://chat.whatsapp.com/GjFMkoDvWvYEBiTjUT4rWd" aria-label="WhatsApp" target="_blank" rel="noopener">
+        <!-- WhatsApp SVG -->
+        <img src="assets/whatsapp.svg" alt="Instagram" class="icon" />
+      </a>
+    </div>
+  </footer>
+  <a href="#bmc-section" class="floating-coffee" aria-label="Apóyanos en BuyMeACoffee">
+    <img src="assets/coffe.gif" alt="" class="coffee-img" />
+  </a>
+
+  <script src="assets/js/scripts.js" defer></script>
+
+</body>
+</html>

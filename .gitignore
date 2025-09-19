@@ -1,0 +1,32 @@
+# Node, npm, yarn
+node_modules/
+dist/
+build/
+
+# Mac y sistema
+.DS_Store
+Thumbs.db
+
+# Archivos temporales o de editor
+*.log
+*.tmp
+*.swp
+*.swo
+*.idea/
+.vscode/
+
+# Archivos ocultos del sistema
+*.~*
+
+# Respaldos
+*.bak
+*.old
+*~
+
+# Mapas de fuentes (útiles si compilas CSS o JS)
+*.map
+
+# Archivos fuera de versiones
+.env
+.env.local
+.env.*
