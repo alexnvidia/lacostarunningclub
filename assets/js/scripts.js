@@ -157,3 +157,133 @@ document.querySelectorAll('.tshirt-card').forEach(card => {
     }
   });
 });
+
+// Modal de login y menú de usuario
+const loginModal = document.getElementById('loginModal');
+const btnUser = document.getElementById('btnUser');
+const closeLogin = document.getElementById('closeLogin');
+const userSection = document.getElementById('userSection');
+const userMenu = document.getElementById('userMenu');
+const linkProfile = document.getElementById('linkProfile');
+const linkLogout = document.getElementById('linkLogout');
+const floatingCoffee = document.querySelector('.floating-coffee'); // Añadir esta línea
+
+let isLoggedIn = false;
+
+// Solo ejecutar si los elementos existen
+if (btnUser && loginModal && closeLogin && userSection && userMenu && linkProfile && linkLogout) {
+  
+  // Función para abrir modal de login o menú de usuario
+  btnUser.onclick = () => {
+    if (isLoggedIn) {
+      // Toggle del menú si ya está logueado
+      if (userMenu.style.display === 'none' || userMenu.style.display === '') {
+        userMenu.style.display = 'block';
+        // Desplazar el café hacia abajo
+        if (floatingCoffee) {
+          floatingCoffee.classList.add('menu-open');
+        }
+      } else {
+        userMenu.style.display = 'none';
+        // Volver el café a su posición original
+        if (floatingCoffee) {
+          floatingCoffee.classList.remove('menu-open');
+        }
+      }
+    } else {
+      // Abrir modal de login
+      loginModal.showModal();
+    }
+  };
+
+  // Cerrar modal
+  closeLogin.onclick = () => {
+    loginModal.close();
+  };
+
+  // Cerrar al hacer clic fuera del modal
+  loginModal.onclick = (e) => {
+    if (e.target === loginModal) {
+      loginModal.close();
+    }
+  };
+
+  // Cerrar menú al hacer clic fuera
+  document.addEventListener('click', (e) => {
+    if (!btnUser.contains(e.target) && !userMenu.contains(e.target)) {
+      userMenu.style.display = 'none';
+      // Volver el café a su posición original
+      if (floatingCoffee) {
+        floatingCoffee.classList.remove('menu-open');
+      }
+    }
+  });
+
+  // Manejar login (simulado)
+  const loginForm = document.getElementById('loginForm');
+  if (loginForm) {
+    loginForm.onsubmit = (e) => {
+      e.preventDefault();
+      
+      // Obtener datos del formulario
+      const email = document.getElementById('email').value;
+      const userName = email.split('@')[0];
+      
+      // Actualizar perfil
+      document.getElementById('userName').textContent = userName;
+      document.getElementById('userEmail').textContent = email;
+      document.getElementById('userMenuName').textContent = userName;
+      
+      // Cambiar estado de sesión
+      isLoggedIn = true;
+      btnUser.classList.add('logged-in');
+      btnUser.setAttribute('aria-label', 'Menú de usuario');
+      
+      // Mostrar sección de usuario
+      userSection.style.display = 'block';
+      
+      // Cerrar modal
+      loginModal.close();
+      
+      // Scroll suave a la sección de usuario
+      userSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+  }
+
+  // Ir al perfil
+  linkProfile.onclick = (e) => {
+    e.preventDefault();
+    userMenu.style.display = 'none';
+    // Volver el café a su posición original
+    if (floatingCoffee) {
+      floatingCoffee.classList.remove('menu-open');
+    }
+    userSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  // Cerrar sesión
+  linkLogout.onclick = () => {
+    // Restablecer estado
+    isLoggedIn = false;
+    btnUser.classList.remove('logged-in');
+    btnUser.setAttribute('aria-label', 'Iniciar sesión');
+    
+    // Ocultar elementos
+    userSection.style.display = 'none';
+    userMenu.style.display = 'none';
+    
+    // Volver el café a su posición original
+    if (floatingCoffee) {
+      floatingCoffee.classList.remove('menu-open');
+    }
+    
+    // Limpiar formulario
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) loginForm.reset();
+    
+    // Scroll al inicio
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+}
+
+
