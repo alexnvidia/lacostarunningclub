@@ -1,0 +1,440 @@
+openapi: 3.0.3
+info:
+  title: La Costa Running Club - Admin Service
+  version: 1.0.0
+  description: Administrative operations service. All endpoints require admin role.
+  contact:
+    name: LCRC Tech Team
+
+servers:
+  - url: http://localhost:3005/api
+    description: Local development
+
+tags:
+  - name: Order Management
+    description: Admin order management operations
+  - name: User Management
+    description: Admin user management operations
+  - name: Statistics
+    description: Analytics and reporting
+
+security:
+  - BearerAuth: []
+
+paths:
+  /admin/orders:
+    get:
+      tags:
+        - Order Management
+      summary: List all orders
+      description: Returns list of all orders with filtering options
+      operationId: listAllOrders
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, confirmed, preparing, shipped, delivered, cancelled]
+        - name: from_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: to_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: user_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Orders retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orders:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AdminOrderView'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/orders/pending:
+    get:
+      tags:
+        - Order Management
+      summary: Get pending orders
+      description: Returns all orders with pending status
+      operationId: getPendingOrders
+      responses:
+        '200':
+          description: Pending orders retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdminOrderView'
+
+  /admin/orders/{id}:
+    get:
+      tags:
+        - Order Management
+      summary: Get order details
+      description: Returns detailed order information including history
+      operationId: getOrderDetails
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Order details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminOrderDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags:
+        - Order Management
+      summary: Update order
+      description: Updates order status, tracking number, or admin notes
+      operationId: updateOrder
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminOrderUpdate'
+      responses:
+        '200':
+          description: Order updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminOrderDetail'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /admin/users:
+    get:
+      tags:
+        - User Management
+      summary: List all users
+      description: Returns list of all registered users
+      operationId: listUsers
+      parameters:
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum: [user, admin]
+        - name: active
+          in: query
+          schema:
+            type: boolean
+        - name: search
+          in: query
+          description: Search by email or name
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Users retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserSummary'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /admin/stats:
+    get:
+      tags:
+        - Statistics
+      summary: Get dashboard statistics
+      description: Returns overall statistics for admin dashboard
+      operationId: getStatistics
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [day, week, month, year]
+            default: month
+      responses:
+        '200':
+          description: Statistics retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Statistics'
+
+  /admin/stats/sales:
+    get:
+      tags:
+        - Statistics
+      summary: Get sales statistics
+      description: Returns sales metrics and revenue data
+      operationId: getSalesStats
+      parameters:
+        - name: from_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: to_date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Sales statistics retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalesStatistics'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    AdminOrderView:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        order_number:
+          type: string
+        user_email:
+          type: string
+        user_name:
+          type: string
+        order_date:
+          type: string
+          format: date-time
+        status:
+          type: string
+        total:
+          type: number
+        total_items:
+          type: integer
+
+    AdminOrderDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        order_number:
+          type: string
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            email:
+              type: string
+            first_name:
+              type: string
+            last_name:
+              type: string
+        order_date:
+          type: string
+          format: date-time
+        status:
+          type: string
+        subtotal:
+          type: number
+        shipping_cost:
+          type: number
+        total:
+          type: number
+        shipping_address:
+          type: object
+        tracking_number:
+          type: string
+        customer_notes:
+          type: string
+        admin_notes:
+          type: string
+        items:
+          type: array
+          items:
+            type: object
+        status_history:
+          type: array
+          items:
+            type: object
+            properties:
+              previous_status:
+                type: string
+              new_status:
+                type: string
+              changed_at:
+                type: string
+                format: date-time
+              comment:
+                type: string
+
+    AdminOrderUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [pending, confirmed, preparing, shipped, delivered, cancelled]
+        tracking_number:
+          type: string
+        admin_notes:
+          type: string
+
+    UserSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        role:
+          type: string
+        active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        total_orders:
+          type: integer
+        total_spent:
+          type: number
+
+    Statistics:
+      type: object
+      properties:
+        total_users:
+          type: integer
+        total_orders:
+          type: integer
+        pending_orders:
+          type: integer
+        total_revenue:
+          type: number
+        recent_orders:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminOrderView'
+
+    SalesStatistics:
+      type: object
+      properties:
+        period:
+          type: string
+        total_sales:
+          type: number
+        total_orders:
+          type: integer
+        average_order_value:
+          type: number
+        top_products:
+          type: array
+          items:
+            type: object
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        total_pages:
+          type: integer
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        code:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    
+    Forbidden:
+      description: Forbidden - Admin access required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
