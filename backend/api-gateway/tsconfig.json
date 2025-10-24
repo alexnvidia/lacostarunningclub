@@ -5,6 +5,7 @@
     "lib": ["ES2022"],
     "module": "commonjs",
     "moduleResolution": "node",
+    "types": ["jest", "node"],
     
     /* Emit */
     "outDir": "./dist",
@@ -38,7 +39,8 @@
     "declarationMap": true
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "tests/**/*"
   ],
   "exclude": [
     "node_modules",

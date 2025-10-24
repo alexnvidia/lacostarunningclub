@@ -95,7 +95,7 @@ Object.entries(services).forEach(([_key, service]) => {
       `${API_PREFIX}${service.prefix}`,
       authMiddleware,  // Apply auth middleware only for protected routes
       (req: Request, res: Response) => {
-        proxyRequest(req, res, service.url, service.prefix);
+        proxyRequest(req, res, service.url);
       }
     );
     logger.info(`🔒 Protected route: ${API_PREFIX}${service.prefix}`);
@@ -104,7 +104,7 @@ Object.entries(services).forEach(([_key, service]) => {
     app.use(
       `${API_PREFIX}${service.prefix}`,
       (req: Request, res: Response) => {
-        proxyRequest(req, res, service.url, service.prefix);
+        proxyRequest(req, res, service.url);
       }
     );
     logger.info(`🌐 Public route: ${API_PREFIX}${service.prefix}`);
@@ -112,7 +112,7 @@ Object.entries(services).forEach(([_key, service]) => {
 });
 
 // 404 handler
-app.use('*', (req: Request, res: Response) => {
+app.use('*path', (req: Request, res: Response) => {
   logger.warn(`Route not found: ${req.method} ${req.originalUrl}`);
   res.status(404).json({
     error: 'Route not found',

@@ -45,7 +45,7 @@ export const services: Record<string, ServiceConfig> = {
   communication: {
     name: 'Communication Service',
     url: process.env.COMMUNICATION_SERVICE_URL || 'http://localhost:3006',
-    prefix: '/messages',
+    prefix: '/communication',
     healthCheck: '/health',
     requiresAuth: true,
   },
