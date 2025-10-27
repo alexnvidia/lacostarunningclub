@@ -70,6 +70,7 @@ describe('API Gateway - General Tests', () => {
     it('should include CORS headers in responses', async () => {
       const response = await request(app)
         .get('/health')
+        .set('Origin', 'http://localhost:3000')
         .expect(200);
 
       expect(response.headers).toHaveProperty('access-control-allow-origin');

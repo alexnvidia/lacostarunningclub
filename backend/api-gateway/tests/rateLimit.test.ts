@@ -6,7 +6,7 @@ describe('Rate Limiting', () => {
   describe('General Rate Limiting', () => {
     it('should include rate limit headers', async () => {
       const response = await request(app)
-        .get('/api/products');
+        .get('/api/products/products');
 
       expect(response.headers).toHaveProperty('ratelimit-limit');
       expect(response.headers).toHaveProperty('ratelimit-remaining');
@@ -16,7 +16,7 @@ describe('Rate Limiting', () => {
       const requests = [];
       
       for (let i = 0; i < 5; i++) {
-        requests.push(request(app).get('/api/products'));
+        requests.push(request(app).get('/api/products/products'));
       }
 
       const responses = await Promise.all(requests);
@@ -33,7 +33,7 @@ describe('Rate Limiting', () => {
       
       // Hacer más de 100 requests (el límite configurado)
       for (let i = 0; i < 110; i++) {
-        requests.push(request(app).get('/api/products'));
+        requests.push(request(app).get('/api/products/products'));
       }
 
       const responses = await Promise.all(requests);

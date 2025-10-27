@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
@@ -25,12 +25,37 @@ if (!fs.existsSync('logs')) {
 
 // Middlewares globales
 app.use(helmet());
+// Only allow CORS for development; adjust for production as needed
+// change '*' to specific origins in production and add whitelist logic if necessary
 app.use(cors({
-  origin: process.env.CORS_ORIGIN?.split(',') || '*',
+  origin: (origin, callback) => callback(null, origin || '*'),
   credentials: true,
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+// catch JSON parsing errors
+app.use(
+  (
+    err: any,
+    _req: Request,
+    res: Response,
+    next: NextFunction
+  ): Response | void => {
+    if (
+      err instanceof SyntaxError &&
+      (err as any).status === 400 &&
+      'body' in err
+    ) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        code: 'INVALID_JSON',
+        message: 'Malformed JSON in request body'
+      });
+    }
+    // Siempre llama next en otras rutas, así el linter/compilador lo considera cubierto
+    return next(err);
+  }
+);
 app.use(loggerMiddleware);
 
 // Health check endpoints (no auth required)

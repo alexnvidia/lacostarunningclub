@@ -9,7 +9,7 @@
     
     /* Emit */
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": ".",
     "removeComments": true,
     "sourceMap": true,
     
@@ -44,9 +44,6 @@
   ],
   "exclude": [
     "node_modules",
-    "dist",
-    "tests",
-    "**/*.spec.ts",
-    "**/*.test.ts"
+    "dist"
   ]
 }
