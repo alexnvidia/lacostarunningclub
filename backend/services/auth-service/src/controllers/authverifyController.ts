@@ -1,12 +1,7 @@
 import { Response, NextFunction } from 'express';
-import * as authverifyControllerService from './authverifyControllerService.js';
+import { AuthRequest } from '../middlewares/auth.middleware.js';
+import * as authverifyControllerService from './authverifyControllerService';
 
-interface SwaggerRequest extends Request {
-  swagger: {
-    params: any;
-  };
-}
-
-export function verifyToken(req: SwaggerRequest, res: Response, next: NextFunction): void {
-  authverifyControllerService.verifyToken(req.swagger.params, res, next);
+export function verifyToken(req: AuthRequest, res: Response, next: NextFunction): void {
+  authverifyControllerService.verifyToken(req, res, next);
 }

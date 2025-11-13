@@ -94,16 +94,33 @@ paths:
                 $ref: '#/components/schemas/AuthResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Account locked due to multiple failed attempts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Account is temporarily locked due to multiple failed login attempts
+                code: ACCOUNT_LOCKED
 
   /auth/logout:
     post:
       tags:
         - Authentication
       summary: Logout user
-      description: Invalidates current session/token
+      description: Invalidates current session/token Use query parameter `all=true` to logout from all devices.
       operationId: logoutUser
       security:
         - BearerAuth: []
+      parameters:
+        - in: query
+          name: all
+          schema:
+            type: boolean
+            default: false
+          required: false
+          description: If true, logs out from all sessions/devices
       responses:
         '200':
           description: Logout successful
@@ -115,8 +132,21 @@ paths:
                   message:
                     type: string
                     example: Successfully logged out
+                  sessions_revoked:
+                    type: integer
+                    description: Number of sessions revoked (only if `all=true`)
+                    example: 1
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: User not found
+                code: USER_NOT_FOUND
 
   /auth/change-password:
     post:
@@ -133,6 +163,12 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ChangePasswordRequest'
+            examples:
+              validRequest:
+                summary: Valid password change request
+                value:
+                  current_password: OldPass123!
+                  new_password: NewSecurePass456!
       responses:
         '200':
           description: Password changed successfully
@@ -143,11 +179,35 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: Password updated successfully
+                    example: Password changed successfully
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          description: Current password is incorrect or user not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalidCurrentPassword:
+                  summary: Invalid current password
+                  value:
+                    error: Current password is incorrect
+                    code: INVALID_CURRENT_PASSWORD
+                unauthorized:
+                  summary: Not authenticated
+                  value:
+                    error: No token provided
+                    code: UNAUTHORIZED
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: User not found
+                code: USER_NOT_FOUND
 
   /auth/refresh-token:
     post:
@@ -168,6 +228,7 @@ paths:
                 refresh_token:
                   type: string
                   description: Valid refresh token
+                  example: a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0
       responses:
         '200':
           description: Token refreshed successfully
@@ -209,7 +270,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: JWT token obtained from login endpoint
+      description: JWT token obtained from login or register endpoint
 
   schemas:
     RegisterRequest:
@@ -266,10 +327,14 @@ components:
         current_password:
           type: string
           format: password
+          description: Current password of the authenticated user
+          example: OldPass123!
         new_password:
           type: string
           format: password
           minLength: 8
+          description: New password (must be different from current)
+          example: NewSecurePass456!
 
     AuthResponse:
       type: object
@@ -281,6 +346,7 @@ components:
         refresh_token:
           type: string
           description: Refresh token for obtaining new access tokens
+          example: a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0
         expires_in:
           type: integer
           description: Token expiration time in seconds
@@ -351,6 +417,9 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
+          example:
+            error: Validation failed
+            code: VALIDATION_ERROR
     
     Unauthorized:
       description: Authentication required or invalid credentials
@@ -358,6 +427,19 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
-          example:
-            error: Invalid credentials
-            code: UNAUTHORIZED
+          examples:
+            noToken:
+              summary: No token provided
+              value:
+                error: No token provided
+                code: UNAUTHORIZED
+            invalidToken:
+              summary: Invalid token
+              value:
+                error: Invalid token
+                code: INVALID_TOKEN
+            expiredToken:
+              summary: Token expired
+              value:
+                error: Token expired
+                code: TOKEN_EXPIRED

@@ -1,7 +1,14 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import http from 'http';
 import path from 'path';
 import { initialize } from '@oas-tools/core';
+import * as authregisterControllerService from './controllers/authregisterControllerService.js';
+import * as authrefreshtokenControllerService from './controllers/authrefreshtokenControllerService.js';
+import * as authloginControllerService from './controllers/authloginControllerService.js';
+import * as authchangepasswordControllerService from './controllers/authchangepasswordControllerService.js';
+import * as authlogoutControllerService from './controllers/authlogoutControllerService.js';
+import * as authverifyControllerService from './controllers/authverifyControllerService.js';
+import { authMiddleware, AuthRequest } from './middlewares/auth.middleware.js';
 import fs from 'fs';
 import jwt from 'jsonwebtoken';
 
@@ -258,6 +265,42 @@ if (USE_MOCK) {
   
 } else {
   console.log('🚀 Starting Auth Service in PRODUCTION mode with OAS Tools...');
+
+  // Register controller services
+  app.post('/auth/register', (req: Request, res: Response, next: NextFunction) => {
+    
+    authregisterControllerService.registerUser(req, res, next);
+  });
+
+  // refresh controller services
+  app.post('/auth/refresh-token', (req: Request, res: Response, next: NextFunction) => {
+    
+    authrefreshtokenControllerService.refreshToken(req, res, next);
+  });
+
+  // login controller services
+  app.post('/auth/login', (req: Request, res: Response, next: NextFunction) => {
+    
+    authloginControllerService.loginUser(req, res, next);
+  });
+
+  // change password controller services
+  app.post('/auth/change-password', authMiddleware, (req: AuthRequest, res: Response, next: NextFunction) => {
+    
+    authchangepasswordControllerService.changePassword(req, res, next);
+  });
+
+  // logout controller services
+  app.post('/auth/logout', authMiddleware, (req: AuthRequest, res: Response, next: NextFunction) => {
+    
+    authlogoutControllerService.logoutUser(req, res, next);
+  });
+
+  // verify controller services
+  app.get('/auth/verify', authMiddleware, (req: AuthRequest, res: Response, next: NextFunction) => {
+    
+    authverifyControllerService.verifyToken(req, res, next);
+  });
   
   const oasFilePath = path.resolve(process.cwd(), '../../docs/openapi/auth-service.yaml');
   

@@ -1,12 +1,8 @@
 import { Response, NextFunction } from 'express';
+import { AuthRequest } from '../middlewares/auth.middleware.js';
 import * as authchangepasswordControllerService from './authchangepasswordControllerService.js';
 
-interface SwaggerRequest extends Request {
-  swagger: {
-    params: any;
-  };
-}
 
-export function changePassword(req: SwaggerRequest, res: Response, next: NextFunction): void {
-  authchangepasswordControllerService.changePassword(req.swagger.params, res, next);
+export function changePassword(req: AuthRequest, res: Response, next: NextFunction): void {
+  authchangepasswordControllerService.changePassword(req, res, next);
 }
