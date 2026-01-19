@@ -1,4 +1,4 @@
-version: '3.9'
+#version: '3.9'
 
 services:
   postgres:
@@ -12,6 +12,33 @@ services:
       - "5432:5432"
     volumes:
       - pg:/var/lib/postgresql/data
+    networks:
+      - lcrc-networks
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  redis:
+    image: redis:7-alpine
+    container_name: lcrc-redis
+    restart: always
+    command: redis-server --appendonly yes --requirepass ""
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - lcrc-networks
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
 
 volumes:
   pg: {}
+  redis_data: {}
+networks:
+  lcrc-networks:
+    driver: bridge

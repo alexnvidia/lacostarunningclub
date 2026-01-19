@@ -8,9 +8,20 @@ import * as authloginControllerService from './controllers/authloginControllerSe
 import * as authchangepasswordControllerService from './controllers/authchangepasswordControllerService.js';
 import * as authlogoutControllerService from './controllers/authlogoutControllerService.js';
 import * as authverifyControllerService from './controllers/authverifyControllerService.js';
+import * as authverifyemailControllerService from './controllers/authverifyemailControllerService.js';
+import * as authresendverificationemailControllerService from './controllers/authresendverificationemailControllerService.js';
+import * as authforgotpasswordControllerService from './controllers/authforgotpasswordControllerService.js';
+import * as authresetpasswordControllerService from './controllers/authresetpasswordControllerService.js';
+import * as authresetpasswordformControllerService from './controllers/authresetpasswordformControllerService.js';
 import { authMiddleware, AuthRequest } from './middlewares/auth.middleware.js';
 import fs from 'fs';
 import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+
+// Cargar variables de entorno desde la raíz
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
+
+import './queue/workers';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -301,7 +312,37 @@ if (USE_MOCK) {
     
     authverifyControllerService.verifyToken(req, res, next);
   });
+
+  // verify email controller services
+  app.get('/auth/verify-email', (req: Request, res: Response, next: NextFunction) => {
+    
+    authverifyemailControllerService.verifyEmail(req, res, next);
+  });
+
+  // resend verification email controller services
+  app.post('/auth/resend-verification-email', (req: Request, res: Response, next: NextFunction) => {
+    
+    authresendverificationemailControllerService.resendVerificationEmail(req, res, next);
+  });
   
+  // forgot password controller services
+  app.post('/auth/forgot-password', (req: Request, res: Response, next: NextFunction) => {
+    
+    authforgotpasswordControllerService.forgotPassword(req, res, next);
+  });
+
+  // reset password controller services
+  app.post('/auth/reset-password', (req: Request, res: Response, next: NextFunction) => {
+    
+    authresetpasswordControllerService.resetPassword(req, res, next);
+  });
+
+  // get reset password form controller services
+  app.get('/auth/reset-password-form', (req: Request, res: Response) => {
+    
+    authresetpasswordformControllerService.getResetPasswordForm(req, res);
+  });
+
   const oasFilePath = path.resolve(process.cwd(), '../../docs/openapi/auth-service.yaml');
   
   if (!fs.existsSync(oasFilePath)) {

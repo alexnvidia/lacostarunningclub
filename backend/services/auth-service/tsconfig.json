@@ -8,9 +8,9 @@
     
     /* Emit */
     "outDir": "./dist",
-    "rootDir": "./src",
+    //"rootDir": ".",
     "typeRoots": ["./node_modules/@types", "./@types"],
-    "types": [],
+    "types": ["node"],
     "removeComments": true,
     "sourceMap": true,
     
@@ -37,10 +37,14 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "declaration": true,
-    "declarationMap": true
+    "declarationMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["../../shared/src/*"]
+    }
   },
   "include": [
-    "src/**/*","@types/**/*"
+    "src/**/*","@types/**/*", "../../shared/src/**/*"
   ],
   "exclude": [
     "node_modules",

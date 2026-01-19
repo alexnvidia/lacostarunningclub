@@ -22,6 +22,7 @@ model User {
   lockoutUntil         DateTime? @map("lockout_until")
   emailVerified        Boolean  @default(false) @map("email_verified")
   verificationToken    String?  @map("verification_token")
+  verificationTokenExpires DateTime? @map("verification_token_expires")
   resetPasswordToken   String?  @map("reset_password_token")
   resetPasswordExpires DateTime? @map("reset_password_expires")
   sessions             Session[]

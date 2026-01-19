@@ -12,9 +12,9 @@ info:
     name: MIT
 
 servers:
-  - url: http://localhost:3001/api
+  - url: http://localhost:3001/
     description: Local development
-  - url: https://api.lacostarunningclub.com/auth/api
+  - url: https://api.lacostarunningclub.com/auth/
     description: Production
 
 tags:
@@ -24,6 +24,8 @@ tags:
     description: Password change and recovery operations
   - name: Token Management
     description: JWT token operations
+  - name: Email Verification
+    description: Email verification operations
 
 paths:
   /auth/register:
@@ -264,6 +266,270 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
+  /auth/verify-email:
+    get:
+      tags:
+        - Email Verification
+      summary: Verify user email address
+      description: |
+        Verifies user email using the token sent via email during registration.
+        This is a public endpoint (no authentication required) that users access by clicking
+        the verification link in their welcome email.
+      operationId: verifyEmail
+      parameters:
+        - in: query
+          name: token
+          required: true
+          schema:
+            type: string
+            minLength: 32
+          description: Email verification token sent to user's email
+          example: a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6
+      responses:
+        '200':
+          description: Email verified successfully
+          content:
+            text/html:
+              schema:
+                type: string
+                description: HTML page confirming successful email verification
+              example: |
+                <!DOCTYPE html>
+                <html>
+                  <head><title>Email Verified</title></head>
+                  <body>
+                    <h1>✅ Email Verified!</h1>
+                    <p>Your account has been verified successfully.</p>
+                  </body>
+                </html>
+        '400':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Verification token is required
+                code: MISSING_TOKEN
+        '404':
+          description: Invalid or expired verification token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Invalid or expired verification token
+                code: INVALID_TOKEN
+  /auth/resend-verification-email:
+    post:
+      tags:
+        - Email Verification
+      summary: Resend verification email
+      description: |
+        Resends the email verification link to the user's email address.
+        Use this endpoint when the verification token has expired or the user didn't receive the original email.
+        This is a public endpoint (no authentication required).
+      operationId: resendVerificationEmail
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResendVerificationEmailRequest'
+            examples:
+              validRequest:
+                summary: Valid resend request
+                value:
+                  email: user@example.com
+      responses:
+        '200':
+          description: Verification email sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResendVerificationEmailResponse'
+        '400':
+          description: Invalid request or email already verified
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missingEmail:
+                  summary: Missing email field
+                  value:
+                    error: Email is required
+                    code: MISSING_EMAIL
+                emailAlreadyVerified:
+                  summary: Email already verified
+                  value:
+                    error: Email is already verified
+                    code: EMAIL_ALREADY_VERIFIED
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: User not found
+                code: USER_NOT_FOUND
+        '429':
+          description: Too many resend requests - rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Too many resend requests. Please try again later
+                code: RATE_LIMIT_EXCEEDED
+
+  /auth/forgot-password:
+    post:
+      tags:
+        - Password Management
+      summary: Initiate password reset
+      description: Sends a password reset email to the user with a reset token
+      operationId: forgotPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+      responses:
+        '200':
+          description: Password reset email sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password reset email sent if the email is registered
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /auth/reset-password:
+    post:
+      tags:
+        - Password Management
+      summary: Reset user password
+      description: Resets the user's password using the provided reset token
+      operationId: resetPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - new_password
+              properties:
+                new_password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  example: NewSecurePass456!
+      parameters:
+        - in: query
+          name: token
+          required: true
+          schema:
+            type: string
+            minLength: 32
+          description: Password reset token sent to user's email
+          example: a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6
+      responses:
+        '200':
+          description: Password reset successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password has been reset successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '410':
+          description: Reset token has expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Reset token has expired
+                code: TOKEN_EXPIRED
+        '404':
+          description: Invalid reset token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Invalid reset token
+                code: INVALID_TOKEN
+  /auth/reset-password-form:
+    get:
+      tags:
+        - Password Management
+      summary: Get reset password form
+      description: Serves an HTML form for users to reset their password using the reset token
+      operationId: getResetPasswordForm
+      parameters:
+        - in: query
+          name: token
+          required: true
+          schema:
+            type: string
+            minLength: 32
+          description: Password reset token sent to user's email
+          example: a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6
+      responses:
+        '200':
+          description: HTML form for password reset
+          content:
+            text/html:
+              schema:
+                type: string
+                description: HTML form page
+              example: |
+                <!DOCTYPE html>
+                <html>
+                  <head><title>Reset Password</title></head>
+                  <body>
+                    <h1>Reset Your Password</h1>
+                    <form action="/auth/reset-password" method="POST">
+                      <input type="hidden" name="token" value="...">
+                      <label for="new_password">New Password:</label>
+                      <input type="password" id="new_password" name="new_password" required>
+                      <button type="submit">Reset Password</button>
+                    </form>
+                  </body>
+                </html>
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Invalid or expired reset token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Invalid or expired reset token
+                code: INVALID_TOKEN
+
 components:
   securitySchemes:
     BearerAuth:
@@ -409,6 +675,28 @@ components:
         details:
           type: object
           description: Additional error details
+    ResendVerificationEmailRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          description: User Email address to resend verification link to
+          example: user@example.com
+    ResendVerificationEmailResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Confirmation message successfully resending verification email
+          example: Verification email sent successfully
+        email:
+          type: string
+          format: email
+          description: Email address to which the verification email was sent
+          example:
 
   responses:
     BadRequest:

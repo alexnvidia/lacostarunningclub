@@ -1,15 +1,16 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { Request, Response, NextFunction } from 'express';
-import { ref } from 'joi';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import { emailQueue } from '../queue/emailQueue';
+import { EmailTemplate, getEmailContent, EmailData } from '../utils/emailTemplates';
 
 const prisma = new PrismaClient();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production-please-12345';
 const TOKEN_LENGTH_BYTES = 40;
-
+const APP_URL = process.env.APP_URL || 'http://localhost:3000'; // point to frontend URL, at the moment is apigateway
 
 export async function registerUser(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
@@ -30,11 +31,17 @@ export async function registerUser(req: Request, res: Response, next: NextFuncti
     // Hash password
     const passwordHash = await bcrypt.hash(password, 10);
 
-    const role = 'user'; // fixed role for registered users
+    // Generate email verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
 
-    // create new user
+    // Generate verification token expiration (e.g., 24 hours from now)
+    const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    const role = 'user';
+
+    // Create new user
     const newUser = await prisma.user.create({
-       data:{
+       data: {
         email,
         passwordHash,
         firstName: first_name,
@@ -42,33 +49,80 @@ export async function registerUser(req: Request, res: Response, next: NextFuncti
         phone,
         role,
         active: true,
+        emailVerified: false,
+        verificationToken,
+        verificationTokenExpires,
       },
     });
 
-    const token = jwt.sign({
-      id: newUser.id,
-      email: newUser.email,
-      role: newUser.role
-    }, JWT_SECRET, { expiresIn: '1h' });
+    // Generate JWT token
+    const token = jwt.sign(
+      {
+        id: newUser.id,
+        email: newUser.email,
+        role: newUser.role,
+      },
+      JWT_SECRET,
+      { expiresIn: '1h' }
+    );
 
-        // Generate refresh token
+    // Generate refresh token
     const refreshToken = crypto.randomBytes(TOKEN_LENGTH_BYTES).toString('hex');
 
-    // save session with refresh token
+    // Save session
     await prisma.session.create({
-      data:{
+       data: {
         userId: newUser.id,
-        tokenHash: token,  // o hash del token de acceso
+        tokenHash: token,
         refreshTokenHash: refreshToken,
         ipAddress: req.ip,
         userAgent: req.headers['user-agent'] || null,
         device: req.body.device || null,
         createdAt: new Date(),
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // example: 30 days
-        isActive: true
-      }
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        isActive: true,
+      },
     });
 
+
+    //prepare data for welcome email  
+    const emailData: EmailData = {
+      template: EmailTemplate.WELCOME,
+      data: {
+      firstName: newUser.firstName,
+      verificationToken,
+      appUrl: APP_URL,
+      },
+    }
+    // 🔥 Generar contenido del email desde plantilla
+    const emailContent = getEmailContent(emailData);
+
+    // Encolar email usando la plantilla
+    try {
+      await emailQueue.add(
+        {
+          to: newUser.email,
+          subject: emailContent.subject,
+          html: emailContent.html,
+          text: emailContent.text,
+        },
+        {
+          attempts: 3,
+          backoff: {
+            type: 'exponential',
+            delay: 2000,
+          },
+          removeOnComplete: true,
+          removeOnFail: false,
+        }
+      );
+
+      console.log(`📧 Welcome email queued for user: ${newUser.email}`);
+    } catch (emailError) {
+      console.error('Failed to queue welcome email:', emailError);
+    }
+
+    // Responder al cliente
     res.status(201).json({
       token,
       refresh_token: refreshToken,
@@ -79,6 +133,7 @@ export async function registerUser(req: Request, res: Response, next: NextFuncti
         first_name: newUser.firstName,
         last_name: newUser.lastName,
         role: newUser.role,
+        email_verified: newUser.emailVerified,
         created_at: newUser.createdAt.toISOString(),
       },
     });
