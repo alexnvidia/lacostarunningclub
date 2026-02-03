@@ -1,8 +1,7 @@
 import { Response, NextFunction } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@lcrc/shared';
 import { AuthRequest } from '../middlewares/auth.middleware.js';
 
-const prisma = new PrismaClient();
 
 export async function verifyToken(
   req: AuthRequest,
@@ -14,9 +13,9 @@ export async function verifyToken(
 
     // Validate that the user is authenticated
     if (!userId) {
-      res.status(401).json({ 
-        error: 'Unauthorized', 
-        code: 'UNAUTHORIZED' 
+      res.status(401).json({
+        error: 'Unauthorized',
+        code: 'UNAUTHORIZED'
       });
       return;
     }
@@ -38,18 +37,18 @@ export async function verifyToken(
     });
 
     if (!user) {
-      res.status(404).json({ 
-        error: 'User not found', 
-        code: 'USER_NOT_FOUND' 
+      res.status(404).json({
+        error: 'User not found',
+        code: 'USER_NOT_FOUND'
       });
       return;
     }
 
     // Verify that the user account is active
     if (!user.active) {
-      res.status(403).json({ 
-        error: 'User account is inactive', 
-        code: 'ACCOUNT_INACTIVE' 
+      res.status(403).json({
+        error: 'User account is inactive',
+        code: 'ACCOUNT_INACTIVE'
       });
       return;
     }
@@ -71,9 +70,9 @@ export async function verifyToken(
       });
 
       if (!session) {
-        res.status(401).json({ 
-          error: 'Session not found or expired', 
-          code: 'SESSION_INVALID' 
+        res.status(401).json({
+          error: 'Session not found or expired',
+          code: 'SESSION_INVALID'
         });
         return;
       }

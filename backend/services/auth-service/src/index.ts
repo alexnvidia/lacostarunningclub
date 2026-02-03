@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+// Load environment variables from root
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 import express, { Request, Response, NextFunction } from 'express';
 import http from 'http';
 import path from 'path';
@@ -16,10 +19,8 @@ import * as authresetpasswordformControllerService from './controllers/authreset
 import { authMiddleware, AuthRequest } from './middlewares/auth.middleware.js';
 import fs from 'fs';
 import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
 
-// Cargar variables de entorno desde la raíz
-dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
+
 
 import './queue/workers';
 
@@ -37,8 +38,8 @@ app.use((req, _res, next) => {
 });
 
 app.get('/health', (_req: Request, res: Response) => {
-  res.json({ 
-    status: 'ok', 
+  res.json({
+    status: 'ok',
     service: 'auth-service',
     mode: USE_MOCK ? 'mock' : 'production',
     timestamp: new Date().toISOString()
@@ -63,7 +64,7 @@ const startServer = () => {
 
 if (USE_MOCK) {
   console.log('🎭 Starting Auth Service in MOCK mode...');
-  
+
   // Root endpoint
   app.get('/', (_req: Request, res: Response) => {
     res.json({
@@ -84,16 +85,16 @@ if (USE_MOCK) {
   // POST /register - Register new user
   app.post('/auth/register', (req: Request, res: Response) => {
     const { email, password, first_name, last_name, phone } = req.body;
-    
+
     console.log(`📥 Register attempt: ${email}`);
-    
+
     if (!email || !password || !first_name) {
       return res.status(400).json({
         error: 'Email, password, and first_name are required',
         code: 'VALIDATION_ERROR'
       });
     }
-    
+
     // Mock: Check if email already exists (simplified)
     if (email === 'existing@example.com') {
       return res.status(409).json({
@@ -101,7 +102,7 @@ if (USE_MOCK) {
         code: 'EMAIL_EXISTS'
       });
     }
-    
+
     const newUser = {
       id: `user-${Date.now()}`,
       email,
@@ -111,13 +112,13 @@ if (USE_MOCK) {
       role: 'user',
       created_at: new Date().toISOString()
     };
-    
+
     const token = jwt.sign(
       { id: newUser.id, email: newUser.email, role: newUser.role },
       JWT_SECRET,
       { expiresIn: '1h' }
     );
-    
+
     res.status(201).json({
       message: 'User registered successfully',
       token,
@@ -130,16 +131,16 @@ if (USE_MOCK) {
   // POST /login - User login
   app.post('/auth/login', (req: Request, res: Response) => {
     const { email, password } = req.body;
-    
+
     console.log(`📥 Login attempt: ${email}`);
-    
+
     if (!email || !password) {
       return res.status(400).json({
         error: 'Email and password are required',
         code: 'VALIDATION_ERROR'
       });
     }
-    
+
     // Mock: Simple validation
     if (password === 'wrong') {
       return res.status(401).json({
@@ -147,7 +148,7 @@ if (USE_MOCK) {
         code: 'UNAUTHORIZED'
       });
     }
-    
+
     const user = {
       id: '123e4567-e89b-12d3-a456-426614174000',
       email,
@@ -156,13 +157,13 @@ if (USE_MOCK) {
       role: email.includes('admin') ? 'admin' : 'user',
       created_at: '2024-01-01T00:00:00Z'
     };
-    
+
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
       JWT_SECRET,
       { expiresIn: '1h' }
     );
-    
+
     res.json({
       message: 'Login successful',
       token,
@@ -181,41 +182,41 @@ if (USE_MOCK) {
   // POST /change-password - Change password
   app.post('/auth/change-password', (req: Request, res: Response) => {
     const { current_password, new_password } = req.body;
-    
+
     if (!current_password || !new_password) {
       return res.status(400).json({
         error: 'Current password and new password are required',
         code: 'VALIDATION_ERROR'
       });
     }
-    
+
     if (new_password.length < 8) {
       return res.status(400).json({
         error: 'New password must be at least 8 characters',
         code: 'WEAK_PASSWORD'
       });
     }
-    
+
     res.json({ message: 'Password updated successfully' });
   });
 
   // POST /refresh-token - Refresh access token
   app.post('/auth/refresh-token', (req: Request, res: Response) => {
     const { refresh_token } = req.body;
-    
+
     if (!refresh_token) {
       return res.status(401).json({
         error: 'Refresh token is required',
         code: 'UNAUTHORIZED'
       });
     }
-    
+
     const newToken = jwt.sign(
       { id: '123', email: 'user@example.com', role: 'user' },
       JWT_SECRET,
       { expiresIn: '1h' }
     );
-    
+
     res.json({
       token: newToken,
       expires_in: 3600
@@ -225,19 +226,19 @@ if (USE_MOCK) {
   // GET /verify - Verify JWT token
   app.get('/auth/verify', (req: Request, res: Response) => {
     const authHeader = req.headers.authorization;
-    
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({
         error: 'No token provided',
         code: 'UNAUTHORIZED'
       });
     }
-    
+
     const token = authHeader.substring(7);
-    
+
     try {
       const decoded = jwt.verify(token, JWT_SECRET) as any;
-      
+
       res.json({
         valid: true,
         user: {
@@ -273,78 +274,78 @@ if (USE_MOCK) {
   });
 
   startServer();
-  
+
 } else {
   console.log('🚀 Starting Auth Service in PRODUCTION mode with OAS Tools...');
 
   // Register controller services
   app.post('/auth/register', (req: Request, res: Response, next: NextFunction) => {
-    
+
     authregisterControllerService.registerUser(req, res, next);
   });
 
   // refresh controller services
   app.post('/auth/refresh-token', (req: Request, res: Response, next: NextFunction) => {
-    
+
     authrefreshtokenControllerService.refreshToken(req, res, next);
   });
 
   // login controller services
   app.post('/auth/login', (req: Request, res: Response, next: NextFunction) => {
-    
+
     authloginControllerService.loginUser(req, res, next);
   });
 
   // change password controller services
   app.post('/auth/change-password', authMiddleware, (req: AuthRequest, res: Response, next: NextFunction) => {
-    
+
     authchangepasswordControllerService.changePassword(req, res, next);
   });
 
   // logout controller services
   app.post('/auth/logout', authMiddleware, (req: AuthRequest, res: Response, next: NextFunction) => {
-    
+
     authlogoutControllerService.logoutUser(req, res, next);
   });
 
   // verify controller services
   app.get('/auth/verify', authMiddleware, (req: AuthRequest, res: Response, next: NextFunction) => {
-    
+
     authverifyControllerService.verifyToken(req, res, next);
   });
 
   // verify email controller services
   app.get('/auth/verify-email', (req: Request, res: Response, next: NextFunction) => {
-    
+
     authverifyemailControllerService.verifyEmail(req, res, next);
   });
 
   // resend verification email controller services
   app.post('/auth/resend-verification-email', (req: Request, res: Response, next: NextFunction) => {
-    
+
     authresendverificationemailControllerService.resendVerificationEmail(req, res, next);
   });
-  
+
   // forgot password controller services
   app.post('/auth/forgot-password', (req: Request, res: Response, next: NextFunction) => {
-    
+
     authforgotpasswordControllerService.forgotPassword(req, res, next);
   });
 
   // reset password controller services
   app.post('/auth/reset-password', (req: Request, res: Response, next: NextFunction) => {
-    
+
     authresetpasswordControllerService.resetPassword(req, res, next);
   });
 
   // get reset password form controller services
   app.get('/auth/reset-password-form', (req: Request, res: Response) => {
-    
+
     authresetpasswordformControllerService.getResetPasswordForm(req, res);
   });
 
   const oasFilePath = path.resolve(process.cwd(), '../../docs/openapi/auth-service.yaml');
-  
+
   if (!fs.existsSync(oasFilePath)) {
     console.warn(`⚠️  OpenAPI file not found: ${oasFilePath}`);
     app.get('*', (_req, res) => {

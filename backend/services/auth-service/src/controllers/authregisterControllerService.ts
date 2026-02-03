@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@lcrc/shared';
 import bcrypt from 'bcryptjs';
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
@@ -6,7 +6,6 @@ import crypto from 'crypto';
 import { emailQueue } from '../queue/emailQueue';
 import { EmailTemplate, getEmailContent, EmailData } from '../utils/emailTemplates';
 
-const prisma = new PrismaClient();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production-please-12345';
 const TOKEN_LENGTH_BYTES = 40;
@@ -14,6 +13,10 @@ const APP_URL = process.env.APP_URL || 'http://localhost:3000'; // point to fron
 
 export async function registerUser(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[DB CONFIG] DATABASE_URL definida?:', process.env.DATABASE_URL);
+      console.log('[DB CONFIG] Tipo DATABASE_URL:', typeof process.env.DATABASE_URL);
+    }
     const { email, password, first_name, last_name, phone } = req.body;
 
     if (!email || !password || !first_name) {
@@ -41,7 +44,7 @@ export async function registerUser(req: Request, res: Response, next: NextFuncti
 
     // Create new user
     const newUser = await prisma.user.create({
-       data: {
+      data: {
         email,
         passwordHash,
         firstName: first_name,
@@ -71,7 +74,7 @@ export async function registerUser(req: Request, res: Response, next: NextFuncti
 
     // Save session
     await prisma.session.create({
-       data: {
+      data: {
         userId: newUser.id,
         tokenHash: token,
         refreshTokenHash: refreshToken,
@@ -89,9 +92,9 @@ export async function registerUser(req: Request, res: Response, next: NextFuncti
     const emailData: EmailData = {
       template: EmailTemplate.WELCOME,
       data: {
-      firstName: newUser.firstName,
-      verificationToken,
-      appUrl: APP_URL,
+        firstName: newUser.firstName,
+        verificationToken,
+        appUrl: APP_URL,
       },
     }
     // 🔥 Generar contenido del email desde plantilla

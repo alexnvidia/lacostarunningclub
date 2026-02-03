@@ -1,11 +1,10 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@lcrc/shared';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { Request,Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
 import { ref } from 'joi';
 
-const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production-please-12345';
 const TOKEN_LENGTH_BYTES = 40;
 const MAX_FAILED_ATTEMPTS = 3;
@@ -14,7 +13,7 @@ const LOCK_TIME_MINUTES = 30;
 
 export async function loginUser(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const {email, password} = req.body;
+    const { email, password } = req.body;
     //logging login attempt
     console.log(`📥 Login attempt: ${email}`);
 
@@ -104,7 +103,7 @@ export async function loginUser(req: Request, res: Response, next: NextFunction)
 
     // Create new session with new refresh token
     await prisma.session.create({
-       data:{
+      data: {
         userId: user.id,
         tokenHash: token,
         refreshTokenHash: refreshToken,
@@ -122,7 +121,7 @@ export async function loginUser(req: Request, res: Response, next: NextFunction)
       data: { lastLogin: new Date() },
     });
 
-    
+
 
     res.status(200).json({
       token,

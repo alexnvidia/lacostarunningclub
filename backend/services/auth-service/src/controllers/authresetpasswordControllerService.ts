@@ -1,8 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@lcrc/shared';
 import bcrypt from 'bcryptjs';
 
-const prisma = new PrismaClient();
 
 export async function resetPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {

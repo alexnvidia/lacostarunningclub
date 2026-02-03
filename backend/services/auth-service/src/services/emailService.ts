@@ -1,4 +1,6 @@
 import nodemailer from 'nodemailer';
+import dotenv from 'dotenv';
+dotenv.config();
 
 console.log('📧 SMTP Configuration:', {
   host: process.env.SMTP_HOST,
@@ -16,14 +18,14 @@ const transporter = nodemailer.createTransport({
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
-  
+
   requireTLS: true,
   tls: {
     // No verificar certificado (solo para desarrollo)
     ciphers: 'SSLv3',
     rejectUnauthorized: false,
   },
-  
+
 });
 
 // Verificar configuración al iniciar

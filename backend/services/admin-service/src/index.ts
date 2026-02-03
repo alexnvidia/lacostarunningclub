@@ -1,7 +1,9 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import http from 'http';
 import path from 'path';
 import { initialize } from '@oas-tools/core';
+import { setupBullBoard } from './config/bullBoard';
+import * as adminordersControllerService from './controllers/adminordersControllerService';
 import fs from 'fs';
 
 const app = express();
@@ -21,13 +23,16 @@ app.use((req, _res, next) => {
 
 // Health check (siempre disponible)
 app.get('/health', (_req: Request, res: Response) => {
-  res.json({ 
-    status: 'ok', 
+  res.json({
+    status: 'ok',
     service: 'admin-service',
     mode: USE_MOCK ? 'mock' : 'production',
     timestamp: new Date().toISOString()
   });
 });
+
+// Setup Bull Board for monitoring queues
+setupBullBoard(app, '/admin/queues');
 
 // ===== START SERVER FUNCTION =====
 const startServer = () => {
@@ -41,11 +46,11 @@ const startServer = () => {
     console.log(`    Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log('───────────────────────────────────────────────');
     console.log(`    ❤️  Health:     http://localhost:${PORT}/health`);
-    
+
     if (!USE_MOCK) {
       console.log(`    📚 API Docs:   http://localhost:${PORT}/docs`);
     }
-    
+
     console.log('═══════════════════════════════════════════════');
     console.log('');
   });
@@ -53,11 +58,11 @@ const startServer = () => {
 
 if (USE_MOCK) {
   console.log('🎭 Starting in MOCK mode...');
-  
+
   // ========================================
   // MOCK ROUTES (basadas en tu OpenAPI)
   // ========================================
-  
+
   // Root endpoint
   app.get('/', (_req: Request, res: Response) => {
     res.json({
@@ -75,13 +80,13 @@ if (USE_MOCK) {
   });
 
   // ===== ORDER MANAGEMENT =====
-  
+
   // GET /admin/orders - List all orders
   app.get('/admin/orders', (req: Request, res: Response) => {
     const { status, page = 1, limit = 20 } = req.query;
-    
+
     console.log(`📦 Listing orders - Status: ${status}, Page: ${page}`);
-    
+
     const mockOrders = [
       {
         id: '550e8400-e29b-41d4-a716-446655440001',
@@ -104,7 +109,7 @@ if (USE_MOCK) {
         total_items: 2
       }
     ];
-    
+
     res.json({
       orders: mockOrders,
       pagination: {
@@ -119,7 +124,7 @@ if (USE_MOCK) {
   // GET /admin/orders/pending - Get pending orders
   app.get('/admin/orders/pending', (_req: Request, res: Response) => {
     console.log('📦 Getting pending orders');
-    
+
     res.json([
       {
         id: '550e8400-e29b-41d4-a716-446655440001',
@@ -137,9 +142,9 @@ if (USE_MOCK) {
   // GET /admin/orders/:id - Get order details
   app.get('/admin/orders/:id', (req: Request, res: Response) => {
     const { id } = req.params;
-    
+
     console.log(`📦 Getting order details: ${id}`);
-    
+
     res.json({
       id,
       order_number: 'ORD-2024-001',
@@ -187,9 +192,9 @@ if (USE_MOCK) {
   app.patch('/admin/orders/:id', (req: Request, res: Response) => {
     const { id } = req.params;
     const { status, tracking_number, admin_notes } = req.body;
-    
+
     console.log(`📦 Updating order ${id}:`, { status, tracking_number, admin_notes });
-    
+
     res.json({
       id,
       order_number: 'ORD-2024-001',
@@ -201,14 +206,14 @@ if (USE_MOCK) {
   });
 
   // ===== USER MANAGEMENT =====
-  
+
   // GET /admin/users - List all users
   app.get('/admin/users', (req: Request, res: Response) => {
     const { role, active, search, page = 1, limit = 20 } = req.query;
     const userRole = req.headers['x-user-role'];
-    
+
     console.log(`👥 Listing users - Role: ${role}, Active: ${active}, Search: ${search}`);
-    
+
     // Verificar que quien accede es admin
     if (userRole !== 'admin') {
       return res.status(403).json({
@@ -217,7 +222,7 @@ if (USE_MOCK) {
         message: 'Admin access required'
       });
     }
-    
+
     const mockUsers = [
       {
         id: '123e4567-e89b-12d3-a456-426614174001',
@@ -242,7 +247,7 @@ if (USE_MOCK) {
         total_spent: 0
       }
     ];
-    
+
     res.json({
       users: mockUsers,
       pagination: {
@@ -255,13 +260,13 @@ if (USE_MOCK) {
   });
 
   // ===== STATISTICS =====
-  
+
   // GET /admin/stats - Get dashboard statistics
   app.get('/admin/stats', (req: Request, res: Response) => {
     const { period = 'month' } = req.query;
-    
+
     console.log(`📊 Getting statistics for period: ${period}`);
-    
+
     res.json({
       total_users: 150,
       total_orders: 450,
@@ -285,9 +290,9 @@ if (USE_MOCK) {
   // GET /admin/stats/sales - Get sales statistics
   app.get('/admin/stats/sales', (req: Request, res: Response) => {
     const { from_date, to_date } = req.query;
-    
+
     console.log(`💰 Getting sales stats from ${from_date} to ${to_date}`);
-    
+
     res.json({
       period: `${from_date || '2024-01-01'} to ${to_date || '2024-10-22'}`,
       total_sales: 15750.50,
@@ -330,24 +335,29 @@ if (USE_MOCK) {
   });
 
   startServer();
-  
+
 } else {
   // ===== PRODUCCIÓN: OAS Tools =====
   console.log('🚀 Starting in PRODUCTION mode with OAS Tools...');
-  
+
+  //register admin orders controller
+  app.get('/admin/orders', (req: Request, res: Response, next: NextFunction) => {
+    adminordersControllerService.listAllOrders(req, res, next);
+  });
+
   const oasFilePath = path.resolve(process.cwd(), '../../docs/openapi/admin-service.yaml');
-  
+
   if (!fs.existsSync(oasFilePath)) {
     console.warn(`⚠️  OpenAPI file not found: ${oasFilePath}`);
     console.warn('   Set USE_MOCK=true to use mock mode.');
-    
+
     app.get('*', (_req: Request, res: Response) => {
       res.status(503).json({
         error: 'Service not fully configured',
         message: 'OpenAPI spec not found. Use USE_MOCK=true for testing.',
       });
     });
-    
+
     startServer();
   } else {
     const oasConfig = {

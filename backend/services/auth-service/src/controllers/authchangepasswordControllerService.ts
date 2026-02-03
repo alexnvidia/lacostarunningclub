@@ -1,9 +1,9 @@
 import { Response, NextFunction } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@lcrc/shared';
 import bcrypt from 'bcryptjs';
 import { AuthRequest } from '../middlewares/auth.middleware.js';
 
-const prisma = new PrismaClient();
+
 
 export async function changePassword(
   req: AuthRequest,
@@ -74,7 +74,7 @@ export async function changePassword(
     // Update password in the database
     await prisma.user.update({
       where: { id: userId },
-       data: { passwordHash: newPasswordHash },
+      data: { passwordHash: newPasswordHash },
     });
 
     res.status(200).json({ message: 'Password changed successfully' });

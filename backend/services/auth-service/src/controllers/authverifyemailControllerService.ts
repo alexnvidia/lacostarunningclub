@@ -1,9 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@lcrc/shared';
 import { getEmailVerifiedPage } from '../templates/pages/emailVerifiedPage';
 import { getTokenExpiredPage } from 'src/templates/pages/tokenExpiredPage';
 
-const prisma = new PrismaClient();
 const APP_URL = process.env.APP_URL || 'http://localhost:3000'; // point to frontend URL, at the moment is apigateway
 
 export async function verifyEmail(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -43,12 +42,12 @@ export async function verifyEmail(req: Request, res: Response, next: NextFunctio
       }
     } else if (user && !user.verificationTokenExpires) {
       // If no expiration date is set, consider the token as expired for security reasons
-        res.status(400).json({
-          error: 'Verification token has expired',
-          code: 'TOKEN_EXPIRED',
-        });
-        return;
-      }
+      res.status(400).json({
+        error: 'Verification token has expired',
+        code: 'TOKEN_EXPIRED',
+      });
+      return;
+    }
 
     // If no user found with the token or token is invalid
 

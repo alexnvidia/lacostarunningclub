@@ -1,10 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@lcrc/shared';
 import crypto from 'crypto';
 import { emailQueue } from '../queue/emailQueue';
 import { EmailTemplate, getEmailContent } from '../utils/emailTemplates';
 
-const prisma = new PrismaClient();
 const APP_URL = process.env.APP_URL || 'http://localhost:3000';
 
 export async function forgotPassword(req: Request, res: Response, next: NextFunction): Promise<void> {

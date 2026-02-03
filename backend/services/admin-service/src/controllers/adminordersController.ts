@@ -1,12 +1,7 @@
-import { Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import * as adminordersControllerService from './adminordersControllerService.js';
 
-interface SwaggerRequest extends Request {
-  swagger: {
-    params: any;
-  };
-}
 
-export function listAllOrders(req: SwaggerRequest, res: Response, next: NextFunction): void {
-  adminordersControllerService.listAllOrders(req.swagger.params, res, next);
+export function listAllOrders(req: Request, res: Response, next: NextFunction): void {
+  adminordersControllerService.listAllOrders(req, res, next);
 }
