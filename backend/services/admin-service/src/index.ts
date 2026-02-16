@@ -4,6 +4,13 @@ import path from 'path';
 import { initialize } from '@oas-tools/core';
 import { setupBullBoard } from './config/bullBoard';
 import * as adminordersControllerService from './controllers/adminordersControllerService';
+import * as adminorderspendingControllerService from './controllers/adminorderspendingControllerService';
+import * as adminordersidControllerService from './controllers/adminordersidControllerService';
+import * as adminusersControllerService from './controllers/adminusersControllerService';
+import * as adminstatsControllerService from './controllers/adminstatsControllerService';
+import * as adminstatssalesControllerService from './controllers/adminstatssalesControllerService';
+import * as adminsubscriptionsControllerService from './controllers/adminsubscriptionsControllerService';
+import { isAdmin } from './middlewares/authMiddleware';
 import fs from 'fs';
 
 const app = express();
@@ -216,11 +223,11 @@ if (USE_MOCK) {
 
     // Verificar que quien accede es admin
     if (userRole !== 'admin') {
-      return res.status(403).json({
-        error: 'Forbidden',
+      res.status(403).json({
         code: 'ADMIN_REQUIRED',
         message: 'Admin access required'
       });
+      return;
     }
 
     const mockUsers = [
@@ -254,6 +261,44 @@ if (USE_MOCK) {
         page: Number(page),
         limit: Number(limit),
         total: mockUsers.length,
+        total_pages: 1
+      }
+    });
+  });
+
+  // POST /admin/subscriptions - Create/Update subscription
+  app.post('/admin/subscriptions', (req: Request, res: Response) => {
+    const { user_id } = req.query;
+    const { status, start_date } = req.body;
+    console.log(`📝 Updating subscription for user ${user_id}: ${status}`);
+    res.json({
+      id: 'sub-123',
+      user_id,
+      status: status || 'ACTIVE',
+      start_date: start_date || new Date().toISOString(),
+      provider: 'buymeacoffee',
+      external_id: 'bmc-123'
+    });
+  });
+
+  // GET /admin/subscriptions - List subscriptions
+  app.get('/admin/subscriptions', (req: Request, res: Response) => {
+    const { page = 1, limit = 20 } = req.query;
+    res.json({
+      subscriptions: [
+        {
+          id: 'sub-123',
+          user_id: '123e4567-e89b-12d3-a456-426614174000',
+          status: 'ACTIVE',
+          start_date: '2024-01-01T00:00:00Z',
+          provider: 'buymeacoffee',
+          external_id: 'bmc-123'
+        }
+      ],
+      pagination: {
+        page: Number(page),
+        limit: Number(limit),
+        total: 1,
         total_pages: 1
       }
     });
@@ -339,10 +384,56 @@ if (USE_MOCK) {
 } else {
   // ===== PRODUCCIÓN: OAS Tools =====
   console.log('🚀 Starting in PRODUCTION mode with OAS Tools...');
+  // Middleware de autenticación (excuyendo /docs)
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    if (req.path.startsWith('/docs') || req.path.startsWith('/queues')) {
+      return next();
+    }
+    return isAdmin(req, res, next);
+  });
 
   //register admin orders controller
   app.get('/admin/orders', (req: Request, res: Response, next: NextFunction) => {
     adminordersControllerService.listAllOrders(req, res, next);
+  });
+
+  //register admin orders pending controller
+  app.get('/admin/orders/pending', (req: Request, res: Response, next: NextFunction) => {
+    adminorderspendingControllerService.getPendingOrders(req, res, next);
+  });
+
+  //register admin orders id controller
+  app.get('/admin/orders/:id', (req: Request, res: Response, next: NextFunction) => {
+    adminordersidControllerService.getOrderDetails(req, res, next);
+  });
+
+  //register admin orders id controller
+  app.patch('/admin/orders/:id', (req: Request, res: Response, next: NextFunction) => {
+    adminordersidControllerService.updateOrder(req, res, next);
+  });
+
+  //register admin users controller
+  app.get('/admin/users', (req: Request, res: Response, next: NextFunction) => {
+    adminusersControllerService.listUsers(req, res, next);
+  });
+
+  //register admin stats controller
+  app.get('/admin/stats', (req: Request, res: Response, next: NextFunction) => {
+    adminstatsControllerService.getStatistics(req, res, next);
+  });
+
+  //register admin stats sales controller
+  app.get('/admin/stats/sales', (req: Request, res: Response, next: NextFunction) => {
+    adminstatssalesControllerService.getSalesStats(req, res, next);
+  });
+
+  //register admin subscriptions controller
+  app.post('/admin/subscriptions', (req: Request, res: Response, next: NextFunction) => {
+    adminsubscriptionsControllerService.createOrUpdateSubscription(req, res, next);
+  });
+
+  app.get('/admin/subscriptions', (req: Request, res: Response, next: NextFunction) => {
+    adminsubscriptionsControllerService.listSubscriptions(req, res, next);
   });
 
   const oasFilePath = path.resolve(process.cwd(), '../../docs/openapi/admin-service.yaml');

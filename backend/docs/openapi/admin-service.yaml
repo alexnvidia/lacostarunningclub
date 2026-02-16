@@ -17,6 +17,8 @@ tags:
     description: Admin user management operations
   - name: Statistics
     description: Analytics and reporting
+  - name: Subscription Management
+    description: Manage user subscriptions
 
 security:
   - BearerAuth: []
@@ -74,6 +76,8 @@ paths:
                       $ref: '#/components/schemas/AdminOrderView'
                   pagination:
                     $ref: '#/components/schemas/Pagination'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '403':
           $ref: '#/components/responses/Forbidden'
 
@@ -146,6 +150,8 @@ paths:
                 $ref: '#/components/schemas/AdminOrderDetail'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /admin/users:
     get:
@@ -241,6 +247,81 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SalesStatistics'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /admin/subscriptions:
+    get:
+      tags:
+        - Subscription Management
+      summary: List subscriptions
+      description: List all user subscriptions with pagination and filtering
+      operationId: listSubscriptions
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [ACTIVE, INACTIVE, PAST_DUE]
+        - name: user_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Subscriptions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subscriptions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Subscription'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    post:
+      tags:
+        - Subscription Management
+      summary: Create or Update Subscription
+      description: Create or update a user's subscription status
+      operationId: createOrUpdateSubscription
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionUpdate'
+      responses:
+        '200':
+          description: Subscription updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+        '400':
+          $ref: '#/components/responses/BadRequest'
 
 components:
   securitySchemes:
@@ -408,6 +489,44 @@ components:
           type: integer
         total_pages:
           type: integer
+
+    Subscription:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE, PAST_DUE]
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        provider:
+          type: string
+        external_id:
+          type: string
+
+    SubscriptionUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE, PAST_DUE]
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        external_id:
+          type: string
 
     Error:
       type: object

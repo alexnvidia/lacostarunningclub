@@ -69,3 +69,6 @@ Thumbs.db
 # Prisma migrations NO versionar, pero sí la carpeta prisma en sí
 # Ignorar migraciones pero no otros archivos de prisma
 backend/services/auth-service/prisma/migrations/
+
+# Generated Prisma Client
+backend/shared/src/generated/

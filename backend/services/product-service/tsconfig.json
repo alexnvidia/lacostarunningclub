@@ -2,18 +2,23 @@
   "compilerOptions": {
     /* Language and Environment */
     "target": "ES2022",
-    "lib": ["ES2022"],
+    "lib": [
+      "ES2022"
+    ],
     "module": "commonjs",
     "moduleResolution": "node",
-    
     /* Emit */
     "outDir": "./dist",
-    "rootDir": "./src",
-    "typeRoots": ["./node_modules/@types", "./@types"],
-    "types": [],
+    //"rootDir": ".",
+    "typeRoots": [
+      "./node_modules/@types",
+      "./@types"
+    ],
+    "types": [
+      "node"
+    ],
     "removeComments": true,
     "sourceMap": true,
-    
     /* Type Checking */
     "strict": true,
     "noImplicitAny": true,
@@ -27,20 +32,26 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    
     /* Interop Constraints */
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
-    
     /* Other Options */
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "declaration": true,
-    "declarationMap": true
+    "declarationMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": [
+        "../../shared/src/*"
+      ]
+    }
   },
   "include": [
-    "src/**/*","@types/**/*"
+    "src/**/*",
+    "@types/**/*",
+    "../../shared/src/**/*"
   ],
   "exclude": [
     "node_modules",

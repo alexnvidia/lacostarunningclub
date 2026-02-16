@@ -109,7 +109,7 @@ if (USE_MOCK) {
       first_name,
       last_name,
       phone,
-      role: 'user',
+      role: 'USER',
       created_at: new Date().toISOString()
     };
 
@@ -154,7 +154,7 @@ if (USE_MOCK) {
       email,
       first_name: 'Test',
       last_name: 'User',
-      role: email.includes('admin') ? 'admin' : 'user',
+      role: email.includes('ADMIN') ? 'ADMIN' : 'USER',
       created_at: '2024-01-01T00:00:00Z'
     };
 
@@ -212,7 +212,7 @@ if (USE_MOCK) {
     }
 
     const newToken = jwt.sign(
-      { id: '123', email: 'user@example.com', role: 'user' },
+      { id: '123', email: 'user@example.com', role: 'USER' },
       JWT_SECRET,
       { expiresIn: '1h' }
     );

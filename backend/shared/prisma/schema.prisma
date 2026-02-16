@@ -11,39 +11,42 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+}
 
 model User {
-  id                       String             @id @default(uuid())
-  email                    String             @unique
-  passwordHash             String             @map("password_hash")
-  firstName                String             @map("first_name")
-  lastName                 String?            @map("last_name")
-  phone                    String?            @map("phone")
-  role                     String             @default("user") @map("role")
-  createdAt                DateTime           @default(now()) @map("created_at")
-  active                   Boolean            @default(true) @map("active")
-  lastLogin                DateTime?          @map("last_login")
-  failedLoginAttempts      Int                @default(0) @map("failed_login_attempts")
-  lockoutUntil             DateTime?          @map("lockout_until")
-  emailVerified            Boolean            @default(false) @map("email_verified")
-  verificationToken        String?            @map("verification_token")
-  verificationTokenExpires DateTime?          @map("verification_token_expires")
-  resetPasswordToken       String?            @map("reset_password_token")
-  resetPasswordExpires     DateTime?          @map("reset_password_expires")
+  id                       String               @id @default(uuid())
+  email                    String               @unique
+  passwordHash             String               @map("password_hash")
+  firstName                String               @map("first_name")
+  lastName                 String?              @map("last_name")
+  phone                    String?              @map("phone")
+  role                     Role                 @default(USER) @map("role")
+  createdAt                DateTime             @default(now()) @map("created_at")
+  active                   Boolean              @default(true) @map("active")
+  lastLogin                DateTime?            @map("last_login")
+  failedLoginAttempts      Int                  @default(0) @map("failed_login_attempts")
+  lockoutUntil             DateTime?            @map("lockout_until")
+  emailVerified            Boolean              @default(false) @map("email_verified")
+  verificationToken        String?              @map("verification_token")
+  verificationTokenExpires DateTime?            @map("verification_token_expires")
+  resetPasswordToken       String?              @map("reset_password_token")
+  resetPasswordExpires     DateTime?            @map("reset_password_expires")
   sessions                 Session[]
   addresses                Address[]
   productReviews           ProductReview[]
   orders                   Order[]
   carts                    Cart[]
   wishlists                Wishlist[]
-  supportTickets           SupportTicket[]    @relation("UserTickets")
-  assignedTickets          SupportTicket[]    @relation("AgentTickets")
+  supportTickets           SupportTicket[]      @relation("UserTickets")
+  assignedTickets          SupportTicket[]      @relation("AgentTickets")
   userAchievements         UserAchievement[]
   userTrainingPlans        UserTrainingPlan[]
   userPerformances         UserPerformance[]
   notifications            Notification[]
-  messages                 Message[]          @relation("SenderMessages")
+  messages                 Message[]            @relation("SenderMessages")
+  statusChanges            OrderStatusHistory[]
+  subscription             Subscription?
+  rewards                  UserReward[]
 
   @@index([email])
   @@index([role])
@@ -124,7 +127,12 @@ model Product {
   stock       Int      @default(0)
   sku         String   @unique
   active      Boolean  @default(true)
+  featured    Boolean  @default(false)
   imageUrl    String?  @map("image_url")
+  imageAlt    String?  @map("image_alt")
+  imageAlt2   String?  @map("image_alt_2")
+  imageTitle  String?  @map("image_title")
+  imageBackground String? @map("image_background")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
@@ -183,16 +191,18 @@ model Order {
   status            OrderStatus @default(PENDING)
   totalAmount       Decimal     @map("total_amount") @db.Decimal(10, 2)
   subtotalAmount    Decimal     @map("subtotal_amount") @db.Decimal(10, 2)
+  shippingCost      Decimal     @map("shipping_cost") @db.Decimal(10, 2)
   shippingAddressId String      @map("shipping_address_id")
   trackingNumber    String?     @map("tracking_number")
   createdAt         DateTime    @default(now()) @map("created_at")
   updatedAt         DateTime    @updatedAt @map("updated_at")
 
-  user            User        @relation(fields: [userId], references: [id])
-  shippingAddress Address     @relation(fields: [shippingAddressId], references: [id])
+  user            User                 @relation(fields: [userId], references: [id])
+  shippingAddress Address              @relation(fields: [shippingAddressId], references: [id])
   items           OrderItem[]
   payments        Payment[]
   shipments       Shipment[]
+  statusHistory   OrderStatusHistory[]
 
   @@index([userId])
   @@index([status])
@@ -263,6 +273,23 @@ model Shipment {
   @@index([orderId])
   @@index([trackingNumber])
   @@map("shipments")
+}
+
+model OrderStatusHistory {
+  id              String   @id @default(uuid())
+  orderId         String   @map("order_id")
+  previousStatus  String?  @map("previous_status") @db.VarChar(30)
+  newStatus       String   @map("new_status") @db.VarChar(30)
+  changedByUserId String?  @map("changed_by_user_id")
+  comment         String?  @db.Text
+  changedAt       DateTime @default(now()) @map("changed_at") @db.Timestamptz(3)
+
+  order     Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  changedBy User? @relation(fields: [changedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([orderId, changedAt(sort: Desc)])
+  @@index([changedByUserId])
+  @@map("order_status_history")
 }
 
 // --------------------------------------------------------
@@ -452,4 +479,40 @@ model UserAchievement {
   @@unique([userId, achievementId])
   @@index([userId])
   @@map("user_achievements")
+}
+
+// --------------------------------------------------------
+// MEMBERSHIP & SUBSCRIPTIONS
+// --------------------------------------------------------
+
+model Subscription {
+  id              String    @id @default(uuid())
+  userId          String    @unique @map("user_id")
+  status          String    @default("INACTIVE") // ACTIVE, INACTIVE, PAST_DUE
+  startDate       DateTime? @map("start_date")
+  endDate         DateTime? @map("end_date")
+  lastPaymentDate DateTime? @map("last_payment_date")
+  provider        String    @default("buymeacoffee")
+  externalId      String?   @map("external_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+model UserReward {
+  id              String    @id @default(uuid())
+  userId          String    @map("user_id")
+  milestoneMonths Int       @map("milestone_months") // 3, 6, 9, 12
+  unlockedAt      DateTime? @map("unlocked_at")
+  isClaimed       Boolean   @default(false) @map("is_claimed")
+  claimedAt       DateTime? @map("claimed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, milestoneMonths])
+  @@map("user_rewards")
 }

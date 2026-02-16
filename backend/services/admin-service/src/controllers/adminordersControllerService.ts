@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { prisma } from '@lcrc/shared';
+import { prisma, OrderStatus } from '@lcrc/shared';
 
 export const listAllOrders = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -10,6 +10,13 @@ export const listAllOrders = async (req: Request, res: Response, next: NextFunct
     const skip = (page - 1) * limit;
 
     const status = req.query.status as string | undefined;
+
+    if (status && !Object.values(OrderStatus).includes(status as OrderStatus)) {
+      res.status(400).json({
+        error: `Invalid status: ${status}. Allowed values: ${Object.values(OrderStatus).join(', ')}`
+      });
+      return;
+    }
     const userId = req.query.user_id as string | undefined;
     const fromDate = req.query.from_date as string | undefined;
     const toDate = req.query.to_date as string | undefined;
@@ -22,13 +29,27 @@ export const listAllOrders = async (req: Request, res: Response, next: NextFunct
     }
 
     if (userId) {
-      where.user_id = userId;
+      where.userId = userId;
     }
 
     if (fromDate || toDate) {
       where.createdAt = {};
-      if (fromDate) where.createdAt.gte = new Date(fromDate);
-      if (toDate) where.createdAt.lte = new Date(toDate);
+      if (fromDate) {
+        const start = new Date(fromDate);
+        if (isNaN(start.getTime())) {
+          res.status(400).json({ error: `Invalid from_date format: ${fromDate}` });
+          return;
+        }
+        where.createdAt.gte = start;
+      }
+      if (toDate) {
+        const end = new Date(toDate);
+        if (isNaN(end.getTime())) {
+          res.status(400).json({ error: `Invalid to_date format: ${toDate}` });
+          return;
+        }
+        where.createdAt.lte = end;
+      }
     }
 
     // 3. Ejecutar consulta (Count + FindMany) en transacción

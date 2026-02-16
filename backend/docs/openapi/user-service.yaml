@@ -60,6 +60,31 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
+  /users/rewards/{milestone}/claim:
+    post:
+      tags:
+        - Profile
+      summary: Claim reward
+      description: Claim a reward for a specific milestone
+      operationId: claimReward
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: milestone
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Reward claimed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserReward'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
   /users/{id}:
     get:
       tags:
@@ -118,6 +143,36 @@ components:
           type: string
           format: date-time
         last_login:
+          type: string
+          format: date-time
+        subscription:
+          $ref: '#/components/schemas/UserSubscription'
+        rewards:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserReward'
+
+    UserSubscription:
+      type: object
+      properties:
+        status:
+          type: string
+        active_since:
+          type: string
+          format: date-time
+        months_active:
+          type: integer
+
+    UserReward:
+      type: object
+      properties:
+        milestone_months:
+          type: integer
+        unlocked:
+          type: boolean
+        claimed:
+          type: boolean
+        unlocked_at:
           type: string
           format: date-time
 

@@ -1,16 +1,10 @@
-import { Response, NextFunction } from 'express';
-import * as usersprofileControllerService from './usersprofileControllerService.js';
+import * as service from './usersprofileControllerService';
+import { Request, Response, NextFunction } from 'express';
 
-interface SwaggerRequest extends Request {
-  swagger: {
-    params: any;
-  };
+export function getProfile(req: Request, res: Response, next: NextFunction) {
+  service.getProfile(req, res, next);
 }
 
-export function getProfile(req: SwaggerRequest, res: Response, next: NextFunction): void {
-  usersprofileControllerService.getProfile(req.swagger.params, res, next);
-}
-
-export function updateProfile(req: SwaggerRequest, res: Response, next: NextFunction): void {
-  usersprofileControllerService.updateProfile(req.swagger.params, res, next);
+export function updateProfile(req: Request, res: Response, next: NextFunction) {
+  service.updateProfile(req, res, next);
 }

@@ -1,8 +1,11 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import http from 'http';
 import path from 'path';
 import { initialize } from '@oas-tools/core';
 import fs from 'fs';
+import * as usersprofileControllerService from './controllers/usersprofileControllerService';
+import * as usersrewardsmilestoneclaimControllerService from './controllers/usersrewardsmilestoneclaimControllerService';
+import * as usersidControllerService from './controllers/usersidControllerService';
 
 const app = express();
 const PORT = process.env.PORT || 3002;
@@ -51,7 +54,8 @@ if (USE_MOCK) {
       mode: 'mock',
       endpoints: {
         profile: 'GET/PUT /users/profile',
-        userById: 'GET /users/:id'
+        userById: 'GET /users/:id',
+        claimReward: 'POST /users/rewards/:milestone/claim'
       }
     });
   });
@@ -96,16 +100,29 @@ if (USE_MOCK) {
     });
   });
 
+  // POST /users/rewards/:milestone/claim - Claim reward (MOCK)
+  app.post('/users/rewards/:milestone/claim', (req: Request, res: Response) => {
+    const { milestone } = req.params;
+    console.log(`🎁 Claim reward ${milestone} for mock user`);
+    res.json({
+      milestone_months: Number(milestone),
+      unlocked: true,
+      claimed: true,
+      unlocked_at: new Date().toISOString()
+    });
+  });
+
   // GET /:id - Get user by ID (Admin only)
   app.get('/users/:id', (req: Request, res: Response) => {
     const { id } = req.params;
     const userRole = req.headers['x-user-role'] as string;
 
     if (userRole !== 'admin') {
-      return res.status(403).json({
+      res.status(403).json({
         error: 'Forbidden - Admin access required',
         code: 'FORBIDDEN'
       });
+      return;
     }
 
     console.log(`👤 Get user by ID: ${id}`);
@@ -149,7 +166,29 @@ if (USE_MOCK) {
     });
     startServer();
   } else {
-    const oasConfig = {
+    // Register controllers manually if needed before OAS
+
+    //register get user profile
+    app.get('/users/profile', (req: Request, res: Response, next: NextFunction) => {
+      usersprofileControllerService.getProfile(req, res, next);
+    });
+
+    //register user profile update
+    app.put('/users/profile', (req: Request, res: Response, next: NextFunction) => {
+      usersprofileControllerService.updateProfile(req, res, next);
+    });
+
+    //register claim reward
+    app.post('/users/rewards/:milestone/claim', (req: Request, res: Response, next: NextFunction) => {
+      usersrewardsmilestoneclaimControllerService.claimReward(req, res, next);
+    });
+
+    //register get user by id (admin only)
+    app.get('/users/:id', (req: Request, res: Response, next: NextFunction) => {
+      usersidControllerService.getUserById(req, res, next);
+    });
+
+    const oasConfig: any = {
       oasFile: oasFilePath,
       useAnnotations: false,
       logger: { level: 'info' },
@@ -162,7 +201,7 @@ if (USE_MOCK) {
 
     initialize(app, oasConfig)
       .then(() => startServer())
-      .catch((err) => {
+      .catch((err: any) => {
         console.error('❌ Error initializing OAS Tools:', err);
         startServer();
       });

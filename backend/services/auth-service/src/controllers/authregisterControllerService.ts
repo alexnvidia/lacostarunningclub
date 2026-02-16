@@ -40,7 +40,7 @@ export async function registerUser(req: Request, res: Response, next: NextFuncti
     // Generate verification token expiration (e.g., 24 hours from now)
     const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-    const role = 'user';
+    const role = 'USER';
 
     // Create new user
     const newUser = await prisma.user.create({
