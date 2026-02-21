@@ -49,6 +49,11 @@ paths:
           schema:
             type: integer
             default: 20
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [t-shirts, hats, accessories]
       responses:
         '200':
           description: Products retrieved successfully
@@ -232,9 +237,9 @@ components:
           enum: [XS, S, M, L, XL, XXL]
         color:
           type: string
-        product_type:
+        category:
           type: string
-          default: t-shirt
+          default: t-shirts
         front_image_url:
           type: string
         back_image_url:
@@ -254,6 +259,7 @@ components:
         - name
         - price
         - size
+        - category_name
       properties:
         product_code:
           type: string
@@ -281,6 +287,9 @@ components:
         featured:
           type: boolean
           default: false
+        category_name:
+          type: string
+          enum: [t-shirts, hats, accessories]
 
     UpdateProductRequest:
       type: object

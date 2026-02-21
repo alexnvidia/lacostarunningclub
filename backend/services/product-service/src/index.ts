@@ -1,8 +1,12 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import http from 'http';
 import path from 'path';
 import { initialize } from '@oas-tools/core';
 import fs from 'fs';
+// Import controllers
+const productsController = require('./controllers/productsControllerService');
+const productsIdController = require('./controllers/productsidControllerService');
+const productsIdStockController = require('./controllers/productsidstockControllerService');
 
 const app = express();
 const PORT = process.env.PORT || 3004;
@@ -17,8 +21,8 @@ app.use((req, _res, next) => {
 });
 
 app.get('/health', (_req: Request, res: Response) => {
-  res.json({ 
-    status: 'ok', 
+  res.json({
+    status: 'ok',
     service: 'product-service',
     mode: USE_MOCK ? 'mock' : 'production',
     timestamp: new Date().toISOString()
@@ -43,7 +47,7 @@ const startServer = () => {
 
 if (USE_MOCK) {
   console.log('🎭 Starting Product Service in MOCK mode...');
-  
+
   // Mock products database
   const mockProducts = [
     {
@@ -83,7 +87,7 @@ if (USE_MOCK) {
       created_at: '2024-02-01T00:00:00Z'
     }
   ];
-  
+
   app.get('/', (_req: Request, res: Response) => {
     res.json({
       service: 'product-service',
@@ -103,23 +107,23 @@ if (USE_MOCK) {
   // GET / - List all products (PUBLIC)
   app.get('/products/products', (req: Request, res: Response) => {
     const { size, color, active = 'true', page = 1, limit = 20 } = req.query;
-    
+
     console.log(`👕 Listing products - Filters: size=${size}, color=${color}`);
-    
+
     let products = [...mockProducts];
-    
+
     if (active === 'true') {
       products = products.filter(p => p.active);
     }
-    
+
     if (size) {
       products = products.filter(p => p.sizes.includes(size as string));
     }
-    
+
     if (color) {
       products = products.filter(p => p.colors.includes(color as string));
     }
-    
+
     res.json({
       products,
       pagination: {
@@ -130,21 +134,21 @@ if (USE_MOCK) {
       }
     });
   });
-// GET /:id/stock - Check product stock
+  // GET /:id/stock - Check product stock
   app.get('/products/products/:id/stock', (req: Request, res: Response) => {
     const { id } = req.params;
-    
+
     console.log(`📦 Checking stock for product: ${id}`);
-    
+
     const product = mockProducts.find(p => p.id === id);
-    
+
     if (!product) {
       return res.status(404).json({
         error: 'Product not found',
         code: 'NOT_FOUND'
       });
     }
-    
+
     res.json({
       product_id: id,
       product_name: product.name,
@@ -163,43 +167,43 @@ if (USE_MOCK) {
   // GET /:id - Get product by ID (PUBLIC)
   app.get('/products/products/:id', (req: Request, res: Response) => {
     const { id } = req.params;
-    
+
     console.log(`👕 Get product: ${id}`);
-    
+
     const product = mockProducts.find(p => p.id === id);
-    
+
     if (!product) {
       return res.status(404).json({
         error: 'Product not found',
         code: 'NOT_FOUND'
       });
     }
-    
+
     res.json(product);
   });
 
   // POST / - Create product (ADMIN)
   app.post('/products/products', (req: Request, res: Response) => {
     const userRole = req.headers['x-user-role'] as string;
-    
+
     if (userRole !== 'admin') {
       return res.status(403).json({
         error: 'Forbidden - Admin access required',
         code: 'FORBIDDEN'
       });
     }
-    
+
     const { name, description, price, sizes, colors, stock } = req.body;
-    
+
     console.log(`➕ Creating product: ${name}`);
-    
+
     if (!name || !price || !sizes || !colors) {
       return res.status(400).json({
         error: 'Name, price, sizes, and colors are required',
         code: 'VALIDATION_ERROR'
       });
     }
-    
+
     const newProduct = {
       id: `prod-${Date.now()}`,
       name,
@@ -212,9 +216,9 @@ if (USE_MOCK) {
       active: true,
       created_at: new Date().toISOString()
     };
-    
+
     mockProducts.push(newProduct);
-    
+
     res.status(201).json(newProduct);
   });
 
@@ -222,31 +226,31 @@ if (USE_MOCK) {
   app.put('/products/products/:id', (req: Request, res: Response) => {
     const userRole = req.headers['x-user-role'] as string;
     const { id } = req.params;
-    
+
     if (userRole !== 'admin') {
       return res.status(403).json({
         error: 'Forbidden - Admin access required',
         code: 'FORBIDDEN'
       });
     }
-    
+
     console.log(`✏️ Updating product: ${id}`);
-    
+
     const productIndex = mockProducts.findIndex(p => p.id === id);
-    
+
     if (productIndex === -1) {
       return res.status(404).json({
         error: 'Product not found',
         code: 'NOT_FOUND'
       });
     }
-    
+
     mockProducts[productIndex] = {
       ...mockProducts[productIndex],
       ...req.body,
       id // Preserve ID
     };
-    
+
     res.json(mockProducts[productIndex]);
   });
 
@@ -254,31 +258,31 @@ if (USE_MOCK) {
   app.delete('/products/products/:id', (req: Request, res: Response) => {
     const userRole = req.headers['x-user-role'] as string;
     const { id } = req.params;
-    
+
     if (userRole !== 'admin') {
       return res.status(403).json({
         error: 'Forbidden - Admin access required',
         code: 'FORBIDDEN'
       });
     }
-    
+
     console.log(`🗑️ Deleting product: ${id}`);
-    
+
     const productIndex = mockProducts.findIndex(p => p.id === id);
-    
+
     if (productIndex === -1) {
       return res.status(404).json({
         error: 'Product not found',
         code: 'NOT_FOUND'
       });
     }
-    
+
     mockProducts.splice(productIndex, 1);
-    
+
     res.json({ message: 'Product deleted successfully' });
   });
 
-  
+
   app.use('*', (req: Request, res: Response) => {
     res.status(404).json({
       error: 'Route not found',
@@ -296,12 +300,12 @@ if (USE_MOCK) {
   });
 
   startServer();
-  
+
 } else {
   console.log('🚀 Starting Product Service in PRODUCTION mode with OAS Tools...');
-  
+  const { authMiddleware, isAdmin } = require('./middlewares/authMiddleware');
   const oasFilePath = path.resolve(process.cwd(), '../../docs/openapi/product-service.yaml');
-  
+
   if (!fs.existsSync(oasFilePath)) {
     console.warn(`⚠️  OpenAPI file not found: ${oasFilePath}`);
     app.get('*', (_req, res) => {
@@ -309,7 +313,42 @@ if (USE_MOCK) {
     });
     startServer();
   } else {
-    const oasConfig = {
+
+    // ===== PUBLIC ROUTES =====
+
+    // GET /products - List all products (PUBLIC)
+    app.get('/products', (req: Request, res: Response, next: NextFunction) => {
+      productsController.listProducts(req, res, next);
+    });
+
+    // GET /products/:id - Get product details (PUBLIC)
+    app.get('/products/:id', (req: Request, res: Response, next: NextFunction) => {
+      productsIdController.getProduct(req, res, next);
+    });
+
+    // GET /products/:id/stock - Check product stock (PUBLIC)
+    app.get('/products/:id/stock', (req: Request, res: Response, next: NextFunction) => {
+      productsIdStockController.checkStock(req, res, next);
+    });
+
+    // ===== ADMIN-ONLY ROUTES (authMiddleware → isAdmin → controller) =====
+
+    // POST /products - Create new product (ADMIN)
+    app.post('/products', authMiddleware, isAdmin, (req: Request, res: Response, next: NextFunction) => {
+      productsController.createProduct(req, res, next);
+    });
+
+    // PUT /products/:id - Update product (ADMIN)
+    app.put('/products/:id', authMiddleware, isAdmin, (req: Request, res: Response, next: NextFunction) => {
+      productsIdController.updateProduct(req, res, next);
+    });
+
+    // DELETE /products/:id - Delete product (ADMIN)
+    app.delete('/products/:id', authMiddleware, isAdmin, (req: Request, res: Response, next: NextFunction) => {
+      productsIdController.deleteProduct(req, res, next);
+    });
+
+    const oasConfig: any = {
       oasFile: oasFilePath,
       useAnnotations: false,
       logger: { level: 'info' },
@@ -322,7 +361,7 @@ if (USE_MOCK) {
 
     initialize(app, oasConfig)
       .then(() => startServer())
-      .catch((err) => {
+      .catch((err: any) => {
         console.error('❌ Error initializing OAS Tools:', err);
         startServer();
       });

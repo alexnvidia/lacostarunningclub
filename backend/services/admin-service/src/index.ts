@@ -10,12 +10,16 @@ import * as adminusersControllerService from './controllers/adminusersController
 import * as adminstatsControllerService from './controllers/adminstatsControllerService';
 import * as adminstatssalesControllerService from './controllers/adminstatssalesControllerService';
 import * as adminsubscriptionsControllerService from './controllers/adminsubscriptionsControllerService';
+import { bmcWebhookHandler } from './controllers/bmcWebhookController';
 import { isAdmin } from './middlewares/authMiddleware';
 import fs from 'fs';
 
 const app = express();
 const PORT = process.env.PORT || 3005;
 const USE_MOCK = process.env.USE_MOCK === 'true';
+
+// BMC webhook needs raw body for HMAC signature validation — registered BEFORE express.json()
+app.post('/admin/webhooks/bmc', express.raw({ type: '*/*' }), bmcWebhookHandler);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -386,7 +390,7 @@ if (USE_MOCK) {
   console.log('🚀 Starting in PRODUCTION mode with OAS Tools...');
   // Middleware de autenticación (excuyendo /docs)
   app.use((req: Request, res: Response, next: NextFunction) => {
-    if (req.path.startsWith('/docs') || req.path.startsWith('/queues')) {
+    if (req.path.startsWith('/docs') || req.path.startsWith('/queues') || req.path.startsWith('/admin/webhooks/bmc')) {
       return next();
     }
     return isAdmin(req, res, next);

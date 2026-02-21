@@ -31,6 +31,7 @@ model User {
   verificationTokenExpires DateTime?            @map("verification_token_expires")
   resetPasswordToken       String?              @map("reset_password_token")
   resetPasswordExpires     DateTime?            @map("reset_password_expires")
+  bmcEmail                 String?              @map("bmc_email")
   sessions                 Session[]
   addresses                Address[]
   productReviews           ProductReview[]
@@ -497,7 +498,8 @@ model Subscription {
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  webhookEvents BmcWebhookEvent[]
 
   @@map("subscriptions")
 }
@@ -515,4 +517,17 @@ model UserReward {
 
   @@unique([userId, milestoneMonths])
   @@map("user_rewards")
+}
+
+model BmcWebhookEvent {
+  id             String        @id @default(uuid())
+  eventId        String        @unique @map("event_id")    // ID externo de BMC — clave de idempotencia
+  eventType      String        @map("event_type")          // ej. "membership.started"
+  subscriptionId String?       @map("subscription_id")
+  processedAt    DateTime      @default(now()) @map("processed_at")
+
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  @@index([eventId])
+  @@map("bmc_webhook_events")
 }
