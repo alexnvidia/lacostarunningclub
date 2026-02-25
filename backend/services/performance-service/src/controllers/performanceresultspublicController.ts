@@ -1,12 +1,6 @@
-import { Response, NextFunction } from 'express';
-import * as performanceresultspublicControllerService from './performanceresultspublicControllerService.js';
+import { Request, Response, NextFunction } from 'express';
+import * as service from './performanceresultspublicControllerService';
 
-interface SwaggerRequest extends Request {
-  swagger: {
-    params: any;
-  };
-}
-
-export function getPublicResults(req: SwaggerRequest, res: Response, next: NextFunction): void {
-  performanceresultspublicControllerService.getPublicResults(req.swagger.params, res, next);
+export function getPublicResults(req: Request, res: Response, next: NextFunction): void {
+  service.getPublicResults(req, res, next);
 }

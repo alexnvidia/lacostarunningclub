@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import http from 'http';
 import path from 'path';
 import { initialize } from '@oas-tools/core';
@@ -17,8 +17,8 @@ app.use((req, _res, next) => {
 });
 
 app.get('/health', (_req: Request, res: Response) => {
-  res.json({ 
-    status: 'ok', 
+  res.json({
+    status: 'ok',
     service: 'performance-service',
     mode: USE_MOCK ? 'mock' : 'production',
     timestamp: new Date().toISOString()
@@ -43,7 +43,7 @@ const startServer = () => {
 
 if (USE_MOCK) {
   console.log('🎭 Starting Performance Service in MOCK mode...');
-  
+
   // Mock data
   const mockResults: any[] = [];
   const mockWorkouts = [
@@ -79,7 +79,7 @@ if (USE_MOCK) {
       ]
     }
   ];
-  
+
   app.get('/', (_req: Request, res: Response) => {
     res.json({
       service: 'performance-service',
@@ -103,16 +103,16 @@ if (USE_MOCK) {
     const userId = req.headers['x-user-id'] as string;
     const userEmail = req.headers['x-user-email'] as string;
     const { race_name, race_date, distance, time, pace, visibility } = req.body;
-    
+
     console.log(`🏃 Uploading race result for user: ${userId}`);
-    
+
     if (!race_name || !race_date || !distance || !time) {
       return res.status(400).json({
         error: 'Race name, date, distance, and time are required',
         code: 'VALIDATION_ERROR'
       });
     }
-    
+
     const newResult = {
       id: `result-${Date.now()}`,
       user_id: userId || '123e4567-e89b-12d3-a456-426614174000',
@@ -125,9 +125,9 @@ if (USE_MOCK) {
       visibility: visibility || 'public',
       uploaded_at: new Date().toISOString()
     };
-    
+
     mockResults.push(newResult);
-    
+
     res.status(201).json(newResult);
   });
 
@@ -135,15 +135,15 @@ if (USE_MOCK) {
   app.get('/performance/results', (req: Request, res: Response) => {
     const userId = req.headers['x-user-id'] as string;
     const { from_date, to_date, distance } = req.query;
-    
+
     console.log(`🏃 Getting results for user: ${userId}`);
-    
+
     let userResults = mockResults.filter(r => r.user_id === userId);
-    
+
     if (distance) {
       userResults = userResults.filter(r => r.distance === distance);
     }
-    
+
     // If no results, return mock data
     if (userResults.length === 0) {
       userResults = [
@@ -160,7 +160,7 @@ if (USE_MOCK) {
         }
       ];
     }
-    
+
     res.json({
       results: userResults,
       filters: {
@@ -174,16 +174,16 @@ if (USE_MOCK) {
   // GET /performance/results/public - Get public race results (PUBLIC)
   app.get('/performance/results/public', (req: Request, res: Response) => {
     const { distance, from_date, to_date, page = 1, limit = 20 } = req.query;
-    
+
     console.log(`🏃 Getting public race results`);
-    
+
     // Filter public results
     let publicResults = mockResults.filter(r => r.visibility === 'public');
-    
+
     if (distance) {
       publicResults = publicResults.filter(r => r.distance === distance);
     }
-    
+
     // If no results, return mock data
     if (publicResults.length === 0) {
       publicResults = [
@@ -216,7 +216,7 @@ if (USE_MOCK) {
         }
       ];
     }
-    
+
     res.json({
       results: publicResults,
       filters: {
@@ -238,24 +238,24 @@ if (USE_MOCK) {
   // GET /performance/workouts - Get current week's workout (PUBLIC)
   app.get('/performance/workouts', (_req: Request, res: Response) => {
     console.log(`📅 Getting current week workout`);
-    
+
     res.json(mockWorkouts[0]);
   });
 
   // GET /performance/workouts/:year/:week - Get specific week's workout (PUBLIC)
   app.get('/performance/workouts/:year/:week', (req: Request, res: Response) => {
     const { year, week } = req.params;
-    
+
     console.log(`📅 Getting workout for week ${week} of ${year}`);
-    
+
     const existingWorkout = mockWorkouts.find(
       w => w.year === Number(year) && w.week_number === Number(week)
     );
-    
+
     if (existingWorkout) {
       return res.json(existingWorkout);
     }
-    
+
     // Return mock workout
     res.json({
       id: `workout-${year}-${week}`,
@@ -294,35 +294,35 @@ if (USE_MOCK) {
   app.post('/performance/workouts', (req: Request, res: Response) => {
     const userRole = req.headers['x-user-role'] as string;
     const { week_number, year, title, description, workouts } = req.body;
-    
+
     console.log(`📅 Creating workout for week ${week_number} of ${year}`);
-    
+
     if (userRole !== 'admin') {
       return res.status(403).json({
         error: 'Forbidden - Admin access required',
         code: 'FORBIDDEN'
       });
     }
-    
+
     if (!week_number || !year || !title || !workouts) {
       return res.status(400).json({
         error: 'Week number, year, title, and workouts are required',
         code: 'VALIDATION_ERROR'
       });
     }
-    
+
     if (!Array.isArray(workouts) || workouts.length === 0) {
       return res.status(400).json({
         error: 'Workouts must be a non-empty array',
         code: 'VALIDATION_ERROR'
       });
     }
-    
+
     // Check if workout already exists
     const existingIndex = mockWorkouts.findIndex(
       w => w.year === year && w.week_number === week_number
     );
-    
+
     const newWorkout = {
       id: `workout-${Date.now()}`,
       week_number,
@@ -332,7 +332,7 @@ if (USE_MOCK) {
       published_date: new Date().toISOString(),
       workouts
     };
-    
+
     if (existingIndex !== -1) {
       // Replace existing
       mockWorkouts[existingIndex] = newWorkout;
@@ -341,9 +341,9 @@ if (USE_MOCK) {
         workout: newWorkout
       });
     }
-    
+
     mockWorkouts.push(newWorkout);
-    
+
     res.status(201).json(newWorkout);
   });
 
@@ -364,17 +364,59 @@ if (USE_MOCK) {
   });
 
   startServer();
-  
+
 } else {
   console.log('🚀 Starting Performance Service in PRODUCTION mode with OAS Tools...');
-  
+  const { authMiddleware, isAdmin } = require('./middlewares/authMiddleware');
+
+  // Import controller services
+  const resultsController = require('./controllers/performanceresultsControllerService');
+  const publicResultsController = require('./controllers/performanceresultspublicControllerService');
+  const workoutsController = require('./controllers/performanceworkoutsControllerService');
+  const workoutsByWeekController = require('./controllers/performanceworkoutsweekyearControllerService');
+
+  // ===== PUBLIC ROUTES =====
+
+  // GET /performance/results/public - Resultados públicos de carrera (sin auth)
+  app.get('/performance/results/public', (req: Request, res: Response, next: NextFunction) => {
+    publicResultsController.getPublicResults(req, res, next);
+  });
+
+  // GET /performance/workouts - Entrenamiento de la semana actual (sin auth)
+  app.get('/performance/workouts', (req: Request, res: Response, next: NextFunction) => {
+    workoutsController.getCurrentWorkout(req, res, next);
+  });
+
+  // GET /performance/workouts/:week/:year - Entrenamiento por semana/año (sin auth)
+  app.get('/performance/workouts/:week/:year', (req: Request, res: Response, next: NextFunction) => {
+    workoutsByWeekController.getWorkoutByWeek(req, res, next);
+  });
+
+  // ===== AUTHENTICATED USER ROUTES =====
+
+  // POST /performance/results - Subir resultado de carrera (requiere auth)
+  app.post('/performance/results', authMiddleware, (req: Request, res: Response, next: NextFunction) => {
+    resultsController.uploadRaceResult(req, res, next);
+  });
+
+  // GET /performance/results - Consultar propios resultados (requiere auth)
+  app.get('/performance/results', authMiddleware, (req: Request, res: Response, next: NextFunction) => {
+    resultsController.getUserResults(req, res, next);
+  });
+
+  // ===== ADMIN-ONLY ROUTES =====
+
+  // POST /performance/workouts - Crear entrenamiento semanal (solo ADMIN)
+  app.post('/performance/workouts', authMiddleware, isAdmin, (req: Request, res: Response, next: NextFunction) => {
+    workoutsController.createWorkout(req, res, next);
+  });
+
+  // ===== OAS TOOLS (docs + validation) =====
+
   const oasFilePath = path.resolve(process.cwd(), '../../docs/openapi/performance-service.yaml');
-  
+
   if (!fs.existsSync(oasFilePath)) {
     console.warn(`⚠️  OpenAPI file not found: ${oasFilePath}`);
-    app.get('*', (_req, res) => {
-      res.status(503).json({ error: 'Service not fully configured' });
-    });
     startServer();
   } else {
     const oasConfig = {
@@ -398,3 +440,4 @@ if (USE_MOCK) {
 }
 
 export default app;
+

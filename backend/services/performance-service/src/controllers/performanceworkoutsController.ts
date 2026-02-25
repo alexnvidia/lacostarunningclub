@@ -1,16 +1,11 @@
-import { Response, NextFunction } from 'express';
-import * as performanceworkoutsControllerService from './performanceworkoutsControllerService.js';
+import { Request, Response, NextFunction } from 'express';
+import * as service from './performanceworkoutsControllerService';
+import { AuthRequest } from '../middlewares/authMiddleware';
 
-interface SwaggerRequest extends Request {
-  swagger: {
-    params: any;
-  };
+export function getCurrentWorkout(req: Request, res: Response, next: NextFunction): void {
+  service.getCurrentWorkout(req, res, next);
 }
 
-export function getCurrentWorkout(req: SwaggerRequest, res: Response, next: NextFunction): void {
-  performanceworkoutsControllerService.getCurrentWorkout(req.swagger.params, res, next);
-}
-
-export function createWorkout(req: SwaggerRequest, res: Response, next: NextFunction): void {
-  performanceworkoutsControllerService.createWorkout(req.swagger.params, res, next);
+export function createWorkout(req: Request, res: Response, next: NextFunction): void {
+  service.createWorkout(req as AuthRequest, res, next);
 }

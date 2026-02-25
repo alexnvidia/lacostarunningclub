@@ -411,21 +411,63 @@ enum Priority {
 // --------------------------------------------------------
 
 model UserPerformance {
-  id          String   @id @default(uuid())
-  userId      String   @map("user_id")
-  date        DateTime
-  distanceKm  Float    @map("distance_km")
-  durationMin Int      @map("duration_min")
-  calories    Int?
-  notes       String?
-  createdAt   DateTime @default(now()) @map("created_at")
+  id              String   @id @default(uuid())
+  userId          String   @map("user_id")
+  date            DateTime
+  distanceKm      Float    @map("distance_km")
+  durationMin     Int      @default(0) @map("duration_min")
+  calories        Int?
+  notes           String?
+
+  // Race result fields (previously stored in notes metadata)
+  raceName        String?  @map("race_name") @db.VarChar(200)
+  time            String?  @db.VarChar(20)  // HH:MM:SS
+  pace            String?  @db.VarChar(20)  // min/km
+  location        String?  @db.VarChar(200)
+  surfaceType     String?  @map("surface_type") @db.VarChar(20) // road, trail, track, mixed
+  elevationGain   Int?     @map("elevation_gain")               // meters
+  avgHeartRate    Int?     @map("avg_heart_rate")
+  maxHeartRate    Int?     @map("max_heart_rate")
+  temperature     Int?                                          // celsius
+  attachmentUrl   String?  @map("attachment_url")
+  isPublic        Boolean  @default(true) @map("is_public")
+
+  createdAt       DateTime @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([date])
+  @@index([isPublic])
   @@map("user_performances")
 }
+
+
+model WeeklyWorkout {
+  id                String   @id @default(uuid())
+  weekNumber        Int      @map("week_number")
+  year              Int
+  title             String   @db.VarChar(200)
+  description       String   @db.Text
+  workoutType       String?  @map("workout_type")       // technique, speed, endurance, recovery, strength, mixed
+  estimatedDuration Int?     @map("estimated_duration") // minutes
+  estimatedDistance Float?   @map("estimated_distance") // km
+  difficultyLevel   String?  @map("difficulty_level")   // beginner, intermediate, advanced
+  warmup            String?  @db.Text
+  mainSet           String?  @map("main_set") @db.Text
+  cooldown          String?  @db.Text
+  weekStartDate     DateTime? @map("week_start_date") @db.Date
+  weekEndDate       DateTime? @map("week_end_date") @db.Date
+  isPublished       Boolean  @default(true) @map("is_published")
+  publishedAt       DateTime @default(now()) @map("published_at")
+
+  @@unique([weekNumber, year])
+  @@index([year, weekNumber])
+  @@index([isPublished])
+  @@map("weekly_workouts")
+}
+
+
 
 model TrainingPlan {
   id            String   @id @default(uuid())

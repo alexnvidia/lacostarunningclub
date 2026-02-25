@@ -1,12 +1,6 @@
-import { Response, NextFunction } from 'express';
-import * as performanceworkoutsweekyearControllerService from './performanceworkoutsweekyearControllerService.js';
+import { Request, Response, NextFunction } from 'express';
+import * as service from './performanceworkoutsweekyearControllerService';
 
-interface SwaggerRequest extends Request {
-  swagger: {
-    params: any;
-  };
-}
-
-export function getWorkoutByWeek(req: SwaggerRequest, res: Response, next: NextFunction): void {
-  performanceworkoutsweekyearControllerService.getWorkoutByWeek(req.swagger.params, res, next);
+export function getWorkoutByWeek(req: Request, res: Response, next: NextFunction): void {
+  service.getWorkoutByWeek(req, res, next);
 }
