@@ -22,9 +22,9 @@
   "author": "LCRC Tech Team",
   "license": "MIT",
   "dependencies": {
-    "@lcrc/shared": "file:../../shared",
-    "@bull-board/api": "^6.16.2",
+    "@bull-board/api": "^6.19.0",
     "@bull-board/express": "^6.16.2",
+    "@lcrc/shared": "file:../../shared",
     "@prisma/adapter-pg": "^7.2.0",
     "bull": "^4.16.5",
     "cors": "^2.8.5",

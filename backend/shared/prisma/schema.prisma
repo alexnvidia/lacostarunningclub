@@ -346,6 +346,7 @@ model SupportTicket {
   userId     String       @map("user_id")
   assignedTo String?      @map("assigned_to")
   subject    String
+  category   TicketCategory? @map("category")
   status     TicketStatus @default(OPEN)
   priority   Priority     @default(MEDIUM)
   createdAt  DateTime     @default(now()) @map("created_at")
@@ -358,16 +359,18 @@ model SupportTicket {
   @@index([userId])
   @@index([assignedTo])
   @@index([status])
+  @@index([category])
   @@map("support_tickets")
 }
 
 model Message {
-  id         String   @id @default(uuid())
-  ticketId   String   @map("ticket_id")
-  senderId   String   @map("sender_id")
+  id         String    @id @default(uuid())
+  ticketId   String    @map("ticket_id")
+  senderId   String    @map("sender_id")
   content    String
-  isInternal Boolean  @default(false) @map("is_internal")
-  createdAt  DateTime @default(now()) @map("created_at")
+  isInternal Boolean   @default(false) @map("is_internal")
+  readAt     DateTime? @map("read_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
 
   ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   sender User          @relation("SenderMessages", fields: [senderId], references: [id])
@@ -397,6 +400,15 @@ enum TicketStatus {
   IN_PROGRESS
   RESOLVED
   CLOSED
+}
+
+enum TicketCategory {
+  GENERAL_INQUIRY
+  ORDER_ISSUE
+  SUGGESTION
+  PERFORMANCE_CREW
+  EVENT
+  OTHER
 }
 
 enum Priority {

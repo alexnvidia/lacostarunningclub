@@ -1,12 +1,6 @@
-import { Response, NextFunction } from 'express';
-import * as messagesidrepliesControllerService from './messagesidrepliesControllerService.js';
+import { Request, Response, NextFunction } from 'express';
+import * as messagesidrepliesControllerService from './messagesidrepliesControllerService';
 
-interface SwaggerRequest extends Request {
-  swagger: {
-    params: any;
-  };
-}
-
-export function replyToMessage(req: SwaggerRequest, res: Response, next: NextFunction): void {
-  messagesidrepliesControllerService.replyToMessage(req.swagger.params, res, next);
+export function replyToMessage(req: Request, res: Response, next: NextFunction): void {
+  messagesidrepliesControllerService.replyToMessage(req, res, next);
 }

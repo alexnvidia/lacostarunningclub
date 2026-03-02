@@ -14,4 +14,4 @@ export const emailQueue = new Bull('email-queue', {
 });
 
 // Si tuvieras más colas en otros servicios, las instancias aquí también:
-// export const notificationQueue = new Bull('notification-queue', { redis: redisConfig });
+export const notificationQueue = new Bull('notification-queue', { redis: redisConfig });
