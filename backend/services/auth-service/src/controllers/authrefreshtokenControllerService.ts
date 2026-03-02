@@ -3,7 +3,10 @@ import { prisma } from '@lcrc/shared';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production-please-12345';
+if (!process.env.JWT_SECRET) {
+  throw new Error('❌ JWT_SECRET is not defined. Set it in your .env file.');
+}
+const JWT_SECRET = process.env.JWT_SECRET;
 const TOKEN_LENGTH_BYTES = 40;
 
 export async function refreshToken(req: Request, res: Response, next: NextFunction): Promise<void> {

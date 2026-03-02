@@ -7,7 +7,10 @@ import { emailQueue } from '../queue/emailQueue';
 import { EmailTemplate, getEmailContent, EmailData } from '../utils/emailTemplates';
 
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production-please-12345';
+if (!process.env.JWT_SECRET) {
+  throw new Error('❌ JWT_SECRET is not defined. Set it in your .env file.');
+}
+const JWT_SECRET = process.env.JWT_SECRET;
 const TOKEN_LENGTH_BYTES = 40;
 const APP_URL = process.env.APP_URL || 'http://localhost:3000'; // point to frontend URL, at the moment is apigateway
 

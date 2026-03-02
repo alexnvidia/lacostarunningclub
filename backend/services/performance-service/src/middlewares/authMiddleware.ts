@@ -32,10 +32,11 @@ export const authMiddleware = (
     const token = authHeader.substring(7);
 
     try {
-        const decoded = jwt.verify(
-            token,
-            process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production-please-12345'
-        ) as {
+        const jwtSecret = process.env.JWT_SECRET;
+        if (!jwtSecret) {
+            throw new Error('JWT_SECRET is not defined in environment variables');
+        }
+        const decoded = jwt.verify(token, jwtSecret) as {
             id: string;
             email: string;
             role: string;

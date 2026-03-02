@@ -27,7 +27,10 @@ import './queue/workers';
 const app = express();
 const PORT = process.env.PORT || 3001;
 const USE_MOCK = process.env.USE_MOCK === 'true';
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production-please-12345';
+if (!process.env.JWT_SECRET) {
+  throw new Error('❌ JWT_SECRET is not defined. Set it in your .env file.');
+}
+const JWT_SECRET = process.env.JWT_SECRET;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

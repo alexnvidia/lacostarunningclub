@@ -31,11 +31,12 @@ export const authMiddleware = (
   const token = authHeader.substring(7); // Remove 'Bearer ' prefix
 
   try {
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      throw new Error('JWT_SECRET is not defined in environment variables');
+    }
     // Verificar y decodificar el token
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production-please-12345'
-    ) as {
+    const decoded = jwt.verify(token, jwtSecret) as {
       id: string;
       email: string;
       role: string;
@@ -50,7 +51,7 @@ export const authMiddleware = (
     req.headers['x-user-role'] = decoded.role;
 
     logger.debug(`User authenticated: ${decoded.email} (${decoded.role}) - Path: ${req.path}`);
-    
+
     // Pasar al siguiente middleware
     next();
   } catch (error) {
