@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@theme {
+  /* LCRC Brand Colors — Dark Runner Design */
+  --color-brand-primary: #e63946;    /* Rojo LCRC */
+  --color-brand-accent: #f4a261;     /* Naranja cálido */
+  --color-brand-dark: #0d0d0d;       /* Negro profundo */
+  --color-brand-surface: #1a1a1a;    /* Superficie cards */
+  --color-brand-border: #2a2a2a;     /* Bordes sutiles */
+  --color-brand-muted: #6b7280;      /* Texto secundario */
+
+  /* Tipografía */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Inter', system-ui, sans-serif;
+
+  /* Spacing extra */
+  --spacing-18: 4.5rem;
+  --spacing-88: 22rem;
+}
+
+/* Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+/* Reset base */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background-color: var(--color-brand-dark);
+  color: #f5f5f5;
+  font-family: var(--font-sans);
+  margin: 0;
+}
+
+/* Scrollbar personalizada */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--color-brand-surface); }
+::-webkit-scrollbar-thumb { background: var(--color-brand-primary); border-radius: 2px; }
+
+/* Transitions globales */
+* { transition-property: color, background-color, border-color, opacity, transform;
+    transition-duration: 150ms;
+    transition-timing-function: ease; }
