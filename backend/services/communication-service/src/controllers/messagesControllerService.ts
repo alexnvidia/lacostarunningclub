@@ -165,6 +165,7 @@ export const listMessages = async (req: AuthRequest, res: Response, next: NextFu
     const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 10));
     const skip = (page - 1) * limit;
     const statusParam = req.query.status as string | undefined;
+    const assignedToParam = req.query.assigned_to as string | undefined;
 
     // Validate status filter
     if (statusParam !== undefined && !VALID_STATUSES.includes(statusParam)) {
@@ -175,13 +176,26 @@ export const listMessages = async (req: AuthRequest, res: Response, next: NextFu
       return;
     }
 
+    const isStaff = req.user.role === 'ADMIN' || req.user.role === 'SUPPORT';
+
+    // Build where clause: staff see all tickets, regular users only their own
     const where: {
-      userId: string;
+      userId?: string;
       status?: TicketStatus;
-    } = { userId: req.user.id };
+      assignedTo?: string | null;
+    } = isStaff ? {} : { userId: req.user.id };
 
     if (statusParam) {
       where.status = STATUS_MAP[statusParam];
+    }
+
+    // Staff-only assignment filter
+    if (isStaff && assignedToParam) {
+      if (assignedToParam === 'me') {
+        where.assignedTo = req.user.id;
+      } else if (assignedToParam === 'unassigned') {
+        where.assignedTo = null;
+      }
     }
 
     const [total, tickets] = await prisma.$transaction([
@@ -213,6 +227,7 @@ export const listMessages = async (req: AuthRequest, res: Response, next: NextFu
         priority: PRIORITY_REVERSE[ticket.priority] ?? 'normal',
         created_at: ticket.createdAt,
         unread_replies: unreadReplies,
+        ...(isStaff ? { assigned_to_user_id: ticket.assignedTo ?? null } : {}),
       };
     });
 

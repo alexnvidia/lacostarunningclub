@@ -33,7 +33,7 @@ export function Footer() {
                         <div className="space-y-3 text-sm text-gray-400">
                             <div className="flex items-center gap-2">
                                 <MapPin className="w-4 h-4 text-[#e63946] shrink-0" />
-                                <span>Fuengirola · Torrón</span>
+                                <span>Fuengirola · Mijas</span>
                             </div>
                             <div className="flex items-center gap-4 mt-4">
                                 <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"

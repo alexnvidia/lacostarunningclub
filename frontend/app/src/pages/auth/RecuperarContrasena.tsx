@@ -45,8 +45,8 @@ export default function RecuperarContrasena() {
                     <p className="text-gray-500 text-sm mb-8">Introduce tu email y te enviaremos un enlace de recuperación.</p>
                     <form onSubmit={handleSubmit((data) => mutation.mutate(data))} className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-1.5">Email</label>
-                            <input {...register('email')} type="email" placeholder="tu@email.com" className="w-full bg-[#0d0d0d] border border-[#2a2a2a] focus:border-[#e63946] rounded-lg px-4 py-3 text-white placeholder-gray-600 outline-none text-sm transition-colors" />
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1.5">Email</label>
+                            <input {...register('email')} id="email" type="email" autoComplete="email" placeholder="tu@email.com" className="w-full bg-[#0d0d0d] border border-[#2a2a2a] focus:border-[#e63946] rounded-lg px-4 py-3 text-white placeholder-gray-600 outline-none text-sm transition-colors" />
                             {errors.email && <p className="text-[#e63946] text-xs mt-1">{errors.email.message}</p>}
                         </div>
                         <button type="submit" disabled={mutation.isPending} className="w-full bg-[#e63946] hover:bg-[#c1121f] disabled:opacity-50 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center">

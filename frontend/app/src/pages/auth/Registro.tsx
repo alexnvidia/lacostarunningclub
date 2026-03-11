@@ -61,26 +61,26 @@ export default function Registro() {
                     <form onSubmit={handleSubmit((data) => registerMutation.mutate(data))} className="space-y-4">
                         <div className="grid grid-cols-2 gap-3">
                             <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-1.5">Nombre *</label>
-                                <input {...register('first_name')} placeholder="Juan" className="w-full bg-[#0d0d0d] border border-[#2a2a2a] focus:border-[#e63946] rounded-lg px-3 py-3 text-white placeholder-gray-600 outline-none text-sm transition-colors" />
+                                <label htmlFor="first_name" className="block text-sm font-medium text-gray-300 mb-1.5">Nombre *</label>
+                                <input {...register('first_name')} id="first_name" autoComplete="given-name" placeholder="Juan" className="w-full bg-[#0d0d0d] border border-[#2a2a2a] focus:border-[#e63946] rounded-lg px-3 py-3 text-white placeholder-gray-600 outline-none text-sm transition-colors" />
                                 {errors.first_name && <p className="text-[#e63946] text-xs mt-1">{errors.first_name.message}</p>}
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-1.5">Apellido</label>
-                                <input {...register('last_name')} placeholder="García" className="w-full bg-[#0d0d0d] border border-[#2a2a2a] focus:border-[#e63946] rounded-lg px-3 py-3 text-white placeholder-gray-600 outline-none text-sm transition-colors" />
+                                <label htmlFor="last_name" className="block text-sm font-medium text-gray-300 mb-1.5">Apellido</label>
+                                <input {...register('last_name')} id="last_name" autoComplete="family-name" placeholder="García" className="w-full bg-[#0d0d0d] border border-[#2a2a2a] focus:border-[#e63946] rounded-lg px-3 py-3 text-white placeholder-gray-600 outline-none text-sm transition-colors" />
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-1.5">Email *</label>
-                            <input {...register('email')} type="email" placeholder="tu@email.com" className="w-full bg-[#0d0d0d] border border-[#2a2a2a] focus:border-[#e63946] rounded-lg px-4 py-3 text-white placeholder-gray-600 outline-none text-sm transition-colors" />
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1.5">Email *</label>
+                            <input {...register('email')} id="email" type="email" autoComplete="email" placeholder="tu@email.com" className="w-full bg-[#0d0d0d] border border-[#2a2a2a] focus:border-[#e63946] rounded-lg px-4 py-3 text-white placeholder-gray-600 outline-none text-sm transition-colors" />
                             {errors.email && <p className="text-[#e63946] text-xs mt-1">{errors.email.message}</p>}
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-1.5">Contraseña *</label>
+                            <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-1.5">Contraseña *</label>
                             <div className="relative">
-                                <input {...register('password')} type={showPassword ? 'text' : 'password'} placeholder="Mínimo 8 caracteres" className="w-full bg-[#0d0d0d] border border-[#2a2a2a] focus:border-[#e63946] rounded-lg px-4 py-3 pr-10 text-white placeholder-gray-600 outline-none text-sm transition-colors" />
+                                <input {...register('password')} id="password" type={showPassword ? 'text' : 'password'} autoComplete="new-password" placeholder="Mínimo 8 caracteres" className="w-full bg-[#0d0d0d] border border-[#2a2a2a] focus:border-[#e63946] rounded-lg px-4 py-3 pr-10 text-white placeholder-gray-600 outline-none text-sm transition-colors" />
                                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
                                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                 </button>
@@ -89,8 +89,8 @@ export default function Registro() {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-1.5">Teléfono</label>
-                            <input {...register('phone')} type="tel" placeholder="+34 600 000 000" className="w-full bg-[#0d0d0d] border border-[#2a2a2a] focus:border-[#e63946] rounded-lg px-4 py-3 text-white placeholder-gray-600 outline-none text-sm transition-colors" />
+                            <label htmlFor="phone" className="block text-sm font-medium text-gray-300 mb-1.5">Teléfono</label>
+                            <input {...register('phone')} id="phone" type="tel" autoComplete="tel" placeholder="+34 600 000 000" className="w-full bg-[#0d0d0d] border border-[#2a2a2a] focus:border-[#e63946] rounded-lg px-4 py-3 text-white placeholder-gray-600 outline-none text-sm transition-colors" />
                         </div>
 
                         {errorMsg && (

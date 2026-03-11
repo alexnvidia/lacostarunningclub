@@ -64,9 +64,10 @@ export default function Login() {
                     <form onSubmit={handleSubmit((data) => loginMutation.mutate(data))} className="space-y-5">
                         {/* Email */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-1.5">Email</label>
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1.5">Email</label>
                             <input
                                 {...register('email')}
+                                id="email"
                                 type="email"
                                 autoComplete="email"
                                 placeholder="tu@email.com"
@@ -78,7 +79,7 @@ export default function Login() {
                         {/* Password */}
                         <div>
                             <div className="flex items-center justify-between mb-1.5">
-                                <label className="text-sm font-medium text-gray-300">Contraseña</label>
+                                <label htmlFor="password" className="text-sm font-medium text-gray-300">Contraseña</label>
                                 <Link to="/recuperar-contrasena" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
                                     ¿Olvidaste la contraseña?
                                 </Link>
@@ -86,6 +87,7 @@ export default function Login() {
                             <div className="relative">
                                 <input
                                     {...register('password')}
+                                    id="password"
                                     type={showPassword ? 'text' : 'password'}
                                     autoComplete="current-password"
                                     placeholder="••••••••"

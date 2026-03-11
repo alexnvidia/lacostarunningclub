@@ -22,4 +22,15 @@ export const queryKeys = {
         list: (status?: string) => ['tickets', 'list', status] as const,
         detail: (id: string) => ['tickets', 'detail', id] as const,
     },
+    admin: {
+        stats: (period?: string) => ['admin', 'stats', period] as const,
+        salesStats: (from?: string, to?: string) => ['admin', 'stats', 'sales', from, to] as const,
+        orders: (status?: string, page?: number) => ['admin', 'orders', status, page] as const,
+        orderDetail: (id: string) => ['admin', 'orders', id] as const,
+        users: (search?: string, role?: string, page?: number) => ['admin', 'users', search, role, page] as const,
+        subscriptions: (page?: number) => ['admin', 'subscriptions', page] as const,
+        tickets: (status?: string, assignedTo?: string) => ['admin', 'tickets', status, assignedTo] as const,
+        products: (search?: string, active?: string, page?: number) => ['admin', 'products', search, active, page] as const,
+        productDetail: (id: string) => ['admin', 'products', id] as const,
+    },
 } as const

@@ -6,6 +6,7 @@ import fs from 'fs';
 import * as usersprofileControllerService from './controllers/usersprofileControllerService';
 import * as usersrewardsmilestoneclaimControllerService from './controllers/usersrewardsmilestoneclaimControllerService';
 import * as usersidControllerService from './controllers/usersidControllerService';
+import { listUsersByRole } from './controllers/usersidControllerService';
 
 const app = express();
 const PORT = process.env.PORT || 3002;
@@ -184,6 +185,10 @@ if (USE_MOCK) {
     });
 
     //register get user by id (admin only)
+    app.get('/users', (req: Request, res: Response, next: NextFunction) => {
+      listUsersByRole(req, res, next);
+    });
+
     app.get('/users/:id', (req: Request, res: Response, next: NextFunction) => {
       usersidControllerService.getUserById(req, res, next);
     });

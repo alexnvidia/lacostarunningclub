@@ -3,6 +3,7 @@ import { lazy, Suspense } from 'react'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute'
+import { AdminRoute } from '@/components/layout/AdminRoute'
 
 // Lazy pages — public
 const Home = lazy(() => import('@/pages/public/Home'))
@@ -22,8 +23,18 @@ const Pedidos = lazy(() => import('@/pages/dashboard/Pedidos'))
 const PedidoDetalle = lazy(() => import('@/pages/dashboard/PedidoDetalle'))
 const Soporte = lazy(() => import('@/pages/dashboard/Soporte'))
 const TicketDetalle = lazy(() => import('@/pages/dashboard/TicketDetalle'))
+const NuevoTicket = lazy(() => import('@/pages/dashboard/NuevoTicket'))
 const MisCarreras = lazy(() => import('@/pages/dashboard/MisCarreras'))
 const SubirResultado = lazy(() => import('@/pages/dashboard/SubirResultado'))
+
+// Lazy pages — admin (protected + role ADMIN)
+const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard'))
+const AdminPedidos = lazy(() => import('@/pages/admin/AdminPedidos'))
+const AdminPedidoDetalle = lazy(() => import('@/pages/admin/AdminPedidoDetalle'))
+const AdminUsuarios = lazy(() => import('@/pages/admin/AdminUsuarios'))
+const AdminSuscripciones = lazy(() => import('@/pages/admin/AdminSuscripciones'))
+const AdminTickets = lazy(() => import('@/pages/admin/AdminTickets'))
+const AdminProductos = lazy(() => import('@/pages/admin/AdminProductos'))
 
 function PageLoader() {
   return (
@@ -74,9 +85,23 @@ export default function App() {
             <Route path="/pedidos" element={<Pedidos />} />
             <Route path="/pedidos/:id" element={<PedidoDetalle />} />
             <Route path="/soporte" element={<Soporte />} />
+            <Route path="/soporte/nuevo" element={<NuevoTicket />} />
             <Route path="/soporte/:id" element={<TicketDetalle />} />
             <Route path="/mis-carreras" element={<MisCarreras />} />
             <Route path="/subir-resultado" element={<SubirResultado />} />
+          </Route>
+        </Route>
+
+        {/* Admin routes — requires ADMIN role */}
+        <Route element={<AdminRoute />}>
+          <Route element={<PublicLayout />}>
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/pedidos" element={<AdminPedidos />} />
+            <Route path="/admin/pedidos/:id" element={<AdminPedidoDetalle />} />
+            <Route path="/admin/usuarios" element={<AdminUsuarios />} />
+            <Route path="/admin/suscripciones" element={<AdminSuscripciones />} />
+            <Route path="/admin/tickets" element={<AdminTickets />} />
+            <Route path="/admin/productos" element={<AdminProductos />} />
           </Route>
         </Route>
       </Routes>

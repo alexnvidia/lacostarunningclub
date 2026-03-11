@@ -19,7 +19,8 @@ export const upsertSubscription = async (input: UpsertSubscriptionInput) => {
     return prisma.subscription.upsert({
         where: { userId },
         update: {
-            status: status ?? 'ACTIVE',
+            // status se omite si no viene explícitamente → Prisma preserva el valor actual en BD
+            ...(status !== undefined && { status }),
             startDate: startDate ?? undefined,
             endDate: endDate ?? undefined,
             externalId: externalId ?? undefined,

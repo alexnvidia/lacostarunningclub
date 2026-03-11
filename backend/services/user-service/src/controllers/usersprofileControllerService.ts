@@ -59,6 +59,7 @@ export const getProfile = async (req: Request, res: Response, next: NextFunction
       role: user.role.toLowerCase(),
       created_at: user.createdAt,
       last_login: user.lastLogin,
+      email_verified: user.emailVerified,
       subscription: user.subscription ? {
         status: user.subscription.status,
         active_since: user.subscription.startDate,

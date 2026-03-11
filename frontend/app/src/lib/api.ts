@@ -27,6 +27,12 @@ api.interceptors.response.use(
                 const refreshToken = useAuthStore.getState().refreshToken
                 if (!refreshToken) {
                     useAuthStore.getState().logout()
+                    // Solo redirigimos si NO estamos ya en una página de autenticación
+                    // (evita el reload al hacer login con credenciales incorrectas)
+                    const authPaths = ['/login', '/registro']
+                    if (!authPaths.some(p => window.location.pathname.startsWith(p))) {
+                        window.location.href = '/login'
+                    }
                     return Promise.reject(error)
                 }
                 const { data } = await axios.post('/api/auth/refresh-token', { refresh_token: refreshToken })

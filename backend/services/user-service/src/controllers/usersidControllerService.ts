@@ -80,3 +80,50 @@ export const getUserById = async (req: Request, res: Response, next: NextFunctio
     next(error);
   }
 };
+
+export const listUsersByRole = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const callerRole = req.headers['x-user-role'] as string;
+
+    // Only ADMIN or SUPPORT can list users
+    if (callerRole !== 'ADMIN' && callerRole !== 'SUPPORT') {
+      res.status(403).json({ error: 'Forbidden - Staff access required', code: 'FORBIDDEN' });
+      return;
+    }
+
+    const roleParam = (req.query.role as string | undefined)?.toUpperCase();
+    const VALID_ROLES = ['USER', 'ADMIN', 'SUPPORT', 'TRAINER'];
+
+    if (!roleParam || !VALID_ROLES.includes(roleParam)) {
+      res.status(400).json({
+        error: `role query param is required. Allowed: ${VALID_ROLES.join(', ')}`,
+        code: 'VALIDATION_ERROR',
+      });
+      return;
+    }
+
+    const users = await prisma.user.findMany({
+      where: { role: roleParam as any, active: true },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+      },
+      orderBy: { firstName: 'asc' },
+    });
+
+    res.json({
+      users: users.map(u => ({
+        id: u.id,
+        email: u.email,
+        first_name: u.firstName,
+        last_name: u.lastName,
+        role: u.role.toLowerCase(),
+      })),
+    });
+  } catch (error) {
+    next(error);
+  }
+};

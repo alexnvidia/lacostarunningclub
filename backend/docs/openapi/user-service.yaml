@@ -13,8 +13,39 @@ servers:
 tags:
   - name: Profile
     description: User profile operations
+  - name: Admin
+    description: Admin-only user management operations
 
 paths:
+  /users:
+    get:
+      tags:
+        - Admin
+      summary: List users by role (Admin/Support only)
+      description: Returns a list of active users filtered by role. Only accessible by ADMIN or SUPPORT.
+      operationId: listUsersByRole
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: role
+          in: query
+          required: true
+          description: Role to filter users by
+          schema:
+            type: string
+            enum: [USER, ADMIN, SUPPORT, TRAINER]
+      responses:
+        '200':
+          description: Users retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
   /users/profile:
     get:
       tags:
@@ -138,19 +169,42 @@ components:
           type: string
         role:
           type: string
-          enum: [user, admin]
+          enum: [user, admin, support, trainer]
         created_at:
           type: string
           format: date-time
         last_login:
           type: string
           format: date-time
+        email_verified:
+          type: boolean
         subscription:
           $ref: '#/components/schemas/UserSubscription'
         rewards:
           type: array
           items:
             $ref: '#/components/schemas/UserReward'
+
+    UserList:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              email:
+                type: string
+                format: email
+              first_name:
+                type: string
+              last_name:
+                type: string
+              role:
+                type: string
 
     UserSubscription:
       type: object

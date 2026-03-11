@@ -49,9 +49,9 @@ export const replyToMessage = async (req: AuthRequest, res: Response, next: Next
       return;
     }
 
-    // Cannot reply to closed tickets
-    if (ticket.status === 'CLOSED') {
-      res.status(400).json({ error: 'Cannot reply to a closed message', code: 'INVALID_STATUS' });
+    // Cannot reply to closed or resolved tickets
+    if (ticket.status === 'CLOSED' || ticket.status === 'RESOLVED') {
+      res.status(400).json({ error: 'Cannot reply to a closed or resolved ticket', code: 'INVALID_STATUS' });
       return;
     }
 

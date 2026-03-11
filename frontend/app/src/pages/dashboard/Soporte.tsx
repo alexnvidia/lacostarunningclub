@@ -15,10 +15,10 @@ const STATUS: Record<string, { label: string; color: string }> = {
 export default function Soporte() {
     const { data, isLoading } = useQuery({
         queryKey: queryKeys.tickets.list(),
-        queryFn: () => api.get('/api/messages').then(r => r.data),
+        queryFn: () => api.get('/api/communication/messages').then(r => r.data),
     })
 
-    const tickets = data?.tickets ?? []
+    const tickets = data?.messages ?? []
 
     return (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

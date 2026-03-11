@@ -142,12 +142,14 @@ export const updateMessage = async (req: AuthRequest, res: Response, next: NextF
         error: `Invalid status. Allowed: ${VALID_STATUSES.join(', ')}`,
         code: 'VALIDATION_ERROR',
       });
+      console.log('Invalid status')
       return;
     }
 
     if (assigned_to_user_id !== undefined) {
       if (typeof assigned_to_user_id !== 'string' || !UUID_REGEX.test(assigned_to_user_id)) {
         res.status(400).json({ error: 'assigned_to_user_id must be a valid UUID', code: 'VALIDATION_ERROR' });
+        console.log('Invalid assigned_to_user_id', assigned_to_user_id)
         return;
       }
     }

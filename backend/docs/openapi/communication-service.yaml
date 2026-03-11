@@ -45,8 +45,11 @@ paths:
     get:
       tags:
         - Messages
-      summary: List user messages
-      description: Returns list of messages for authenticated user
+      summary: List messages
+      description: |
+        Returns messages for the authenticated user.
+        - Regular users see only their own tickets.
+        - ADMIN/SUPPORT see all tickets and can filter by assignment.
       operationId: listMessages
       security:
         - BearerAuth: []
@@ -66,6 +69,12 @@ paths:
           schema:
             type: integer
             default: 10
+        - name: assigned_to
+          in: query
+          description: "Filter by assignment (ADMIN/SUPPORT only). `me` = assigned to caller, `unassigned` = no assignee."
+          schema:
+            type: string
+            enum: [me, unassigned]
       responses:
         '200':
           description: Messages retrieved successfully
@@ -259,6 +268,11 @@ components:
           format: date-time
         unread_replies:
           type: integer
+        assigned_to_user_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: ID of the agent assigned to this ticket (only included for ADMIN/SUPPORT)
 
     MessageDetail:
       type: object

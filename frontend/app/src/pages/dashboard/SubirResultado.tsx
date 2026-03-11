@@ -8,8 +8,7 @@ import { queryKeys } from '@/lib/query-keys'
 // Form uses strings to avoid zodResolver coerce issues; convert on submit
 interface FormFields {
     race_date: string
-    distance_km: string
-    duration_min: string
+    distance: string
     race_name: string
     location: string
     surface_type: string
@@ -32,8 +31,7 @@ export default function SubirResultado() {
         mutationFn: (data: FormFields) => {
             const payload = {
                 race_date: data.race_date,
-                distance_km: parseFloat(data.distance_km),
-                duration_min: parseFloat(data.duration_min),
+                distance: parseFloat(data.distance),
                 race_name: data.race_name || undefined,
                 location: data.location || undefined,
                 surface_type: data.surface_type || undefined,
@@ -54,9 +52,9 @@ export default function SubirResultado() {
 
     const onSubmit: SubmitHandler<FormFields> = (data) => mutation.mutate(data)
 
-    const Field = ({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) => (
+    const Field = ({ label, id, error, children }: { label: string; id?: string; error?: string; children: React.ReactNode }) => (
         <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">{label}</label>
+            <label htmlFor={id} className="block text-sm font-medium text-gray-300 mb-1.5">{label}</label>
             {children}
             {error && <p className="text-[#e63946] text-xs mt-1">{error}</p>}
         </div>
@@ -78,39 +76,35 @@ export default function SubirResultado() {
             <form onSubmit={handleSubmit(onSubmit)} className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl p-6 space-y-5">
                 {/* Required */}
                 <div className="grid grid-cols-2 gap-4">
-                    <Field label="Fecha *" error={errors.race_date?.message}>
-                        <input {...register('race_date', { required: 'Requerido' })} type="date" className={inputClass} />
+                    <Field label="Fecha *" id="race_date" error={errors.race_date?.message}>
+                        <input {...register('race_date', { required: 'Requerido' })} id="race_date" type="date" className={inputClass} />
                     </Field>
-                    <Field label="Distancia (km) *" error={errors.distance_km?.message}>
-                        <input {...register('distance_km', { required: 'Requerido', min: { value: 0.1, message: 'Debe ser positivo' } })} type="number" step="0.01" placeholder="10.5" className={inputClass} />
+                    <Field label="Distancia (km) *" id="distance" error={errors.distance?.message}>
+                        <input {...register('distance', { required: 'Requerido', min: { value: 0.1, message: 'Debe ser positivo' } })} id="distance" type="number" step="0.01" placeholder="10.5" className={inputClass} />
                     </Field>
                 </div>
-
-                <Field label="Duración (minutos) *" error={errors.duration_min?.message}>
-                    <input {...register('duration_min', { required: 'Requerido', min: { value: 1, message: 'Debe ser positivo' } })} type="number" step="0.5" placeholder="45" className={inputClass} />
-                </Field>
 
                 {/* Optional */}
                 <div className="border-t border-[#2a2a2a] pt-5">
                     <p className="text-xs text-gray-500 uppercase tracking-wider mb-4">Datos opcionales</p>
                     <div className="space-y-4">
-                        <Field label="Nombre de la carrera">
-                            <input {...register('race_name')} placeholder="p.ej. Carrera Popular Fuengirola" className={inputClass} />
+                        <Field label="Nombre de la carrera" id="race_name">
+                            <input {...register('race_name')} id="race_name" placeholder="p.ej. Carrera Popular Fuengirola" className={inputClass} />
                         </Field>
                         <div className="grid grid-cols-2 gap-4">
-                            <Field label="Tiempo oficial (hh:mm:ss)">
-                                <input {...register('time')} placeholder="0:45:30" className={inputClass} />
+                            <Field label="Tiempo oficial (hh:mm:ss)" id="time">
+                                <input {...register('time')} id="time" placeholder="0:45:30" className={inputClass} />
                             </Field>
-                            <Field label="Ritmo (min/km)">
-                                <input {...register('pace')} placeholder="4:33" className={inputClass} />
+                            <Field label="Ritmo (min/km)" id="pace">
+                                <input {...register('pace')} id="pace" placeholder="4:33" className={inputClass} />
                             </Field>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
-                            <Field label="Ubicación">
-                                <input {...register('location')} placeholder="Fuengirola" className={inputClass} />
+                            <Field label="Ubicación" id="location">
+                                <input {...register('location')} id="location" placeholder="Fuengirola" className={inputClass} />
                             </Field>
-                            <Field label="Superficie">
-                                <select {...register('surface_type')} className={inputClass}>
+                            <Field label="Superficie" id="surface_type">
+                                <select {...register('surface_type')} id="surface_type" className={inputClass}>
                                     <option value="">Seleccionar</option>
                                     <option value="road">Asfalto</option>
                                     <option value="trail">Trail</option>
@@ -120,11 +114,11 @@ export default function SubirResultado() {
                             </Field>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
-                            <Field label="FC media (ppm)">
-                                <input {...register('avg_heart_rate')} type="number" placeholder="155" className={inputClass} />
+                            <Field label="FC media (ppm)" id="avg_heart_rate">
+                                <input {...register('avg_heart_rate')} id="avg_heart_rate" type="number" placeholder="155" className={inputClass} />
                             </Field>
-                            <Field label="Desnivel (m)">
-                                <input {...register('elevation_gain')} type="number" placeholder="120" className={inputClass} />
+                            <Field label="Desnivel (m)" id="elevation_gain">
+                                <input {...register('elevation_gain')} id="elevation_gain" type="number" placeholder="120" className={inputClass} />
                             </Field>
                         </div>
                     </div>
@@ -136,7 +130,7 @@ export default function SubirResultado() {
                         <p className="text-white text-sm font-medium">Resultado público</p>
                         <p className="text-gray-500 text-xs">Visible en el feed del club</p>
                     </div>
-                    <input {...register('is_public')} type="checkbox" className="w-5 h-5 accent-[#e63946]" />
+                    <input {...register('is_public')} id="is_public" type="checkbox" className="w-5 h-5 accent-[#e63946]" />
                 </div>
 
                 {mutation.error && (

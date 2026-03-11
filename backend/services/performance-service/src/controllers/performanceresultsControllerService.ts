@@ -35,6 +35,7 @@ export const uploadRaceResult = async (req: AuthRequest, res: Response, next: Ne
       is_public,
     } = req.body;
 
+
     // --- Validate required fields ---
     if (!race_date) {
       res.status(400).json({ error: 'race_date is required', code: 'VALIDATION_ERROR' });

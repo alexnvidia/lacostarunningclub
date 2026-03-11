@@ -13,6 +13,7 @@ export const listProducts = async (req: Request, res: Response, next: NextFuncti
     const colorParam = req.query.color as string | undefined;
     const categoryParam = req.query.category as string | undefined;
     const activeParam = req.query.active as string | undefined;
+    const searchParam = req.query.search as string | undefined;
 
     // Parse multi-value params (comma-separated)
     const sizes = sizeParam ? sizeParam.split(',').map(s => s.trim().toUpperCase()).filter(Boolean) : [];
@@ -34,6 +35,11 @@ export const listProducts = async (req: Request, res: Response, next: NextFuncti
 
     // Build where clause
     const where: any = { active };
+
+    // Filter by name (partial, case-insensitive search)
+    if (searchParam && searchParam.trim()) {
+      where.name = { contains: searchParam.trim(), mode: 'insensitive' };
+    }
 
     // Filter by category name (case-insensitive), supports multiple values
     if (categories.length > 0) {
