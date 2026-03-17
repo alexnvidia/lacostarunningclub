@@ -144,6 +144,37 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /users/{userId}/rewards:
+    get:
+      tags:
+        - Admin
+      summary: List rewards for a specific user (Admin only)
+      description: Returns all milestone rewards for a given user, including unlocked and claimed status. Only accessible by ADMIN.
+      operationId: listRewards
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: UUID of the user whose rewards to fetch
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Rewards retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRewardsList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
 components:
   securitySchemes:
     BearerAuth:
@@ -229,6 +260,19 @@ components:
         unlocked_at:
           type: string
           format: date-time
+
+    UserRewardsList:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        months_active:
+          type: integer
+        rewards:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserReward'
 
     UpdateProfileRequest:
       type: object

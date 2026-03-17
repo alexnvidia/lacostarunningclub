@@ -113,6 +113,27 @@ if (USE_MOCK) {
     });
   });
 
+  // GET /users/:userId/rewards - List rewards for a user (Admin, MOCK)
+  app.get('/users/:userId/rewards', (req: Request, res: Response) => {
+    const { userId } = req.params;
+    const userRole = req.headers['x-user-role'] as string;
+    if (userRole !== 'admin' && userRole !== 'ADMIN') {
+      res.status(403).json({ error: 'Forbidden - Admin access required', code: 'FORBIDDEN' });
+      return;
+    }
+    console.log(`🏅 List rewards for user: ${userId}`);
+    res.json({
+      user_id: userId,
+      months_active: 7,
+      rewards: [
+        { milestone_months: 3, unlocked: true, claimed: true, unlocked_at: new Date().toISOString() },
+        { milestone_months: 6, unlocked: true, claimed: false, unlocked_at: new Date().toISOString() },
+        { milestone_months: 9, unlocked: false, claimed: false, unlocked_at: null },
+        { milestone_months: 12, unlocked: false, claimed: false, unlocked_at: null },
+      ]
+    });
+  });
+
   // GET /:id - Get user by ID (Admin only)
   app.get('/users/:id', (req: Request, res: Response) => {
     const { id } = req.params;
@@ -182,6 +203,11 @@ if (USE_MOCK) {
     //register claim reward
     app.post('/users/rewards/:milestone/claim', (req: Request, res: Response, next: NextFunction) => {
       usersrewardsmilestoneclaimControllerService.claimReward(req, res, next);
+    });
+
+    //register list rewards for a user (admin only)
+    app.get('/users/:userId/rewards', (req: Request, res: Response, next: NextFunction) => {
+      usersrewardsmilestoneclaimControllerService.listRewards(req, res, next);
     });
 
     //register get user by id (admin only)

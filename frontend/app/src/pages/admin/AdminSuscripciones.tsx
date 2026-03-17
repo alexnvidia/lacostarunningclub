@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { useState } from 'react'
-import { ArrowLeft, Star, PlusCircle } from 'lucide-react'
+import { ArrowLeft, Star, PlusCircle, Trophy, Lock, Gift, CheckCircle2 } from 'lucide-react'
 import api from '@/lib/api'
 import { queryKeys } from '@/lib/query-keys'
 import { formatDateTime } from '@/lib/utils'
@@ -30,6 +30,19 @@ interface SubForm {
     external_id?: string
 }
 
+interface UserReward {
+    milestone_months: number
+    unlocked: boolean
+    claimed: boolean
+    unlocked_at: string | null
+}
+
+interface UserRewardsResponse {
+    user_id: string
+    months_active: number
+    rewards: UserReward[]
+}
+
 const STATUS_COLORS: Record<string, string> = {
     ACTIVE: 'bg-green-500/10 text-green-400',
     CANCELLED: 'bg-red-500/10 text-red-400',
@@ -37,6 +50,104 @@ const STATUS_COLORS: Record<string, string> = {
     PENDING: 'bg-yellow-500/10 text-yellow-400',
 }
 
+// ── Rewards badge + expandable panel ────────────────────────────────────────
+function RewardsBadge({ userId }: { userId: string }) {
+    const [open, setOpen] = useState(false)
+
+    const { data, isLoading } = useQuery<UserRewardsResponse>({
+        queryKey: queryKeys.admin.userRewards(userId),
+        queryFn: () => api.get(`/api/users/${userId}/rewards`).then(r => r.data),
+        staleTime: 5 * 60 * 1000,
+    })
+
+    if (isLoading) {
+        return <div className="w-5 h-5 rounded-full bg-[#2a2a2a] animate-pulse" />
+    }
+
+    if (!data) return null
+
+    const hasClaimed = data.rewards.some(r => r.claimed)
+    const hasPending = !hasClaimed && data.rewards.some(r => r.unlocked && !r.claimed)
+
+    // Hide trophy if no rewards are available at all
+    if (!hasClaimed && !hasPending) return null
+
+    const iconColor = hasClaimed
+        ? 'text-yellow-400 hover:text-yellow-300'
+        : 'text-gray-500 hover:text-gray-400'
+
+    const tooltipText = hasClaimed
+        ? 'Tiene rewards reclamados'
+        : 'Tiene rewards pendientes de reclamar'
+
+    return (
+        <div className="relative">
+            <button
+                onClick={() => setOpen(v => !v)}
+                title={tooltipText}
+                className={`transition-colors ${iconColor}`}
+            >
+                <Trophy className="w-4 h-4" />
+            </button>
+
+            {open && (
+                <div className="absolute right-0 top-7 z-50 w-72 bg-[#111] border border-[#2a2a2a] rounded-xl shadow-2xl p-4">
+                    <p className="text-xs text-gray-500 mb-3 font-mono truncate">{userId}</p>
+                    <p className="text-xs text-gray-400 mb-3">
+                        <span className="text-white font-semibold">{data.months_active}</span> meses activo
+                    </p>
+                    <div className="space-y-2">
+                        {data.rewards.map(r => {
+                            const label = `${r.milestone_months} meses`
+                            if (r.claimed) {
+                                return (
+                                    <div key={r.milestone_months} className="flex items-center justify-between">
+                                        <span className="text-xs text-gray-300 flex items-center gap-1.5">
+                                            <CheckCircle2 className="w-3.5 h-3.5 text-yellow-400" /> {label}
+                                        </span>
+                                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-400 font-medium">
+                                            Reclamado
+                                        </span>
+                                    </div>
+                                )
+                            }
+                            if (r.unlocked) {
+                                return (
+                                    <div key={r.milestone_months} className="flex items-center justify-between">
+                                        <span className="text-xs text-gray-300 flex items-center gap-1.5">
+                                            <Gift className="w-3.5 h-3.5 text-blue-400" /> {label}
+                                        </span>
+                                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 font-medium">
+                                            Pendiente
+                                        </span>
+                                    </div>
+                                )
+                            }
+                            return (
+                                <div key={r.milestone_months} className="flex items-center justify-between opacity-40">
+                                    <span className="text-xs text-gray-500 flex items-center gap-1.5">
+                                        <Lock className="w-3.5 h-3.5" /> {label}
+                                    </span>
+                                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-500/10 text-gray-500 font-medium">
+                                        Bloqueado
+                                    </span>
+                                </div>
+                            )
+                        })}
+                    </div>
+                    <button
+                        onClick={() => setOpen(false)}
+                        className="mt-3 text-[10px] text-gray-600 hover:text-gray-400 transition-colors"
+                    >
+                        Cerrar
+                    </button>
+                </div>
+            )}
+        </div>
+    )
+}
+
+// ── Main page ────────────────────────────────────────────────────────────────
 export default function AdminSuscripciones() {
     const [page, setPage] = useState(1)
     const [showForm, setShowForm] = useState(false)
@@ -56,7 +167,6 @@ export default function AdminSuscripciones() {
             api.post(`/api/admin/subscriptions?user_id=${form.user_id}`, {
                 status: form.status,
                 start_date: form.start_date,
-                // Solo enviamos external_id si el usuario ha rellenado el campo
                 ...(form.external_id?.trim() && { external_id: form.external_id.trim() }),
             }).then(r => r.data),
         onSuccess: () => {
@@ -149,9 +259,11 @@ export default function AdminSuscripciones() {
             )}
 
             {/* List */}
-            <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl overflow-hidden">
-                <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-4 px-6 py-3 border-b border-[#2a2a2a] text-xs text-gray-500 uppercase tracking-wider">
+            <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl">
+                {/* Header row — added Rewards column */}
+                <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_40px] gap-4 px-6 py-3 border-b border-[#2a2a2a] text-xs text-gray-500 uppercase tracking-wider">
                     <span>User ID</span><span>Estado</span><span>Inicio</span><span>Proveedor</span><span>Ext. ID</span>
+                    <span title="Rewards"><Trophy className="w-3.5 h-3.5" /></span>
                 </div>
 
                 {isLoading ? (
@@ -163,7 +275,7 @@ export default function AdminSuscripciones() {
                 ) : (
                     <div className="divide-y divide-[#2a2a2a]">
                         {data!.subscriptions.map(sub => (
-                            <div key={sub.id} className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-4 items-center px-6 py-4">
+                            <div key={sub.id} className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_40px] gap-4 items-center px-6 py-4">
                                 <p className="text-gray-400 text-xs truncate font-mono">{sub.user_id}</p>
                                 <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium w-fit ${STATUS_COLORS[sub.status] ?? 'bg-gray-500/10 text-gray-400'}`}>
                                     {sub.status}
@@ -171,6 +283,8 @@ export default function AdminSuscripciones() {
                                 <p className="text-gray-400 text-xs">{formatDateTime(sub.start_date)}</p>
                                 <p className="text-gray-400 text-xs capitalize">{sub.provider}</p>
                                 <p className="text-gray-600 text-xs font-mono truncate">{sub.external_id ?? '—'}</p>
+                                {/* Rewards badge */}
+                                <RewardsBadge userId={sub.user_id} />
                             </div>
                         ))}
                     </div>

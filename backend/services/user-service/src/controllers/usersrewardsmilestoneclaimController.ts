@@ -4,3 +4,7 @@ import { Request, Response, NextFunction } from 'express';
 export function claimReward(req: Request, res: Response, next: NextFunction) {
     service.claimReward(req, res, next);
 }
+
+export function listRewards(req: Request, res: Response, next: NextFunction) {
+    service.listRewards(req, res, next);
+}

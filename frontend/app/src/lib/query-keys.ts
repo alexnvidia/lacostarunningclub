@@ -1,6 +1,7 @@
 export const queryKeys = {
     user: {
         profile: () => ['user', 'profile'] as const,
+        rewards: () => ['user', 'rewards'] as const,
     },
     products: {
         list: (filters?: Record<string, unknown>) => ['products', 'list', filters] as const,
@@ -32,5 +33,6 @@ export const queryKeys = {
         tickets: (status?: string, assignedTo?: string) => ['admin', 'tickets', status, assignedTo] as const,
         products: (search?: string, active?: string, page?: number) => ['admin', 'products', search, active, page] as const,
         productDetail: (id: string) => ['admin', 'products', id] as const,
+        userRewards: (userId: string) => ['admin', 'userRewards', userId] as const,
     },
 } as const
