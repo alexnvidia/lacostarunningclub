@@ -4,6 +4,7 @@ import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute'
 import { AdminRoute } from '@/components/layout/AdminRoute'
+import { PwaUpdatePrompt } from '@/components/ui/PwaUpdatePrompt'
 
 // Lazy pages — public
 const Home = lazy(() => import('@/pages/public/Home'))
@@ -62,6 +63,7 @@ function PublicLayout() {
 
 export default function App() {
   return (
+    <>
     <Suspense fallback={<PageLoader />}>
       <Routes>
         {/* Public routes */}
@@ -106,5 +108,7 @@ export default function App() {
         </Route>
       </Routes>
     </Suspense>
+    <PwaUpdatePrompt />
+    </>
   )
 }
