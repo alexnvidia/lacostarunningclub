@@ -19,7 +19,7 @@ export function PwaUpdatePrompt() {
       role="alert"
       aria-live="polite"
       className="fixed bottom-4 right-4 z-50 flex items-center gap-3 rounded-xl
-                 bg-slate-800 px-4 py-3 text-sm text-white shadow-2xl ring-1 ring-white/10
+                 bg-slate-800 px-4 py-3 text-sm text-[var(--t-fg)] shadow-2xl ring-1 ring-white/10
                  animate-in slide-in-from-bottom-4"
     >
       <span className="flex items-center gap-2">
@@ -35,7 +35,7 @@ export function PwaUpdatePrompt() {
       </button>
       <button
         aria-label="Cerrar notificación"
-        className="ml-1 text-slate-400 transition-colors hover:text-white"
+        className="ml-1 text-slate-400 transition-colors hover:text-[var(--t-fg)]"
         onClick={() => setNeedRefresh(false)}
       >
         ✕

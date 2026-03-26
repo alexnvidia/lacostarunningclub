@@ -46,7 +46,7 @@ const STATUS_COLORS: Record<string, string> = {
     open: 'bg-green-500/10 text-green-400',
     in_progress: 'bg-yellow-500/10 text-yellow-400',
     resolved: 'bg-blue-500/10 text-blue-400',
-    closed: 'bg-gray-500/10 text-gray-400',
+    closed: 'bg-gray-500/10 text-[var(--t-fg-muted)]',
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -112,26 +112,26 @@ export default function AdminTickets() {
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
-            <Link to="/admin" className="flex items-center gap-1 text-gray-400 hover:text-white text-sm mb-8 transition-colors">
+            <Link to="/admin" className="flex items-center gap-1 text-[var(--t-fg-muted)] hover:text-[var(--t-fg)] text-sm mb-8 transition-colors">
                 <ArrowLeft className="w-4 h-4" /> Panel Admin
             </Link>
 
             <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
                 <div>
-                    <p className="text-[#e63946] text-sm font-medium uppercase tracking-wider mb-1">Admin</p>
-                    <h1 className="text-3xl font-black text-white flex items-center gap-2">
+                    <p className="text-[var(--t-accent)] text-sm font-medium uppercase tracking-wider mb-1">Admin</p>
+                    <h1 className="text-3xl font-black text-[var(--t-fg)] flex items-center gap-2">
                         <MessageSquare className="w-7 h-7" /> Tickets de soporte
                     </h1>
                 </div>
 
                 <div className="flex flex-col gap-2 items-end">
                     {/* Status filter */}
-                    <div className="flex gap-1 bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-1">
+                    <div className="flex gap-1 bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-xl p-1">
                         {STATUS_OPTIONS.map(s => (
                             <button
                                 key={s || 'all'}
                                 onClick={() => setFilterStatus(s)}
-                                className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${filterStatus === s ? 'bg-[#e63946] text-white' : 'text-gray-400 hover:text-white'
+                                className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${filterStatus === s ? 'bg-[var(--t-accent)] text-[var(--t-fg)]' : 'text-[var(--t-fg-muted)] hover:text-[var(--t-fg)]'
                                     }`}
                             >
                                 {s ? STATUS_LABELS[s] : 'Todos'}
@@ -140,12 +140,12 @@ export default function AdminTickets() {
                     </div>
 
                     {/* Assignment filter */}
-                    <div className="flex gap-1 bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-1">
+                    <div className="flex gap-1 bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-xl p-1">
                         {ASSIGN_FILTER_OPTIONS.map(opt => (
                             <button
                                 key={opt.value || 'all-assign'}
                                 onClick={() => setFilterAssigned(opt.value)}
-                                className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${filterAssigned === opt.value ? 'bg-[#e63946] text-white' : 'text-gray-400 hover:text-white'
+                                className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${filterAssigned === opt.value ? 'bg-[var(--t-accent)] text-[var(--t-fg)]' : 'text-[var(--t-fg-muted)] hover:text-[var(--t-fg)]'
                                     }`}
                             >
                                 {opt.label}
@@ -155,8 +155,8 @@ export default function AdminTickets() {
                 </div>
             </div>
 
-            <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl overflow-hidden">
-                <div className="grid grid-cols-[3fr_1fr_1fr_1fr_1.5fr_auto] gap-4 px-6 py-3 border-b border-[#2a2a2a] text-xs text-gray-500 uppercase tracking-wider">
+            <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-2xl overflow-hidden">
+                <div className="grid grid-cols-[3fr_1fr_1fr_1fr_1.5fr_auto] gap-4 px-6 py-3 border-b border-[var(--t-border)] text-xs text-[var(--t-fg-dimmed)] uppercase tracking-wider">
                     <span>Asunto</span><span>Categoría</span><span>Prioridad</span><span>Estado</span><span>Agente</span><span>Ver</span>
                 </div>
 
@@ -165,19 +165,19 @@ export default function AdminTickets() {
                         {[...Array(6)].map((_, i) => <div key={i} className="h-14 bg-[#2a2a2a] rounded animate-pulse" />)}
                     </div>
                 ) : tickets.length === 0 ? (
-                    <p className="text-center py-16 text-gray-500">No hay tickets</p>
+                    <p className="text-center py-16 text-[var(--t-fg-dimmed)]">No hay tickets</p>
                 ) : (
-                    <div className="divide-y divide-[#2a2a2a]">
+                    <div className="divide-y divide-[var(--t-border)]">
                         {tickets.map(ticket => (
                             <div key={ticket.id} className="grid grid-cols-[3fr_1fr_1fr_1fr_1.5fr_auto] gap-4 items-center px-6 py-4">
                                 <div>
-                                    <p className="text-white text-sm font-medium line-clamp-1">{ticket.subject}</p>
-                                    <p className="text-gray-600 text-xs mt-0.5">{formatDateTime(ticket.created_at)}</p>
+                                    <p className="text-[var(--t-fg)] text-sm font-medium line-clamp-1">{ticket.subject}</p>
+                                    <p className="text-[var(--t-fg-dimmed)] text-xs mt-0.5">{formatDateTime(ticket.created_at)}</p>
                                 </div>
-                                <p className="text-gray-400 text-xs capitalize">{ticket.category?.replace('_', ' ') ?? '—'}</p>
+                                <p className="text-[var(--t-fg-muted)] text-xs capitalize">{ticket.category?.replace('_', ' ') ?? '—'}</p>
                                 <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium w-fit ${ticket.priority === 'urgent' ? 'bg-red-500/10 text-red-400' :
                                     ticket.priority === 'high' ? 'bg-orange-500/10 text-orange-400' :
-                                        'bg-gray-500/10 text-gray-400'
+                                        'bg-gray-500/10 text-[var(--t-fg-muted)]'
                                     }`}>
                                     {ticket.priority}
                                 </span>
@@ -189,7 +189,7 @@ export default function AdminTickets() {
                                     style={{ backgroundImage: 'none' }}
                                 >
                                     {STATUS_OPTIONS.filter(Boolean).map(s => (
-                                        <option key={s} value={s} className="bg-[#1a1a1a] text-white text-xs">
+                                        <option key={s} value={s} className="bg-[var(--t-bg2)] text-[var(--t-fg)] text-xs">
                                             {STATUS_LABELS[s]}
                                         </option>
                                     ))}
@@ -200,7 +200,7 @@ export default function AdminTickets() {
                                     {ticket.assigned_to_user_id ? (
                                         <UserCheck className="w-3 h-3 text-green-400 shrink-0" />
                                     ) : (
-                                        <UserX className="w-3 h-3 text-gray-600 shrink-0" />
+                                        <UserX className="w-3 h-3 text-[var(--t-fg-dimmed)] shrink-0" />
                                     )}
                                     {agentOptions.length > 0 ? (
                                         <select
@@ -209,18 +209,18 @@ export default function AdminTickets() {
                                                 id: ticket.id,
                                                 assigned_to_user_id: e.target.value || null,
                                             })}
-                                            className="text-[10px] bg-transparent text-gray-400 outline-none cursor-pointer border-0 min-w-0 truncate max-w-[120px]"
+                                            className="text-[10px] bg-transparent text-[var(--t-fg-muted)] outline-none cursor-pointer border-0 min-w-0 truncate max-w-[120px]"
                                             style={{ backgroundImage: 'none' }}
                                             title={getAgentLabel(ticket.assigned_to_user_id) ?? '—'}
                                         >
                                             {agentOptions.map(agent => (
-                                                <option key={agent.id} value={agent.id} className="bg-[#1a1a1a] text-white">
+                                                <option key={agent.id} value={agent.id} className="bg-[var(--t-bg2)] text-[var(--t-fg)]">
                                                     {agent.id === me?.id ? '★ Yo' : `${agent.first_name}${agent.last_name ? ' ' + agent.last_name : ''}`}
                                                 </option>
                                             ))}
                                         </select>
                                     ) : (
-                                        <span className="text-[10px] text-gray-600">
+                                        <span className="text-[10px] text-[var(--t-fg-dimmed)]">
                                             {getAgentLabel(ticket.assigned_to_user_id) ?? '—'}
                                         </span>
                                     )}
@@ -228,7 +228,7 @@ export default function AdminTickets() {
 
                                 <Link
                                     to={`/soporte/${ticket.id}`}
-                                    className="p-1.5 text-gray-500 hover:text-[#e63946] transition-colors"
+                                    className="p-1.5 text-[var(--t-fg-dimmed)] hover:text-[var(--t-accent)] transition-colors"
                                     title="Ver conversación"
                                 >
                                     <ChevronRight className="w-4 h-4" />

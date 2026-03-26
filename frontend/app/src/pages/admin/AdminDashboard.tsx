@@ -36,7 +36,7 @@ const STATUS_COLORS: Record<string, string> = {
     SHIPPED: 'bg-purple-500/10 text-purple-400',
     DELIVERED: 'bg-green-500/10 text-green-400',
     CANCELLED: 'bg-red-500/10 text-red-400',
-    RETURNED: 'bg-gray-500/10 text-gray-400',
+    RETURNED: 'bg-gray-500/10 text-[var(--t-fg-muted)]',
 }
 
 export default function AdminDashboard() {
@@ -60,19 +60,19 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-between mb-8">
                 <div>
                     <div className="flex items-center gap-2 mb-1">
-                        <Shield className="w-5 h-5 text-[#e63946]" />
-                        <p className="text-[#e63946] text-sm font-medium uppercase tracking-wider">Panel Admin</p>
+                        <Shield className="w-5 h-5 text-[var(--t-accent)]" />
+                        <p className="text-[var(--t-accent)] text-sm font-medium uppercase tracking-wider">Panel Admin</p>
                     </div>
-                    <h1 className="text-3xl font-black text-white">Dashboard</h1>
+                    <h1 className="text-3xl font-black text-[var(--t-fg)]">Dashboard</h1>
                 </div>
-                <div className="flex gap-1 bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-1">
+                <div className="flex gap-1 bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-xl p-1">
                     {PERIODS.map(p => (
                         <button
                             key={p.value}
                             onClick={() => setPeriod(p.value)}
                             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${period === p.value
-                                ? 'bg-[#e63946] text-white'
-                                : 'text-gray-400 hover:text-white'
+                                ? 'bg-[var(--t-accent)] text-[var(--t-fg)]'
+                                : 'text-[var(--t-fg-muted)] hover:text-[var(--t-fg)]'
                                 }`}
                         >
                             {p.label}
@@ -84,15 +84,15 @@ export default function AdminDashboard() {
             {/* KPIs */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 {kpis.map((kpi) => (
-                    <div key={kpi.label} className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl p-5">
+                    <div key={kpi.label} className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-2xl p-5">
                         <div className={`w-10 h-10 ${kpi.bg} rounded-xl flex items-center justify-center mb-3`}>
                             <kpi.icon className={`w-5 h-5 ${kpi.color}`} />
                         </div>
                         {isLoading
                             ? <div className="h-8 w-24 bg-[#2a2a2a] rounded animate-pulse mb-1" />
-                            : <p className="text-2xl font-black text-white">{kpi.value}</p>
+                            : <p className="text-2xl font-black text-[var(--t-fg)]">{kpi.value}</p>
                         }
-                        <p className="text-gray-500 text-xs mt-1">{kpi.label}</p>
+                        <p className="text-[var(--t-fg-dimmed)] text-xs mt-1">{kpi.label}</p>
                     </div>
                 ))}
             </div>
@@ -109,27 +109,27 @@ export default function AdminDashboard() {
                     <Link
                         key={nav.to}
                         to={nav.to}
-                        className="bg-[#1a1a1a] border border-[#2a2a2a] hover:border-[#e63946]/40 rounded-xl p-4 flex items-center gap-3 transition-all group"
+                        className="bg-[var(--t-bg2)] border border-[var(--t-border)] hover:border-[var(--t-accent)]/40 rounded-xl p-4 flex items-center gap-3 transition-all group"
                     >
-                        <nav.icon className="w-4 h-4 text-gray-500 group-hover:text-[#e63946] transition-colors" />
-                        <span className="text-sm text-gray-300 group-hover:text-white transition-colors">{nav.label}</span>
-                        <ChevronRight className="w-3.5 h-3.5 text-gray-600 ml-auto group-hover:text-[#e63946] transition-colors" />
+                        <nav.icon className="w-4 h-4 text-[var(--t-fg-dimmed)] group-hover:text-[var(--t-accent)] transition-colors" />
+                        <span className="text-sm text-[var(--t-fg)] group-hover:text-[var(--t-fg)] transition-colors">{nav.label}</span>
+                        <ChevronRight className="w-3.5 h-3.5 text-[var(--t-fg-dimmed)] ml-auto group-hover:text-[var(--t-accent)] transition-colors" />
                     </Link>
                 ))}
             </div>
 
             {/* Recent orders */}
-            <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl overflow-hidden">
-                <div className="px-6 py-4 border-b border-[#2a2a2a] flex items-center justify-between">
-                    <h2 className="text-white font-bold">Últimos pedidos</h2>
-                    <Link to="/admin/pedidos" className="text-xs text-[#e63946] hover:underline">Ver todos</Link>
+            <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-2xl overflow-hidden">
+                <div className="px-6 py-4 border-b border-[var(--t-border)] flex items-center justify-between">
+                    <h2 className="text-[var(--t-fg)] font-bold">Últimos pedidos</h2>
+                    <Link to="/admin/pedidos" className="text-xs text-[var(--t-accent)] hover:underline">Ver todos</Link>
                 </div>
                 {isLoading ? (
                     <div className="p-6 space-y-3">
                         {[...Array(4)].map((_, i) => <div key={i} className="h-10 bg-[#2a2a2a] rounded animate-pulse" />)}
                     </div>
                 ) : (
-                    <div className="divide-y divide-[#2a2a2a]">
+                    <div className="divide-y divide-[var(--t-border)]">
                         {(data?.recent_orders ?? []).map(order => (
                             <Link
                                 key={order.id}
@@ -137,20 +137,20 @@ export default function AdminDashboard() {
                                 className="flex items-center justify-between px-6 py-4 hover:bg-[#2a2a2a]/50 transition-colors group"
                             >
                                 <div className="min-w-0">
-                                    <p className="text-white text-sm font-medium">{order.order_number}</p>
-                                    <p className="text-gray-500 text-xs mt-0.5">{order.user_name} · {formatDateTime(order.order_date)}</p>
+                                    <p className="text-[var(--t-fg)] text-sm font-medium">{order.order_number}</p>
+                                    <p className="text-[var(--t-fg-dimmed)] text-xs mt-0.5">{order.user_name} · {formatDateTime(order.order_date)}</p>
                                 </div>
                                 <div className="flex items-center gap-3 ml-4 shrink-0">
-                                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[order.status] ?? 'bg-gray-500/10 text-gray-400'}`}>
+                                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[order.status] ?? 'bg-gray-500/10 text-[var(--t-fg-muted)]'}`}>
                                         {order.status}
                                     </span>
-                                    <span className="text-white text-sm font-semibold">{order.total.toFixed(2)} €</span>
-                                    <ChevronRight className="w-3.5 h-3.5 text-gray-600 group-hover:text-[#e63946]" />
+                                    <span className="text-[var(--t-fg)] text-sm font-semibold">{order.total.toFixed(2)} €</span>
+                                    <ChevronRight className="w-3.5 h-3.5 text-[var(--t-fg-dimmed)] group-hover:text-[var(--t-accent)]" />
                                 </div>
                             </Link>
                         ))}
                         {(data?.recent_orders ?? []).length === 0 && (
-                            <p className="text-center py-10 text-gray-500 text-sm">No hay pedidos recientes</p>
+                            <p className="text-center py-10 text-[var(--t-fg-dimmed)] text-sm">No hay pedidos recientes</p>
                         )}
                     </div>
                 )}

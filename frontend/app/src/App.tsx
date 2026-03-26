@@ -39,10 +39,10 @@ const AdminProductos = lazy(() => import('@/pages/admin/AdminProductos'))
 
 function PageLoader() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0d0d0d]">
+    <div className="min-h-screen flex items-center justify-center bg-[var(--t-bg)]">
       <div className="flex flex-col items-center gap-4">
-        <div className="w-8 h-8 rounded-full border-2 border-[#e63946] border-t-transparent animate-spin" />
-        <p className="text-gray-500 text-sm">Cargando...</p>
+        <div className="w-8 h-8 rounded-full border-2 border-[var(--t-accent)] border-t-transparent animate-spin" />
+        <p className="text-[var(--t-fg-dimmed)] text-sm">Cargando...</p>
       </div>
     </div>
   )

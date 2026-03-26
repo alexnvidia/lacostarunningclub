@@ -47,29 +47,29 @@ export default function NuevoTicket() {
 
     const onSubmit: SubmitHandler<FormFields> = (data) => mutation.mutate(data)
 
-    const inputClass = 'w-full bg-[#0d0d0d] border border-[#2a2a2a] focus:border-[#e63946] rounded-lg px-4 py-2.5 text-white placeholder-gray-600 outline-none text-sm transition-colors'
+    const inputClass = 'w-full bg-[var(--t-bg)] border border-[var(--t-border)] focus:border-[var(--t-accent)] rounded-lg px-4 py-2.5 text-[var(--t-fg)] placeholder-[var(--t-fg-dimmed)] outline-none text-sm transition-colors'
 
     const Field = ({ label, id, error, children }: { label: string; id: string; error?: string; children: React.ReactNode }) => (
         <div>
-            <label htmlFor={id} className="block text-sm font-medium text-gray-300 mb-1.5">{label}</label>
+            <label htmlFor={id} className="block text-sm font-medium text-[var(--t-fg)] mb-1.5">{label}</label>
             {children}
-            {error && <p className="text-[#e63946] text-xs mt-1">{error}</p>}
+            {error && <p className="text-[var(--t-accent)] text-xs mt-1">{error}</p>}
         </div>
     )
 
     return (
         <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12">
-            <Link to="/soporte" className="flex items-center gap-1 text-gray-400 hover:text-white text-sm mb-8 transition-colors">
+            <Link to="/soporte" className="flex items-center gap-1 text-[var(--t-fg-muted)] hover:text-[var(--t-fg)] text-sm mb-8 transition-colors">
                 <ArrowLeft className="w-4 h-4" /> Volver a soporte
             </Link>
 
             <div className="mb-8">
-                <p className="text-[#e63946] text-sm font-medium uppercase tracking-wider mb-2">Ayuda</p>
-                <h1 className="text-3xl font-black text-white">Nuevo ticket</h1>
-                <p className="text-gray-500 text-sm mt-2">Cuéntanos en qué podemos ayudarte. Te responderemos lo antes posible.</p>
+                <p className="text-[var(--t-accent)] text-sm font-medium uppercase tracking-wider mb-2">Ayuda</p>
+                <h1 className="text-3xl font-black text-[var(--t-fg)]">Nuevo ticket</h1>
+                <p className="text-[var(--t-fg-dimmed)] text-sm mt-2">Cuéntanos en qué podemos ayudarte. Te responderemos lo antes posible.</p>
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl p-6 space-y-5">
+            <form onSubmit={handleSubmit(onSubmit)} className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-2xl p-6 space-y-5">
 
                 <Field label="Asunto *" id="subject" error={errors.subject?.message}>
                     <input
@@ -114,15 +114,15 @@ export default function NuevoTicket() {
                 </Field>
 
                 {mutation.isError && (
-                    <div className="bg-[#e63946]/10 border border-[#e63946]/20 rounded-lg px-4 py-3">
-                        <p className="text-[#e63946] text-sm">Error al enviar el ticket. Inténtalo de nuevo.</p>
+                    <div className="bg-[var(--t-accent)]/10 border border-[var(--t-accent)]/20 rounded-lg px-4 py-3">
+                        <p className="text-[var(--t-accent)] text-sm">Error al enviar el ticket. Inténtalo de nuevo.</p>
                     </div>
                 )}
 
                 <button
                     type="submit"
                     disabled={mutation.isPending}
-                    className="w-full bg-[#e63946] hover:bg-[#c1121f] disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+                    className="w-full bg-[var(--t-accent)] hover:bg-[var(--t-accent-hover)] disabled:opacity-50 text-[var(--t-fg)] font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
                 >
                     {mutation.isPending
                         ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

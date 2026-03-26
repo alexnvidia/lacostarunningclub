@@ -54,26 +54,26 @@ export default function SubirResultado() {
 
     const Field = ({ label, id, error, children }: { label: string; id?: string; error?: string; children: React.ReactNode }) => (
         <div>
-            <label htmlFor={id} className="block text-sm font-medium text-gray-300 mb-1.5">{label}</label>
+            <label htmlFor={id} className="block text-sm font-medium text-[var(--t-fg)] mb-1.5">{label}</label>
             {children}
-            {error && <p className="text-[#e63946] text-xs mt-1">{error}</p>}
+            {error && <p className="text-[var(--t-accent)] text-xs mt-1">{error}</p>}
         </div>
     )
 
-    const inputClass = "w-full bg-[#0d0d0d] border border-[#2a2a2a] focus:border-[#e63946] rounded-lg px-4 py-2.5 text-white placeholder-gray-600 outline-none text-sm transition-colors"
+    const inputClass = "w-full bg-[var(--t-bg)] border border-[var(--t-border)] focus:border-[var(--t-accent)] rounded-lg px-4 py-2.5 text-[var(--t-fg)] placeholder-[var(--t-fg-dimmed)] outline-none text-sm transition-colors"
 
     return (
         <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12">
-            <button onClick={() => navigate('/mis-carreras')} className="flex items-center gap-1 text-gray-400 hover:text-white text-sm mb-8 transition-colors">
+            <button onClick={() => navigate('/mis-carreras')} className="flex items-center gap-1 text-[var(--t-fg-muted)] hover:text-[var(--t-fg)] text-sm mb-8 transition-colors">
                 <ArrowLeft className="w-4 h-4" /> Volver
             </button>
 
             <div className="mb-8">
-                <p className="text-[#e63946] text-sm font-medium uppercase tracking-wider mb-2">Performance</p>
-                <h1 className="text-3xl font-black text-white">Subir resultado</h1>
+                <p className="text-[var(--t-accent)] text-sm font-medium uppercase tracking-wider mb-2">Performance</p>
+                <h1 className="text-3xl font-black text-[var(--t-fg)]">Subir resultado</h1>
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl p-6 space-y-5">
+            <form onSubmit={handleSubmit(onSubmit)} className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-2xl p-6 space-y-5">
                 {/* Required */}
                 <div className="grid grid-cols-2 gap-4">
                     <Field label="Fecha *" id="race_date" error={errors.race_date?.message}>
@@ -85,8 +85,8 @@ export default function SubirResultado() {
                 </div>
 
                 {/* Optional */}
-                <div className="border-t border-[#2a2a2a] pt-5">
-                    <p className="text-xs text-gray-500 uppercase tracking-wider mb-4">Datos opcionales</p>
+                <div className="border-t border-[var(--t-border)] pt-5">
+                    <p className="text-xs text-[var(--t-fg-dimmed)] uppercase tracking-wider mb-4">Datos opcionales</p>
                     <div className="space-y-4">
                         <Field label="Nombre de la carrera" id="race_name">
                             <input {...register('race_name')} id="race_name" placeholder="p.ej. Carrera Popular Fuengirola" className={inputClass} />
@@ -125,21 +125,21 @@ export default function SubirResultado() {
                 </div>
 
                 {/* Public toggle */}
-                <div className="flex items-center justify-between bg-[#0d0d0d] border border-[#2a2a2a] rounded-lg px-4 py-3">
+                <div className="flex items-center justify-between bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg px-4 py-3">
                     <div>
-                        <p className="text-white text-sm font-medium">Resultado público</p>
-                        <p className="text-gray-500 text-xs">Visible en el feed del club</p>
+                        <p className="text-[var(--t-fg)] text-sm font-medium">Resultado público</p>
+                        <p className="text-[var(--t-fg-dimmed)] text-xs">Visible en el feed del club</p>
                     </div>
                     <input {...register('is_public')} id="is_public" type="checkbox" className="w-5 h-5 accent-[#e63946]" />
                 </div>
 
                 {mutation.error && (
-                    <div className="bg-[#e63946]/10 border border-[#e63946]/20 rounded-lg px-4 py-3">
-                        <p className="text-[#e63946] text-sm">Error al subir el resultado. Inténtalo de nuevo.</p>
+                    <div className="bg-[var(--t-accent)]/10 border border-[var(--t-accent)]/20 rounded-lg px-4 py-3">
+                        <p className="text-[var(--t-accent)] text-sm">Error al subir el resultado. Inténtalo de nuevo.</p>
                     </div>
                 )}
 
-                <button type="submit" disabled={mutation.isPending} className="w-full bg-[#e63946] hover:bg-[#c1121f] disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-2">
+                <button type="submit" disabled={mutation.isPending} className="w-full bg-[var(--t-accent)] hover:bg-[var(--t-accent-hover)] disabled:opacity-50 text-[var(--t-fg)] font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-2">
                     {mutation.isPending ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Subir resultado'}
                 </button>
             </form>

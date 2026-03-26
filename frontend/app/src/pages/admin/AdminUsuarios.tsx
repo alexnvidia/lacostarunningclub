@@ -53,21 +53,21 @@ export default function AdminUsuarios() {
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
-            <Link to="/admin" className="flex items-center gap-1 text-gray-400 hover:text-white text-sm mb-8 transition-colors">
+            <Link to="/admin" className="flex items-center gap-1 text-[var(--t-fg-muted)] hover:text-[var(--t-fg)] text-sm mb-8 transition-colors">
                 <ArrowLeft className="w-4 h-4" /> Panel Admin
             </Link>
 
             <div className="flex flex-wrap items-end gap-4 mb-6">
                 <div>
-                    <p className="text-[#e63946] text-sm font-medium uppercase tracking-wider mb-1">Admin</p>
-                    <h1 className="text-3xl font-black text-white flex items-center gap-2">
+                    <p className="text-[var(--t-accent)] text-sm font-medium uppercase tracking-wider mb-1">Admin</p>
+                    <h1 className="text-3xl font-black text-[var(--t-fg)] flex items-center gap-2">
                         <Users className="w-7 h-7" /> Usuarios
                     </h1>
                 </div>
                 <div className="ml-auto flex gap-3 flex-wrap">
                     {/* Search */}
                     <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--t-fg-dimmed)] pointer-events-none" />
                         <input
                             id="user-search"
                             type="search"
@@ -78,7 +78,7 @@ export default function AdminUsuarios() {
                                 setSearch(e.target.value)
                                 onSearchDebounced(e.target.value)
                             }}
-                            className="bg-[#1a1a1a] border border-[#2a2a2a] focus:border-[#e63946] rounded-lg pl-9 pr-4 py-2 text-white placeholder-gray-600 outline-none text-sm transition-colors w-64"
+                            className="bg-[var(--t-bg2)] border border-[var(--t-border)] focus:border-[var(--t-accent)] rounded-lg pl-9 pr-4 py-2 text-[var(--t-fg)] placeholder-[var(--t-fg-dimmed)] outline-none text-sm transition-colors w-64"
                         />
                     </div>
                     {/* Role filter */}
@@ -86,7 +86,7 @@ export default function AdminUsuarios() {
                         id="role-filter"
                         value={roleFilter}
                         onChange={e => { setRoleFilter(e.target.value); setPage(1) }}
-                        className="bg-[#1a1a1a] border border-[#2a2a2a] focus:border-[#e63946] rounded-lg px-3 py-2 text-white outline-none text-sm transition-colors"
+                        className="bg-[var(--t-bg2)] border border-[var(--t-border)] focus:border-[var(--t-accent)] rounded-lg px-3 py-2 text-[var(--t-fg)] outline-none text-sm transition-colors"
                     >
                         <option value="">Todos los roles</option>
                         <option value="user">Usuario</option>
@@ -95,9 +95,9 @@ export default function AdminUsuarios() {
                 </div>
             </div>
 
-            <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl overflow-hidden">
+            <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-2xl overflow-hidden">
                 {/* Table header */}
-                <div className="grid grid-cols-[2fr_2fr_1fr_1fr_1fr] gap-4 px-6 py-3 border-b border-[#2a2a2a] text-xs text-gray-500 uppercase tracking-wider">
+                <div className="grid grid-cols-[2fr_2fr_1fr_1fr_1fr] gap-4 px-6 py-3 border-b border-[var(--t-border)] text-xs text-[var(--t-fg-dimmed)] uppercase tracking-wider">
                     <span>Usuario</span><span>Email</span><span>Rol</span><span>Pedidos / Gasto</span><span>Registro</span>
                 </div>
 
@@ -106,29 +106,29 @@ export default function AdminUsuarios() {
                         {[...Array(8)].map((_, i) => <div key={i} className="h-12 bg-[#2a2a2a] rounded animate-pulse" />)}
                     </div>
                 ) : (data?.users ?? []).length === 0 ? (
-                    <p className="text-center py-16 text-gray-500">Sin resultados</p>
+                    <p className="text-center py-16 text-[var(--t-fg-dimmed)]">Sin resultados</p>
                 ) : (
-                    <div className="divide-y divide-[#2a2a2a]">
+                    <div className="divide-y divide-[var(--t-border)]">
                         {data!.users.map(user => (
                             <div key={user.id} className="grid grid-cols-[2fr_2fr_1fr_1fr_1fr] gap-4 items-center px-6 py-4">
                                 <div>
-                                    <p className="text-white text-sm font-medium">{user.first_name} {user.last_name}</p>
+                                    <p className="text-[var(--t-fg)] text-sm font-medium">{user.first_name} {user.last_name}</p>
                                     <p className={`text-[10px] mt-0.5 ${user.active ? 'text-green-400' : 'text-red-400'}`}>
                                         {user.active ? 'Activo' : 'Inactivo'}
                                     </p>
                                 </div>
-                                <p className="text-gray-400 text-sm truncate">{user.email}</p>
+                                <p className="text-[var(--t-fg-muted)] text-sm truncate">{user.email}</p>
                                 <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium w-fit ${user.role === 'ADMIN'
-                                        ? 'bg-[#e63946]/10 text-[#e63946]'
-                                        : 'bg-gray-500/10 text-gray-400'
+                                        ? 'bg-[var(--t-accent)]/10 text-[var(--t-accent)]'
+                                        : 'bg-gray-500/10 text-[var(--t-fg-muted)]'
                                     }`}>
                                     {user.role}
                                 </span>
                                 <div>
-                                    <p className="text-white text-sm">{user.total_orders} pedidos</p>
-                                    <p className="text-gray-500 text-xs">{user.total_spent.toFixed(2)} €</p>
+                                    <p className="text-[var(--t-fg)] text-sm">{user.total_orders} pedidos</p>
+                                    <p className="text-[var(--t-fg-dimmed)] text-xs">{user.total_spent.toFixed(2)} €</p>
                                 </div>
-                                <p className="text-gray-500 text-xs">{formatDateTime(user.created_at)}</p>
+                                <p className="text-[var(--t-fg-dimmed)] text-xs">{formatDateTime(user.created_at)}</p>
                             </div>
                         ))}
                     </div>
@@ -136,14 +136,14 @@ export default function AdminUsuarios() {
 
                 {/* Pagination */}
                 {data && data.pagination.total_pages > 1 && (
-                    <div className="flex items-center justify-between px-6 py-4 border-t border-[#2a2a2a]">
-                        <p className="text-xs text-gray-500">{data.pagination.total} usuarios</p>
+                    <div className="flex items-center justify-between px-6 py-4 border-t border-[var(--t-border)]">
+                        <p className="text-xs text-[var(--t-fg-dimmed)]">{data.pagination.total} usuarios</p>
                         <div className="flex gap-2">
                             <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-                                className="px-3 py-1.5 bg-[#2a2a2a] text-gray-400 rounded-lg text-xs disabled:opacity-40">Anterior</button>
-                            <span className="px-3 py-1.5 text-xs text-gray-400">{page} / {data.pagination.total_pages}</span>
+                                className="px-3 py-1.5 bg-[#2a2a2a] text-[var(--t-fg-muted)] rounded-lg text-xs disabled:opacity-40">Anterior</button>
+                            <span className="px-3 py-1.5 text-xs text-[var(--t-fg-muted)]">{page} / {data.pagination.total_pages}</span>
                             <button onClick={() => setPage(p => Math.min(data.pagination.total_pages, p + 1))} disabled={page === data.pagination.total_pages}
-                                className="px-3 py-1.5 bg-[#2a2a2a] text-gray-400 rounded-lg text-xs disabled:opacity-40">Siguiente</button>
+                                className="px-3 py-1.5 bg-[#2a2a2a] text-[var(--t-fg-muted)] rounded-lg text-xs disabled:opacity-40">Siguiente</button>
                         </div>
                     </div>
                 )}

@@ -81,6 +81,7 @@ export default defineConfig({
       },
       devOptions: {
         enabled: true, // Activa SW en dev para pruebas locales
+        navigateFallbackAllowlist: [/^\//],
       },
     }),
   ],

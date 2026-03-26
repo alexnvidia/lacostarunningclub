@@ -81,7 +81,7 @@ function ProductThumbnail({ src, alt }: { src: string | null; alt: string }) {
     if (!src || error) {
         return (
             <div className="w-10 h-10 rounded-lg bg-[#2a2a2a] flex items-center justify-center shrink-0">
-                <ImageOff className="w-4 h-4 text-gray-600" />
+                <ImageOff className="w-4 h-4 text-[var(--t-fg-dimmed)]" />
             </div>
         )
     }
@@ -232,15 +232,15 @@ export default function AdminProductos() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
 
             {/* Back link */}
-            <Link to="/admin" className="flex items-center gap-1 text-gray-400 hover:text-white text-sm mb-8 transition-colors">
+            <Link to="/admin" className="flex items-center gap-1 text-[var(--t-fg-muted)] hover:text-[var(--t-fg)] text-sm mb-8 transition-colors">
                 <ArrowLeft className="w-4 h-4" /> Panel Admin
             </Link>
 
             {/* Header */}
             <div className="flex flex-wrap items-end gap-4 mb-6">
                 <div>
-                    <p className="text-[#e63946] text-sm font-medium uppercase tracking-wider mb-1">Admin</p>
-                    <h1 className="text-3xl font-black text-white flex items-center gap-2">
+                    <p className="text-[var(--t-accent)] text-sm font-medium uppercase tracking-wider mb-1">Admin</p>
+                    <h1 className="text-3xl font-black text-[var(--t-fg)] flex items-center gap-2">
                         <Package className="w-7 h-7" /> Productos
                     </h1>
                 </div>
@@ -248,7 +248,7 @@ export default function AdminProductos() {
                 <div className="ml-auto flex gap-3 flex-wrap items-center">
                     {/* Search */}
                     <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--t-fg-dimmed)] pointer-events-none" />
                         <input
                             id="product-search"
                             type="search"
@@ -256,7 +256,7 @@ export default function AdminProductos() {
                             placeholder="Buscar por nombre..."
                             value={search}
                             onChange={e => { setSearch(e.target.value); onSearchDebounced(e.target.value) }}
-                            className="bg-[#1a1a1a] border border-[#2a2a2a] focus:border-[#e63946] rounded-lg pl-9 pr-4 py-2 text-white placeholder-gray-600 outline-none text-sm transition-colors w-56"
+                            className="bg-[var(--t-bg2)] border border-[var(--t-border)] focus:border-[var(--t-accent)] rounded-lg pl-9 pr-4 py-2 text-[var(--t-fg)] placeholder-[var(--t-fg-dimmed)] outline-none text-sm transition-colors w-56"
                         />
                     </div>
 
@@ -265,7 +265,7 @@ export default function AdminProductos() {
                         id="active-filter"
                         value={activeFilter}
                         onChange={e => { setActiveFilter(e.target.value as 'true' | 'false'); setPage(1) }}
-                        className="bg-[#1a1a1a] border border-[#2a2a2a] focus:border-[#e63946] rounded-lg px-3 py-2 text-white outline-none text-sm transition-colors"
+                        className="bg-[var(--t-bg2)] border border-[var(--t-border)] focus:border-[var(--t-accent)] rounded-lg px-3 py-2 text-[var(--t-fg)] outline-none text-sm transition-colors"
                     >
                         <option value="true">Activos</option>
                         <option value="false">Inactivos</option>
@@ -275,7 +275,7 @@ export default function AdminProductos() {
                     <button
                         id="btn-new-product"
                         onClick={openCreate}
-                        className="flex items-center gap-2 bg-[#e63946] hover:bg-[#c1121f] text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+                        className="flex items-center gap-2 bg-[var(--t-accent)] hover:bg-[var(--t-accent-hover)] text-[var(--t-fg)] text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
                     >
                         <Plus className="w-4 h-4" /> Nuevo producto
                     </button>
@@ -283,9 +283,9 @@ export default function AdminProductos() {
             </div>
 
             {/* Table */}
-            <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl overflow-hidden">
+            <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-2xl overflow-hidden">
                 {/* Header row */}
-                <div className="grid grid-cols-[40px_1fr_1fr_80px_80px_80px_80px_80px_100px] gap-3 px-6 py-3 border-b border-[#2a2a2a] text-xs text-gray-500 uppercase tracking-wider">
+                <div className="grid grid-cols-[40px_1fr_1fr_80px_80px_80px_80px_80px_100px] gap-3 px-6 py-3 border-b border-[var(--t-border)] text-xs text-[var(--t-fg-dimmed)] uppercase tracking-wider">
                     <span />
                     <span>Producto</span>
                     <span>Categoría</span>
@@ -304,9 +304,9 @@ export default function AdminProductos() {
                         ))}
                     </div>
                 ) : (data?.products ?? []).length === 0 ? (
-                    <p className="text-center py-16 text-gray-500">Sin productos</p>
+                    <p className="text-center py-16 text-[var(--t-fg-dimmed)]">Sin productos</p>
                 ) : (
-                    <div className="divide-y divide-[#2a2a2a]">
+                    <div className="divide-y divide-[var(--t-border)]">
                         {data!.products.map(p => (
                             <div
                                 key={p.id}
@@ -318,17 +318,17 @@ export default function AdminProductos() {
                                 {/* Name + SKU + featured */}
                                 <div className="min-w-0">
                                     <div className="flex items-center gap-1.5">
-                                        <p className="text-white text-sm font-medium truncate">{p.name}</p>
+                                        <p className="text-[var(--t-fg)] text-sm font-medium truncate">{p.name}</p>
                                         {p.featured && <Star className="w-3 h-3 text-yellow-400 shrink-0" />}
                                     </div>
-                                    <p className="text-gray-500 text-[11px] font-mono mt-0.5 truncate">{p.product_code}</p>
+                                    <p className="text-[var(--t-fg-dimmed)] text-[11px] font-mono mt-0.5 truncate">{p.product_code}</p>
                                 </div>
 
                                 {/* Category */}
-                                <p className="text-gray-400 text-sm truncate">{p.category}</p>
+                                <p className="text-[var(--t-fg-muted)] text-sm truncate">{p.category}</p>
 
                                 {/* Price */}
-                                <p className="text-white text-sm font-semibold">{p.price.toFixed(2)} €</p>
+                                <p className="text-[var(--t-fg)] text-sm font-semibold">{p.price.toFixed(2)} €</p>
 
                                 {/* Stock */}
                                 <p className={`text-sm font-medium ${p.stock_quantity === 0 ? 'text-red-400' : p.stock_quantity < 10 ? 'text-yellow-400' : 'text-green-400'}`}>
@@ -336,10 +336,10 @@ export default function AdminProductos() {
                                 </p>
 
                                 {/* Size */}
-                                <p className="text-gray-400 text-sm">{p.size ?? '—'}</p>
+                                <p className="text-[var(--t-fg-muted)] text-sm">{p.size ?? '—'}</p>
 
                                 {/* Color */}
-                                <p className="text-gray-400 text-sm truncate">{p.color ?? '—'}</p>
+                                <p className="text-[var(--t-fg-muted)] text-sm truncate">{p.color ?? '—'}</p>
 
                                 {/* Status badge */}
                                 <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium w-fit ${p.active ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
@@ -351,7 +351,7 @@ export default function AdminProductos() {
                                     <button
                                         title="Editar"
                                         onClick={() => openEdit(p)}
-                                        className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[#2a2a2a] transition-colors"
+                                        className="p-1.5 rounded-lg text-[var(--t-fg-muted)] hover:text-[var(--t-fg)] hover:bg-[#2a2a2a] transition-colors"
                                     >
                                         <Pencil className="w-3.5 h-3.5" />
                                     </button>
@@ -360,7 +360,7 @@ export default function AdminProductos() {
                                             title="Desactivar"
                                             onClick={() => deactivateMutation.mutate(p.id)}
                                             disabled={deactivateMutation.isPending}
-                                            className="p-1.5 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-40"
+                                            className="p-1.5 rounded-lg text-[var(--t-fg-muted)] hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-40"
                                         >
                                             <Trash2 className="w-3.5 h-3.5" />
                                         </button>
@@ -369,7 +369,7 @@ export default function AdminProductos() {
                                             title="Reactivar"
                                             onClick={() => reactivateMutation.mutate(p.id)}
                                             disabled={reactivateMutation.isPending}
-                                            className="p-1.5 rounded-lg text-gray-400 hover:text-green-400 hover:bg-green-500/10 transition-colors disabled:opacity-40"
+                                            className="p-1.5 rounded-lg text-[var(--t-fg-muted)] hover:text-green-400 hover:bg-green-500/10 transition-colors disabled:opacity-40"
                                         >
                                             <RotateCcw className="w-3.5 h-3.5" />
                                         </button>
@@ -382,21 +382,21 @@ export default function AdminProductos() {
 
                 {/* Pagination */}
                 {data && data.pagination.total_pages > 1 && (
-                    <div className="flex items-center justify-between px-6 py-4 border-t border-[#2a2a2a]">
-                        <p className="text-xs text-gray-500">{data.pagination.total} productos</p>
+                    <div className="flex items-center justify-between px-6 py-4 border-t border-[var(--t-border)]">
+                        <p className="text-xs text-[var(--t-fg-dimmed)]">{data.pagination.total} productos</p>
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={() => setPage(p => Math.max(1, p - 1))}
                                 disabled={page === 1}
-                                className="p-1.5 bg-[#2a2a2a] text-gray-400 rounded-lg disabled:opacity-40 hover:text-white transition-colors"
+                                className="p-1.5 bg-[#2a2a2a] text-[var(--t-fg-muted)] rounded-lg disabled:opacity-40 hover:text-[var(--t-fg)] transition-colors"
                             >
                                 <ChevronLeft className="w-4 h-4" />
                             </button>
-                            <span className="text-xs text-gray-400 px-2">{page} / {data.pagination.total_pages}</span>
+                            <span className="text-xs text-[var(--t-fg-muted)] px-2">{page} / {data.pagination.total_pages}</span>
                             <button
                                 onClick={() => setPage(p => Math.min(data.pagination.total_pages, p + 1))}
                                 disabled={page === data.pagination.total_pages}
-                                className="p-1.5 bg-[#2a2a2a] text-gray-400 rounded-lg disabled:opacity-40 hover:text-white transition-colors"
+                                className="p-1.5 bg-[#2a2a2a] text-[var(--t-fg-muted)] rounded-lg disabled:opacity-40 hover:text-[var(--t-fg)] transition-colors"
                             >
                                 <ChevronRight className="w-4 h-4" />
                             </button>
@@ -412,13 +412,13 @@ export default function AdminProductos() {
                     <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={closeModal} />
 
                     {/* Panel */}
-                    <div className="relative bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+                    <div className="relative bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
                         {/* Modal header */}
-                        <div className="flex items-center justify-between px-6 py-5 border-b border-[#2a2a2a] sticky top-0 bg-[#1a1a1a] z-10">
-                            <h2 className="text-white font-bold text-lg">
+                        <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--t-border)] sticky top-0 bg-[var(--t-bg2)] z-10">
+                            <h2 className="text-[var(--t-fg)] font-bold text-lg">
                                 {modal === 'create' ? 'Nuevo producto' : `Editar: ${editTarget?.name}`}
                             </h2>
-                            <button onClick={closeModal} className="text-gray-500 hover:text-white transition-colors">
+                            <button onClick={closeModal} className="text-[var(--t-fg-dimmed)] hover:text-[var(--t-fg)] transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
@@ -566,7 +566,7 @@ export default function AdminProductos() {
                                         onChange={e => handleField('featured', e.target.checked)}
                                         className="w-4 h-4 accent-[#e63946]"
                                     />
-                                    <span className="flex items-center gap-1.5 text-sm text-gray-300">
+                                    <span className="flex items-center gap-1.5 text-sm text-[var(--t-fg)]">
                                         <Star className="w-3.5 h-3.5 text-yellow-400" /> Destacado
                                     </span>
                                 </label>
@@ -579,7 +579,7 @@ export default function AdminProductos() {
                                             onChange={e => handleField('active', e.target.checked)}
                                             className="w-4 h-4 accent-[#e63946]"
                                         />
-                                        <span className="text-sm text-gray-300">Activo</span>
+                                        <span className="text-sm text-[var(--t-fg)]">Activo</span>
                                     </label>
                                 )}
                             </div>
@@ -593,11 +593,11 @@ export default function AdminProductos() {
                             )}
 
                             {/* Buttons */}
-                            <div className="flex justify-end gap-3 pt-2 border-t border-[#2a2a2a] mt-4">
+                            <div className="flex justify-end gap-3 pt-2 border-t border-[var(--t-border)] mt-4">
                                 <button
                                     type="button"
                                     onClick={closeModal}
-                                    className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors"
+                                    className="px-4 py-2 text-sm text-[var(--t-fg-muted)] hover:text-[var(--t-fg)] transition-colors"
                                 >
                                     Cancelar
                                 </button>
@@ -605,7 +605,7 @@ export default function AdminProductos() {
                                     id="btn-submit-product"
                                     type="submit"
                                     disabled={isMutating}
-                                    className="flex items-center gap-2 bg-[#e63946] hover:bg-[#c1121f] disabled:opacity-50 text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors"
+                                    className="flex items-center gap-2 bg-[var(--t-accent)] hover:bg-[var(--t-accent-hover)] disabled:opacity-50 text-[var(--t-fg)] text-sm font-semibold px-5 py-2 rounded-lg transition-colors"
                                 >
                                     {isMutating ? (
                                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -626,12 +626,12 @@ export default function AdminProductos() {
 
 // ─── Helper components ──────────────────────────────────────────────────────
 
-const inputCls = 'w-full bg-[#111] border border-[#2a2a2a] focus:border-[#e63946] rounded-lg px-3 py-2 text-white placeholder-gray-600 outline-none text-sm transition-colors'
+const inputCls = 'w-full bg-[var(--t-bg)] border border-[var(--t-border)] focus:border-[var(--t-accent)] rounded-lg px-3 py-2 text-[var(--t-fg)] placeholder-[var(--t-fg-dimmed)] outline-none text-sm transition-colors'
 
 function Field({ label, children, span = 1 }: { label: string; children: React.ReactNode; span?: 1 | 2 }) {
     return (
         <div className={span === 2 ? 'col-span-2' : 'col-span-1'}>
-            <label className="block text-xs text-gray-400 mb-1.5 font-medium">{label}</label>
+            <label className="block text-xs text-[var(--t-fg-muted)] mb-1.5 font-medium">{label}</label>
             {children}
         </div>
     )

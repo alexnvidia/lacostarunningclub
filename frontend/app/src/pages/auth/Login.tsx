@@ -46,41 +46,41 @@ export default function Login() {
         : null
 
     return (
-        <div className="min-h-screen bg-[#0d0d0d] flex items-center justify-center px-4">
+        <div className="min-h-screen bg-[var(--t-bg)] flex items-center justify-center px-4">
             {/* Background blur */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-[#e63946]/5 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute top-0 right-0 w-96 h-96 bg-[var(--t-accent)]/5 rounded-full blur-3xl pointer-events-none" />
 
             <div className="w-full max-w-md">
                 {/* Logo */}
                 <Link to="/" className="flex items-center justify-center gap-2 mb-10">
-                    <Activity className="w-6 h-6 text-[#e63946]" />
-                    <span className="font-bold text-white text-xl">LCRC<span className="text-[#e63946]">.</span></span>
+                    <Activity className="w-6 h-6 text-[var(--t-accent)]" />
+                    <span className="font-bold text-[var(--t-fg)] text-xl">LCRC<span className="text-[var(--t-accent)]">.</span></span>
                 </Link>
 
-                <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl p-8">
-                    <h1 className="text-2xl font-bold text-white mb-1">Bienvenido de nuevo</h1>
-                    <p className="text-gray-500 text-sm mb-8">Inicia sesión en tu cuenta LCRC</p>
+                <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-2xl p-8">
+                    <h1 className="text-2xl font-bold text-[var(--t-fg)] mb-1">Bienvenido de nuevo</h1>
+                    <p className="text-[var(--t-fg-dimmed)] text-sm mb-8">Inicia sesión en tu cuenta LCRC</p>
 
                     <form onSubmit={handleSubmit((data) => loginMutation.mutate(data))} className="space-y-5">
                         {/* Email */}
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1.5">Email</label>
+                            <label htmlFor="email" className="block text-sm font-medium text-[var(--t-fg)] mb-1.5">Email</label>
                             <input
                                 {...register('email')}
                                 id="email"
                                 type="email"
                                 autoComplete="email"
                                 placeholder="tu@email.com"
-                                className="w-full bg-[#0d0d0d] border border-[#2a2a2a] focus:border-[#e63946] rounded-lg px-4 py-3 text-white placeholder-gray-600 outline-none transition-colors text-sm"
+                                className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] focus:border-[var(--t-accent)] rounded-lg px-4 py-3 text-[var(--t-fg)] placeholder-[var(--t-fg-dimmed)] outline-none transition-colors text-sm"
                             />
-                            {errors.email && <p className="text-[#e63946] text-xs mt-1">{errors.email.message}</p>}
+                            {errors.email && <p className="text-[var(--t-accent)] text-xs mt-1">{errors.email.message}</p>}
                         </div>
 
                         {/* Password */}
                         <div>
                             <div className="flex items-center justify-between mb-1.5">
-                                <label htmlFor="password" className="text-sm font-medium text-gray-300">Contraseña</label>
-                                <Link to="/recuperar-contrasena" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
+                                <label htmlFor="password" className="text-sm font-medium text-[var(--t-fg)]">Contraseña</label>
+                                <Link to="/recuperar-contrasena" className="text-xs text-[var(--t-fg-dimmed)] hover:text-[var(--t-fg)] transition-colors">
                                     ¿Olvidaste la contraseña?
                                 </Link>
                             </div>
@@ -91,23 +91,23 @@ export default function Login() {
                                     type={showPassword ? 'text' : 'password'}
                                     autoComplete="current-password"
                                     placeholder="••••••••"
-                                    className="w-full bg-[#0d0d0d] border border-[#2a2a2a] focus:border-[#e63946] rounded-lg px-4 py-3 pr-10 text-white placeholder-gray-600 outline-none transition-colors text-sm"
+                                    className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] focus:border-[var(--t-accent)] rounded-lg px-4 py-3 pr-10 text-[var(--t-fg)] placeholder-[var(--t-fg-dimmed)] outline-none transition-colors text-sm"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--t-fg-dimmed)] hover:text-[var(--t-fg)]"
                                 >
                                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                 </button>
                             </div>
-                            {errors.password && <p className="text-[#e63946] text-xs mt-1">{errors.password.message}</p>}
+                            {errors.password && <p className="text-[var(--t-accent)] text-xs mt-1">{errors.password.message}</p>}
                         </div>
 
                         {/* Error */}
                         {errorMsg && (
-                            <div className="bg-[#e63946]/10 border border-[#e63946]/20 rounded-lg px-4 py-3">
-                                <p className="text-[#e63946] text-sm">{errorMsg}</p>
+                            <div className="bg-[var(--t-accent)]/10 border border-[var(--t-accent)]/20 rounded-lg px-4 py-3">
+                                <p className="text-[var(--t-accent)] text-sm">{errorMsg}</p>
                             </div>
                         )}
 
@@ -115,7 +115,7 @@ export default function Login() {
                         <button
                             type="submit"
                             disabled={loginMutation.isPending}
-                            className="w-full bg-[#e63946] hover:bg-[#c1121f] disabled:opacity-50 text-white font-semibold py-3 rounded-lg transition-all hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2"
+                            className="w-full bg-[var(--t-accent)] hover:bg-[var(--t-accent-hover)] disabled:opacity-50 text-[var(--t-fg)] font-semibold py-3 rounded-lg transition-all hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2"
                         >
                             {loginMutation.isPending ? (
                                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -124,9 +124,9 @@ export default function Login() {
                     </form>
                 </div>
 
-                <p className="text-center text-gray-500 text-sm mt-6">
+                <p className="text-center text-[var(--t-fg-dimmed)] text-sm mt-6">
                     ¿Nuevo en el club?{' '}
-                    <Link to="/registro" className="text-[#e63946] hover:underline font-medium">
+                    <Link to="/registro" className="text-[var(--t-accent)] hover:underline font-medium">
                         Únete gratis
                     </Link>
                 </p>

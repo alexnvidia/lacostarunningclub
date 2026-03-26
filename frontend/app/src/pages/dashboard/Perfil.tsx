@@ -7,6 +7,10 @@ import { useState } from 'react'
 import api from '@/lib/api'
 import { queryKeys } from '@/lib/query-keys'
 import { useAuthStore } from '@/store/auth.store'
+import { AnimationErrorBoundary } from '@/components/subscription/AnimationErrorBoundary'
+import { LcrcPassScene } from '@/components/subscription/LcrcPassScene'
+import { VerticalTimeline } from '@/components/subscription/VerticalTimeline'
+import { RewardModal } from '@/components/subscription/RewardModal'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -82,14 +86,14 @@ function MilestoneCard({
         iconEl = <CheckCircle className="w-5 h-5 text-green-400" />
         stateLabel = <span className="text-xs text-green-400 font-medium">Reclamado ✓</span>
     } else if (reward.unlocked) {
-        cardClass = 'border-[#f4a261]/60 bg-[#f4a261]/5 ring-1 ring-[#f4a261]/30'
-        iconEl = <Gift className="w-5 h-5 text-[#f4a261]" />
+        cardClass = 'border-[var(--t-accent2)]/60 bg-[var(--t-accent2)]/5 ring-1 ring-[#f4a261]/30'
+        iconEl = <Gift className="w-5 h-5 text-[var(--t-accent2)]" />
         stateLabel = (
             <button
                 id={`claim-reward-${reward.milestone_months}`}
                 onClick={() => onClaim(reward.milestone_months)}
                 disabled={isClaiming}
-                className="mt-2 text-xs font-semibold bg-[#f4a261] hover:bg-[#e08c4a] disabled:opacity-50 text-black px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
+                className="mt-2 text-xs font-semibold bg-[var(--t-accent2)] hover:bg-[#e08c4a] disabled:opacity-50 text-black px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
             >
                 {isClaiming ? (
                     <div className="w-3 h-3 border-2 border-black/30 border-t-black rounded-full animate-spin" />
@@ -100,14 +104,14 @@ function MilestoneCard({
             </button>
         )
     } else {
-        cardClass = 'border-[#2a2a2a] bg-[#111] opacity-60'
-        iconEl = <Lock className="w-5 h-5 text-gray-600" />
+        cardClass = 'border-[var(--t-border)] bg-[var(--t-bg)] opacity-60'
+        iconEl = <Lock className="w-5 h-5 text-[var(--t-fg-dimmed)]" />
         stateLabel = isNext ? (
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-[var(--t-fg-dimmed)]">
                 {remaining === 1 ? 'Falta 1 mes' : `Faltan ${remaining} meses`}
             </span>
         ) : (
-            <span className="text-xs text-gray-600">Bloqueado</span>
+            <span className="text-xs text-[var(--t-fg-dimmed)]">Bloqueado</span>
         )
     }
 
@@ -117,8 +121,8 @@ function MilestoneCard({
                 <div className="flex items-center gap-2">
                     <span className="text-2xl leading-none">{meta.emoji}</span>
                     <div>
-                        <p className="text-white font-semibold text-sm">{meta.label}</p>
-                        <p className="text-gray-400 text-xs">{meta.gift}</p>
+                        <p className="text-[var(--t-fg)] font-semibold text-sm">{meta.label}</p>
+                        <p className="text-[var(--t-fg-muted)] text-xs">{meta.gift}</p>
                     </div>
                 </div>
                 {iconEl}
@@ -128,9 +132,9 @@ function MilestoneCard({
     )
 }
 
-// ── Sub-component: Subscription Journey ───────────────────────────────────────
+// ── Sub-component: Subscription Journey (Legacy fallback) ────────────────────
 
-function SubscriptionJourney({
+function SubscriptionJourneyLegacy({
     subscription,
     rewards,
 }: {
@@ -153,12 +157,12 @@ function SubscriptionJourney({
     // No subscription → empty state
     if (!subscription || subscription.status !== 'ACTIVE') {
         return (
-            <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl p-6">
+            <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-2xl p-6">
                 <div className="flex items-center gap-3 mb-2">
-                    <Award className="w-5 h-5 text-gray-600" />
-                    <h2 className="text-white font-bold text-lg">Mi suscripción</h2>
+                    <Award className="w-5 h-5 text-[var(--t-fg-dimmed)]" />
+                    <h2 className="text-[var(--t-fg)] font-bold text-lg">Mi suscripción</h2>
                 </div>
-                <p className="text-gray-500 text-sm">
+                <p className="text-[var(--t-fg-dimmed)] text-sm">
                     Aún no tienes una suscripción activa. ¡Únete al club para desbloquear regalos exclusivos!
                 </p>
             </div>
@@ -179,14 +183,14 @@ function SubscriptionJourney({
         : null
 
     return (
-        <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl p-6">
+        <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-2xl p-6">
             {/* Header */}
             <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-3">
-                    <Award className="w-5 h-5 text-[#f4a261]" />
-                    <h2 className="text-white font-bold text-lg">Mi suscripción</h2>
+                    <Award className="w-5 h-5 text-[var(--t-accent2)]" />
+                    <h2 className="text-[var(--t-fg)] font-bold text-lg">Mi suscripción</h2>
                 </div>
-                <span className="text-xs bg-[#f4a261]/10 text-[#f4a261] border border-[#f4a261]/20 px-3 py-1 rounded-full font-medium">
+                <span className="text-xs bg-[var(--t-accent2)]/10 text-[var(--t-accent2)] border border-[var(--t-accent2)]/20 px-3 py-1 rounded-full font-medium">
                     ⭐ Activa
                 </span>
             </div>
@@ -194,26 +198,26 @@ function SubscriptionJourney({
             {/* Stats row */}
             <div className="flex flex-wrap gap-4 mb-5">
                 {activeSince && (
-                    <div className="flex items-center gap-2 text-sm text-gray-400">
-                        <Calendar className="w-4 h-4 text-gray-500" />
-                        <span>Miembro desde <span className="text-white font-medium">{activeSince}</span></span>
+                    <div className="flex items-center gap-2 text-sm text-[var(--t-fg-muted)]">
+                        <Calendar className="w-4 h-4 text-[var(--t-fg-dimmed)]" />
+                        <span>Miembro desde <span className="text-[var(--t-fg)] font-medium">{activeSince}</span></span>
                     </div>
                 )}
-                <div className="flex items-center gap-2 text-sm text-gray-400">
+                <div className="flex items-center gap-2 text-sm text-[var(--t-fg-muted)]">
                     <CheckCircle className="w-4 h-4 text-green-400" />
                     <span>
-                        <span className="text-white font-medium">{monthsActive}</span>
+                        <span className="text-[var(--t-fg)] font-medium">{monthsActive}</span>
                         {' '}mes{monthsActive !== 1 ? 'es' : ''} activo{monthsActive !== 1 ? 's' : ''}
                     </span>
                 </div>
             </div>
 
             {/* Progress bar */}
-            <div className="mb-1 flex justify-between text-xs text-gray-500">
+            <div className="mb-1 flex justify-between text-xs text-[var(--t-fg-dimmed)]">
                 <span>Inicio</span>
                 <span>1 año</span>
             </div>
-            <div className="relative h-2 bg-[#0d0d0d] rounded-full mb-1 overflow-hidden">
+            <div className="relative h-2 bg-[var(--t-bg)] rounded-full mb-1 overflow-hidden">
                 <div
                     className="h-full bg-gradient-to-r from-[#e63946] to-[#f4a261] rounded-full transition-all duration-700"
                     style={{ width: `${progressPct}%` }}
@@ -227,7 +231,7 @@ function SubscriptionJourney({
                     />
                 ))}
             </div>
-            <div className="flex justify-between text-xs text-gray-600 mb-6 px-px">
+            <div className="flex justify-between text-xs text-[var(--t-fg-dimmed)] mb-6 px-px">
                 {MILESTONES.map(m => (
                     <span key={m} style={{ width: '25%', textAlign: 'center' }}>
                         {m}m
@@ -248,6 +252,129 @@ function SubscriptionJourney({
                 ))}
             </div>
         </div>
+    )
+}
+
+// ── Sub-component: Subscription Journey (Animated) ───────────────────────────
+
+function SubscriptionJourney({
+    subscription,
+    rewards,
+}: {
+    subscription?: UserSubscription | null
+    rewards?: UserReward[]
+}) {
+    const qc = useQueryClient()
+    const [claimingMilestone, setClaimingMilestone] = useState<number | null>(null)
+    const [showRewardModal, setShowRewardModal] = useState(false)
+
+    const claimMutation = useMutation({
+        mutationFn: (milestone: number) =>
+            api.post(`/api/users/rewards/${milestone}/claim`).then(r => r.data),
+        onMutate: (milestone) => setClaimingMilestone(milestone),
+        onSettled: () => {
+            setClaimingMilestone(null)
+            qc.invalidateQueries({ queryKey: queryKeys.user.profile() })
+        },
+    })
+
+    // No subscription → empty state
+    if (!subscription || subscription.status !== 'ACTIVE') {
+        return (
+            <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-2xl p-6">
+                <div className="flex items-center gap-3 mb-2">
+                    <Award className="w-5 h-5 text-[var(--t-fg-dimmed)]" />
+                    <h2 className="text-[var(--t-fg)] font-bold text-lg">Mi suscripción</h2>
+                </div>
+                <p className="text-[var(--t-fg-dimmed)] text-sm">
+                    Aún no tienes una suscripción activa. ¡Únete al club para desbloquear regalos exclusivos!
+                </p>
+            </div>
+        )
+    }
+
+    const monthsActive = subscription.months_active ?? 0
+    const progressRatio = Math.min(monthsActive / 12, 1)
+    const isCompleted = monthsActive >= 12
+
+    const filledRewards: UserReward[] = MILESTONES.map(m => {
+        const found = rewards?.find(r => r.milestone_months === m)
+        return found ?? { milestone_months: m, unlocked: monthsActive >= m, claimed: false, unlocked_at: null }
+    })
+
+    const activeSince = subscription.active_since
+        ? new Date(subscription.active_since).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })
+        : null
+
+    const legacyFallback = (
+        <SubscriptionJourneyLegacy subscription={subscription} rewards={rewards} />
+    )
+
+    return (
+        <AnimationErrorBoundary fallback={legacyFallback}>
+            <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-2xl overflow-hidden">
+                {/* Header */}
+                <div className="flex items-center justify-between px-6 pt-6 pb-4">
+                    <div className="flex items-center gap-3">
+                        <Award className="w-5 h-5 text-[var(--t-accent2)]" />
+                        <h2 className="text-[var(--t-fg)] font-bold text-lg">Mi suscripción</h2>
+                    </div>
+                    <span className="text-xs bg-[var(--t-accent2)]/10 text-[var(--t-accent2)] border border-[var(--t-accent2)]/20 px-3 py-1 rounded-full font-medium">
+                        ⭐ Activa
+                    </span>
+                </div>
+
+                {/* Stats row */}
+                <div className="flex flex-wrap gap-4 px-6 pb-4">
+                    {activeSince && (
+                        <div className="flex items-center gap-2 text-sm text-[var(--t-fg-muted)]">
+                            <Calendar className="w-4 h-4 text-[var(--t-fg-dimmed)]" />
+                            <span>Miembro desde <span className="text-[var(--t-fg)] font-medium">{activeSince}</span></span>
+                        </div>
+                    )}
+                    <div className="flex items-center gap-2 text-sm text-[var(--t-fg-muted)]">
+                        <CheckCircle className="w-4 h-4 text-green-400" />
+                        <span>
+                            <span className="text-[var(--t-fg)] font-medium">{monthsActive}</span>
+                            {' '}mes{monthsActive !== 1 ? 'es' : ''} activo{monthsActive !== 1 ? 's' : ''}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Animated Scene */}
+                <LcrcPassScene
+                    progressRatio={progressRatio}
+                    isCompleted={isCompleted}
+                    onCompleted={() => {
+                        const yearReward = filledRewards.find(r => r.milestone_months === 12)
+                        if (!yearReward?.claimed) {
+                            setShowRewardModal(true)
+                        }
+                    }}
+                />
+
+                {/* Vertical Timeline */}
+                <div className="px-6 pb-4">
+                    <VerticalTimeline progressRatio={progressRatio} rewards={filledRewards} />
+                </div>
+
+                {/* Milestone Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 px-6 pb-6">
+                    {filledRewards.map(reward => (
+                        <MilestoneCard
+                            key={reward.milestone_months}
+                            reward={reward}
+                            monthsActive={monthsActive}
+                            onClaim={(m) => claimMutation.mutate(m)}
+                            isClaiming={claimingMilestone === reward.milestone_months && claimMutation.isPending}
+                        />
+                    ))}
+                </div>
+            </div>
+
+            {/* Reward Modal */}
+            <RewardModal isOpen={showRewardModal} onClose={() => setShowRewardModal(false)} />
+        </AnimationErrorBoundary>
     )
 }
 
@@ -285,8 +412,8 @@ export default function Perfil() {
     if (isLoading) {
         return (
             <div className="max-w-2xl mx-auto px-4 py-12 space-y-6">
-                <div className="bg-[#1a1a1a] rounded-2xl h-64 animate-pulse" />
-                <div className="bg-[#1a1a1a] rounded-2xl h-48 animate-pulse" />
+                <div className="bg-[var(--t-bg2)] rounded-2xl h-64 animate-pulse" />
+                <div className="bg-[var(--t-bg2)] rounded-2xl h-48 animate-pulse" />
             </div>
         )
     }
@@ -295,19 +422,19 @@ export default function Perfil() {
         <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12 space-y-6">
             {/* Page title */}
             <div>
-                <p className="text-[#e63946] text-sm font-medium uppercase tracking-wider mb-2">Cuenta</p>
-                <h1 className="text-3xl font-black text-white">Mi Perfil</h1>
+                <p className="text-[var(--t-accent)] text-sm font-medium uppercase tracking-wider mb-2">Cuenta</p>
+                <h1 className="text-3xl font-black text-[var(--t-fg)]">Mi Perfil</h1>
             </div>
 
             {/* ── Profile card ── */}
-            <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl p-6">
+            <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-2xl p-6">
                 <div className="flex items-center gap-4 mb-6">
-                    <div className="w-16 h-16 bg-[#e63946]/10 border border-[#e63946]/20 rounded-full flex items-center justify-center">
-                        <User className="w-7 h-7 text-[#e63946]" />
+                    <div className="w-16 h-16 bg-[var(--t-accent)]/10 border border-[var(--t-accent)]/20 rounded-full flex items-center justify-center">
+                        <User className="w-7 h-7 text-[var(--t-accent)]" />
                     </div>
                     <div>
-                        <p className="font-bold text-white text-lg">{profile?.first_name} {profile?.last_name}</p>
-                        <p className="text-gray-400 text-sm">{profile?.email}</p>
+                        <p className="font-bold text-[var(--t-fg)] text-lg">{profile?.first_name} {profile?.last_name}</p>
+                        <p className="text-[var(--t-fg-muted)] text-sm">{profile?.email}</p>
                         <div className="flex items-center gap-2 mt-1 flex-wrap">
                             {profile?.email_verified ? (
                                 <span className="text-xs text-green-400 flex items-center gap-1">
@@ -317,7 +444,7 @@ export default function Perfil() {
                                 <span className="text-xs text-yellow-400">Email pendiente de verificar</span>
                             )}
                             {profile?.subscription?.status === 'ACTIVE' && (
-                                <span className="text-xs text-[#f4a261] bg-[#f4a261]/10 px-2 py-0.5 rounded-full">
+                                <span className="text-xs text-[var(--t-accent2)] bg-[var(--t-accent2)]/10 px-2 py-0.5 rounded-full">
                                     ⭐ Suscriptor
                                 </span>
                             )}
@@ -328,49 +455,49 @@ export default function Perfil() {
                 <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="space-y-4">
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label htmlFor="first_name" className="block text-sm font-medium text-gray-300 mb-1.5">Nombre</label>
+                            <label htmlFor="first_name" className="block text-sm font-medium text-[var(--t-fg)] mb-1.5">Nombre</label>
                             <input
                                 {...register('first_name')}
                                 id="first_name"
                                 autoComplete="given-name"
-                                className="w-full bg-[#0d0d0d] border border-[#2a2a2a] focus:border-[#e63946] rounded-lg px-3 py-2.5 text-white outline-none text-sm transition-colors"
+                                className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] focus:border-[var(--t-accent)] rounded-lg px-3 py-2.5 text-[var(--t-fg)] outline-none text-sm transition-colors"
                             />
-                            {errors.first_name && <p className="text-[#e63946] text-xs mt-1">{errors.first_name.message}</p>}
+                            {errors.first_name && <p className="text-[var(--t-accent)] text-xs mt-1">{errors.first_name.message}</p>}
                         </div>
                         <div>
-                            <label htmlFor="last_name" className="block text-sm font-medium text-gray-300 mb-1.5">Apellido</label>
+                            <label htmlFor="last_name" className="block text-sm font-medium text-[var(--t-fg)] mb-1.5">Apellido</label>
                             <input
                                 {...register('last_name')}
                                 id="last_name"
                                 autoComplete="family-name"
-                                className="w-full bg-[#0d0d0d] border border-[#2a2a2a] focus:border-[#e63946] rounded-lg px-3 py-2.5 text-white outline-none text-sm transition-colors"
+                                className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] focus:border-[var(--t-accent)] rounded-lg px-3 py-2.5 text-[var(--t-fg)] outline-none text-sm transition-colors"
                             />
                         </div>
                     </div>
                     <div>
-                        <label htmlFor="phone" className="block text-sm font-medium text-gray-300 mb-1.5">Teléfono</label>
+                        <label htmlFor="phone" className="block text-sm font-medium text-[var(--t-fg)] mb-1.5">Teléfono</label>
                         <input
                             {...register('phone')}
                             id="phone"
                             type="tel"
                             autoComplete="tel"
-                            className="w-full bg-[#0d0d0d] border border-[#2a2a2a] focus:border-[#e63946] rounded-lg px-4 py-2.5 text-white outline-none text-sm transition-colors"
+                            className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] focus:border-[var(--t-accent)] rounded-lg px-4 py-2.5 text-[var(--t-fg)] outline-none text-sm transition-colors"
                         />
                     </div>
                     <div>
-                        <label htmlFor="email_display" className="block text-sm font-medium text-gray-300 mb-1.5">Email</label>
+                        <label htmlFor="email_display" className="block text-sm font-medium text-[var(--t-fg)] mb-1.5">Email</label>
                         <input
                             id="email_display"
                             value={profile?.email}
                             disabled
                             autoComplete="off"
-                            className="w-full bg-[#111] border border-[#1a1a1a] rounded-lg px-4 py-2.5 text-gray-500 text-sm cursor-not-allowed"
+                            className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg px-4 py-2.5 text-[var(--t-fg-dimmed)] text-sm cursor-not-allowed"
                         />
                     </div>
                     <button
                         type="submit"
                         disabled={mutation.isPending}
-                        className="flex items-center gap-2 bg-[#e63946] hover:bg-[#c1121f] disabled:opacity-50 text-white font-semibold px-6 py-2.5 rounded-lg transition-all"
+                        className="flex items-center gap-2 bg-[var(--t-accent)] hover:bg-[var(--t-accent-hover)] disabled:opacity-50 text-[var(--t-fg)] font-semibold px-6 py-2.5 rounded-lg transition-all"
                     >
                         {mutation.isPending
                             ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

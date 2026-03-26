@@ -83,7 +83,7 @@ export function Navbar() {
                         >
                             <ShoppingCart className="w-5 h-5" />
                             {itemCount > 0 && (
-                                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1"
+                                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] text-[var(--t-fg)] text-[10px] font-bold rounded-full flex items-center justify-center px-1"
                                     style={{ background: 'var(--t-accent)' }}>
                                     {itemCount}
                                 </span>

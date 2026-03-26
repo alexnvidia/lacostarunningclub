@@ -426,7 +426,7 @@ export default function Home() {
                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                             <div className="flex-1">
                                 <div className="flex items-center gap-3 mb-3">
-                                    <span className={`text-xs font-medium capitalize ${difficultyColor[workout.difficulty_level as keyof typeof difficultyColor] ?? 'text-gray-400'}`}>
+                                    <span className={`text-xs font-medium capitalize ${difficultyColor[workout.difficulty_level as keyof typeof difficultyColor] ?? 'text-[var(--t-fg-muted)]'}`}>
                                         {workout.difficulty_level}
                                     </span>
                                     <span style={{ color: 'var(--t-border)' }}>·</span>

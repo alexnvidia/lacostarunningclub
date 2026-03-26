@@ -37,19 +37,19 @@ export default function Tienda() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             {/* Header */}
             <div className="mb-8">
-                <p className="text-[#e63946] text-sm font-medium uppercase tracking-wider mb-2">Tienda oficial</p>
-                <h1 className="text-4xl font-black text-white">Camisetas LCRC</h1>
+                <p className="text-[var(--t-accent)] text-sm font-medium uppercase tracking-wider mb-2">Tienda oficial</p>
+                <h1 className="text-4xl font-black text-[var(--t-fg)]">Camisetas LCRC</h1>
             </div>
 
             {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-3 mb-8">
                 <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--t-fg-dimmed)]" />
                     <input
                         value={search}
                         onChange={e => setSearch(e.target.value)}
                         placeholder="Buscar productos..."
-                        className="w-full bg-[#1a1a1a] border border-[#2a2a2a] focus:border-[#e63946] rounded-lg pl-10 pr-4 py-2.5 text-white placeholder-gray-600 outline-none text-sm transition-colors"
+                        className="w-full bg-[var(--t-bg2)] border border-[var(--t-border)] focus:border-[var(--t-accent)] rounded-lg pl-10 pr-4 py-2.5 text-[var(--t-fg)] placeholder-[var(--t-fg-dimmed)] outline-none text-sm transition-colors"
                     />
                 </div>
                 <div className="flex gap-2">
@@ -58,8 +58,8 @@ export default function Tienda() {
                             key={cat}
                             onClick={() => setCategory(cat)}
                             className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-colors border ${category === cat
-                                ? 'bg-[#e63946] border-[#e63946] text-white'
-                                : 'bg-[#1a1a1a] border-[#2a2a2a] text-gray-400 hover:text-white hover:border-[#3a3a3a]'
+                                ? 'bg-[var(--t-accent)] border-[var(--t-accent)] text-[var(--t-fg)]'
+                                : 'bg-[var(--t-bg2)] border-[var(--t-border)] text-[var(--t-fg-muted)] hover:text-[var(--t-fg)] hover:border-[var(--t-border)]'
                                 }`}
                         >
                             {cat === '' ? 'Todos' : cat === 't-shirts' ? 'Camisetas' : cat === 'hats' ? 'Gorras' : 'Accesorios'}
@@ -72,13 +72,13 @@ export default function Tienda() {
             {isLoading ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                     {Array.from({ length: 8 }).map((_, i) => (
-                        <div key={i} className="bg-[#1a1a1a] rounded-xl aspect-square animate-pulse" />
+                        <div key={i} className="bg-[var(--t-bg2)] rounded-xl aspect-square animate-pulse" />
                     ))}
                 </div>
             ) : products.length === 0 ? (
                 <div className="text-center py-20">
                     <ShoppingBag className="w-12 h-12 text-gray-700 mx-auto mb-4" />
-                    <p className="text-gray-500">No hay productos disponibles</p>
+                    <p className="text-[var(--t-fg-dimmed)]">No hay productos disponibles</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -86,23 +86,23 @@ export default function Tienda() {
                         <Link
                             key={product.id}
                             to={`/tienda/${product.id}`}
-                            className="group bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden hover:border-[#e63946]/30 transition-all hover:-translate-y-1"
+                            className="group bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-xl overflow-hidden hover:border-[var(--t-accent)]/30 transition-all hover:-translate-y-1"
                         >
                             {/* Image */}
                             <div className="aspect-square bg-[#2a2a2a] flex items-center justify-center overflow-hidden">
                                 {product.front_image_url ? (
                                     <img src={product.front_image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
                                 ) : (
-                                    <ShoppingBag className="w-10 h-10 text-gray-600" />
+                                    <ShoppingBag className="w-10 h-10 text-[var(--t-fg-dimmed)]" />
                                 )}
                             </div>
                             {/* Info */}
                             <div className="p-3">
-                                <p className="text-white font-medium text-sm line-clamp-1">{product.name}</p>
+                                <p className="text-[var(--t-fg)] font-medium text-sm line-clamp-1">{product.name}</p>
                                 <div className="flex items-center justify-between mt-1">
-                                    <span className="text-[#e63946] font-bold">{formatPrice(product.price)}</span>
+                                    <span className="text-[var(--t-accent)] font-bold">{formatPrice(product.price)}</span>
                                     {!product.in_stock && (
-                                        <span className="text-xs text-gray-500 bg-[#2a2a2a] px-2 py-0.5 rounded">Sin stock</span>
+                                        <span className="text-xs text-[var(--t-fg-dimmed)] bg-[#2a2a2a] px-2 py-0.5 rounded">Sin stock</span>
                                     )}
                                 </div>
                             </div>
