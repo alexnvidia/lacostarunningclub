@@ -157,13 +157,27 @@ function SubscriptionJourneyLegacy({
     // No subscription → empty state
     if (!subscription || subscription.status !== 'ACTIVE') {
         return (
-            <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-2xl p-6">
-                <div className="flex items-center gap-3 mb-2">
-                    <Award className="w-5 h-5 text-[var(--t-fg-dimmed)]" />
-                    <h2 className="text-[var(--t-fg)] font-bold text-lg">Mi suscripción</h2>
+            <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-3xl p-8 text-center relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--t-accent)]/5 rounded-full blur-3xl pointer-events-none" />
+                <div className="w-16 h-16 bg-[var(--t-accent)]/10 border border-[var(--t-accent)]/20 rounded-full flex items-center justify-center mx-auto mb-4 relative z-10">
+                    <Lock className="w-6 h-6 text-[var(--t-accent)]" />
                 </div>
-                <p className="text-[var(--t-fg-dimmed)] text-sm">
-                    Aún no tienes una suscripción activa. ¡Únete al club para desbloquear regalos exclusivos!
+                <h2 className="text-2xl font-black text-[var(--t-fg)] mb-3 relative z-10">Contenido Exclusivo LCRC</h2>
+                <p className="text-[var(--t-fg-muted)] mb-6 max-w-md mx-auto leading-relaxed relative z-10 text-sm">
+                    La zona de Performance, los rankings y entrenamientos del club están reservados solo para los miembros con suscripción activa.
+                </p>
+                <div className="flex flex-col items-center justify-center gap-4 relative z-10">
+                    <a 
+                        href="https://buymeacoffee.com/lacostarunningclub/membership"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full sm:w-auto bg-[var(--t-accent)] hover:bg-[var(--t-accent-hover)] text-[#ffffff] font-bold py-3 px-6 rounded-xl transition-all hover:-translate-y-1 shadow-lg shadow-[var(--t-accent)]/20 text-sm"
+                    >
+                        Suscribirme a LCRC Pass
+                    </a>
+                </div>
+                <p className="mt-6 text-xs text-[var(--t-fg-dimmed)] relative z-10">
+                    ¿Prefieres hacerlo en persona? Contacta con el staff de La Costa para formalizar tu inscripción y pago en nuestros eventos.
                 </p>
             </div>
         )
@@ -281,13 +295,27 @@ function SubscriptionJourney({
     // No subscription → empty state
     if (!subscription || subscription.status !== 'ACTIVE') {
         return (
-            <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-2xl p-6">
-                <div className="flex items-center gap-3 mb-2">
-                    <Award className="w-5 h-5 text-[var(--t-fg-dimmed)]" />
-                    <h2 className="text-[var(--t-fg)] font-bold text-lg">Mi suscripción</h2>
+            <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-3xl p-8 text-center relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--t-accent)]/5 rounded-full blur-3xl pointer-events-none" />
+                <div className="w-16 h-16 bg-[var(--t-accent)]/10 border border-[var(--t-accent)]/20 rounded-full flex items-center justify-center mx-auto mb-4 relative z-10">
+                    <Lock className="w-6 h-6 text-[var(--t-accent)]" />
                 </div>
-                <p className="text-[var(--t-fg-dimmed)] text-sm">
-                    Aún no tienes una suscripción activa. ¡Únete al club para desbloquear regalos exclusivos!
+                <h2 className="text-2xl font-black text-[var(--t-fg)] mb-3 relative z-10">Contenido Exclusivo LCRC</h2>
+                <p className="text-[var(--t-fg-muted)] mb-6 max-w-md mx-auto leading-relaxed relative z-10 text-sm">
+                    La zona de Performance, los rankings y entrenamientos del club están reservados solo para los miembros con suscripción activa.
+                </p>
+                <div className="flex flex-col items-center justify-center gap-4 relative z-10">
+                    <a 
+                        href="https://buymeacoffee.com/lacostarunningclub/membership"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full sm:w-auto bg-[var(--t-accent)] hover:bg-[var(--t-accent-hover)] text-[#ffffff] font-bold py-3 px-6 rounded-xl transition-all hover:-translate-y-1 shadow-lg shadow-[var(--t-accent)]/20 text-sm"
+                    >
+                        Suscribirme a LCRC Pass
+                    </a>
+                </div>
+                <p className="mt-6 text-xs text-[var(--t-fg-dimmed)] relative z-10">
+                    ¿Prefieres hacerlo en persona? Contacta con el staff de La Costa para formalizar tu inscripción y pago en nuestros eventos.
                 </p>
             </div>
         )
