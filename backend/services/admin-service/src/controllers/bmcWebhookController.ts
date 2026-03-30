@@ -175,7 +175,7 @@ export const bmcWebhookHandler = async (req: Request, res: Response): Promise<vo
 
         console.log(`✅ BMC webhook: subscription updated for user ${user.id} → ${status}`);
 
-        // ── 5. Registrar evento procesado (idempotencia) ──────────
+        // ── 5. Register processed event (idempotency) ──────────
         if (bmcEventId != null) {
             const eventIdStr = String(bmcEventId);
             try {
@@ -186,11 +186,11 @@ export const bmcWebhookHandler = async (req: Request, res: Response): Promise<vo
                         subscriptionId: subscription.id,
                     },
                 });
-                console.log(`📝 BMC webhook: event_id=${eventIdStr} registrado en bmc_webhook_events`);
+                console.log(`📝 BMC webhook: event_id=${eventIdStr} registered in bmc_webhook_events`);
             } catch (regErr) {
-                // No-fatal: si falla el registro (ej. raza de condición con event_id único),
-                // el upsert ya se ejecutó; solo logueamos.
-                console.error('⚠️  BMC webhook: no se pudo registrar el evento', regErr);
+                // Non-fatal: if registration fails (e.g. race condition with unique event_id),
+                // the upsert already executed; we just log it.
+                console.error('⚠️  BMC webhook: could not register event', regErr);
             }
         }
 

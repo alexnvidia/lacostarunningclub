@@ -17,7 +17,7 @@ export const setupBullBoard = (app: Express, path: string) => {
       serverAdapter: serverAdapter,
     });
 
-    // Montar el router
+    // Mount the router
     app.use(path, serverAdapter.getRouter());
 
     console.log(`📊 Bull Board initialized at ${path}`);

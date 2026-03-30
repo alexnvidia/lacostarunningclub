@@ -9,7 +9,7 @@ export enum EmailTemplate {
   EMAIL_VERIFICATION = 'email_verification',
 }
 
-// Tipos específicos para cada plantilla
+// Specific types for each template
 type PasswordResetData = {
   firstName: string;
   resetToken: string;
@@ -22,12 +22,12 @@ type EmailVerificationData = {
   appUrl: string;
 };
 
-// Union type para todos los datos posibles
+// Union type for all possible data
 type EmailTemplateData = WelcomeEmailData | PasswordResetData | EmailVerificationData;
 
 export interface EmailData {
   template: EmailTemplate;
-data: EmailTemplateData;
+  data: EmailTemplateData;
 }
 
 export function getEmailContent(emailData: EmailData): { subject: string; html: string; text: string } {
@@ -39,7 +39,6 @@ export function getEmailContent(emailData: EmailData): { subject: string; html: 
       };
 
     case EmailTemplate.PASSWORD_RESET:
-      // TODO: Implementar plantilla de reset password
       const resetData = emailData.data as PasswordResetEmailData;
       return {
         subject: '🔐 Restablece tu contraseña - La Costa Running Club',
@@ -47,7 +46,6 @@ export function getEmailContent(emailData: EmailData): { subject: string; html: 
       };
 
     case EmailTemplate.EMAIL_VERIFICATION:
-      // TODO: Implementar plantilla de verificación
       const verifyData = emailData.data as EmailVerificationData;
       const verificationUrl = `${verifyData.appUrl}/auth/verify-email?token=${verifyData.verificationToken}`;
       return {

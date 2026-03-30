@@ -9,11 +9,11 @@ console.log('📧 SMTP Configuration:', {
   user: process.env.SMTP_USER ? '✓' : '✗',
   pass: process.env.SMTP_PASS ? '✓' : '✗',
 });
-// Configurar transporter de nodemailer
+// Configure nodemailer transporter
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'sandbox.smtp.mailtrap.io',
   port: parseInt(process.env.SMTP_PORT || '2525', 10),
-  //secure: process.env.SMTP_SECURE === 'false', // true para 465, false para otros puertos
+  //secure: process.env.SMTP_SECURE === 'false', // true for 465, false for other ports
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
@@ -21,15 +21,15 @@ const transporter = nodemailer.createTransport({
 
   requireTLS: true,
   tls: {
-    // No verificar certificado (solo para desarrollo)
+    // Do not verify certificate (only for development)
     ciphers: 'SSLv3',
     rejectUnauthorized: false,
   },
 
 });
 
-// Verificar configuración al iniciar
-transporter.verify((error, success) => {
+// Verify configuration on startup
+transporter.verify((error, _success) => {
   if (error) {
     console.error('❌ SMTP configuration error:', error);
   } else {

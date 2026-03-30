@@ -6,8 +6,8 @@ const VALID_SURFACES = ['road', 'trail', 'track', 'mixed'];
 
 /**
  * POST /performance/results
- * Sube un nuevo resultado de carrera del usuario autenticado.
- * Todos los campos se guardan como columnas reales en UserPerformance.
+ * Uploads a new race result for the authenticated user.
+ * All fields are saved as real columns in UserPerformance.
  */
 export const uploadRaceResult = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
@@ -97,7 +97,7 @@ export const uploadRaceResult = async (req: AuthRequest, res: Response, next: Ne
 
 /**
  * GET /performance/results
- * Devuelve los resultados de carrera del usuario autenticado, con filtros opcionales.
+ * Returns the race results of the authenticated user, with optional filters.
  */
 export const getUserResults = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {

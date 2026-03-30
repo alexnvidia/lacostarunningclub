@@ -3,8 +3,8 @@ import { prisma, OrderStatus } from '@lcrc/shared';
 
 export const listAllOrders = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // 1. Extraer parámetros directamente de la Query String (req.query)
-    // Nota: req.query devuelve strings, así que casteamos a Number donde es necesario
+    // 1. Extract parameters directly from the Query String (req.query)
+    // Note: req.query returns strings, so we cast to Number where necessary
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 20;
     const skip = (page - 1) * limit;
@@ -21,7 +21,7 @@ export const listAllOrders = async (req: Request, res: Response, next: NextFunct
     const fromDate = req.query.from_date as string | undefined;
     const toDate = req.query.to_date as string | undefined;
 
-    // 2. Construir el objeto 'where' dinámicamente
+    // 2. Build the 'where' object dynamically
     const where: any = {};
 
     if (status) {
@@ -52,7 +52,7 @@ export const listAllOrders = async (req: Request, res: Response, next: NextFunct
       }
     }
 
-    // 3. Ejecutar consulta (Count + FindMany) en transacción
+    // 3. Execute query (Count + FindMany) in transaction
     const [total, orders] = await prisma.$transaction([
       prisma.order.count({ where }),
       prisma.order.findMany({
@@ -67,7 +67,7 @@ export const listAllOrders = async (req: Request, res: Response, next: NextFunct
       })
     ]);
 
-    // 4. Mapear respuesta al esquema 'AdminOrderView'
+    // 4. Map response to 'AdminOrderView' schema
     const mappedOrders = orders.map(order => ({
       id: order.id,
       order_number: order.orderNumber,
@@ -77,12 +77,12 @@ export const listAllOrders = async (req: Request, res: Response, next: NextFunct
         : 'Unknown User',
       order_date: order.createdAt,
       status: order.status,
-      // Convertir Decimal a Number si usas el tipo Decimal de Prisma
+      // Convert Decimal to Number if using Prisma Decimal type
       total: Number(order.totalAmount),
       total_items: order.items.reduce((sum, item) => sum + item.quantity, 0)
     }));
 
-    // 5. Enviar respuesta
+    // 5. Send response
     res.status(200).json({
       orders: mappedOrders,
       pagination: {

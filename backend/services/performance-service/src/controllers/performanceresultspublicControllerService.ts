@@ -3,9 +3,9 @@ import { prisma } from '@lcrc/shared';
 
 /**
  * GET /performance/results/public
- * Devuelve los resultados públicos de todos los usuarios, paginados.
- * Consulta directamente por is_public = true en la BD (sin filtrado en memoria).
- * No requiere autenticación.
+ * Returns the public results of all users, paginated.
+ * Queries directly for is_public = true in the DB (without in-memory filtering).
+ * Does not require authentication.
  */
 export const getPublicResults = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {

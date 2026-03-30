@@ -52,7 +52,7 @@ app.use(
         message: 'Malformed JSON in request body'
       });
     }
-    // Siempre llama next en otras rutas, así el linter/compilador lo considera cubierto
+    // Always call next in other routes, so the linter/compiler considers it covered
     return next(err);
   }
 );

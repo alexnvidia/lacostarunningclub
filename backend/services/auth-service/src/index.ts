@@ -122,7 +122,7 @@ if (USE_MOCK) {
       { expiresIn: '1h' }
     );
 
-    res.status(201).json({
+    return res.status(201).json({
       message: 'User registered successfully',
       token,
       refresh_token: `refresh-${Date.now()}`,
@@ -167,7 +167,7 @@ if (USE_MOCK) {
       { expiresIn: '1h' }
     );
 
-    res.json({
+    return res.json({
       message: 'Login successful',
       token,
       refresh_token: `refresh-${Date.now()}`,
@@ -200,7 +200,7 @@ if (USE_MOCK) {
       });
     }
 
-    res.json({ message: 'Password updated successfully' });
+    return res.json({ message: 'Password updated successfully' });
   });
 
   // POST /refresh-token - Refresh access token
@@ -220,7 +220,7 @@ if (USE_MOCK) {
       { expiresIn: '1h' }
     );
 
-    res.json({
+    return res.json({
       token: newToken,
       expires_in: 3600
     });
@@ -242,7 +242,7 @@ if (USE_MOCK) {
     try {
       const decoded = jwt.verify(token, JWT_SECRET) as any;
 
-      res.json({
+      return res.json({
         valid: true,
         user: {
           id: decoded.id,
@@ -252,7 +252,7 @@ if (USE_MOCK) {
         }
       });
     } catch (error) {
-      res.status(401).json({
+      return res.status(401).json({
         error: 'Invalid token',
         code: 'INVALID_TOKEN'
       });

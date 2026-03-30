@@ -3,6 +3,7 @@ node_modules/
 dist/
 build/
 *.tsbuildinfo
+frontend/app/dev-dist/
 
 # Archivos de producción
 *.log

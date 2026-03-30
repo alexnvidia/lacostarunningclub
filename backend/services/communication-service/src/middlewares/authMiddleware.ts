@@ -10,7 +10,7 @@ export interface AuthRequest extends Request {
 }
 
 /**
- * Verifica el JWT y adjunta los datos del usuario a req.user.
+ * Verifies the JWT and attaches the user data to req.user.
  */
 export const authMiddleware = (
     req: AuthRequest,
@@ -61,8 +61,8 @@ export const authMiddleware = (
 };
 
 /**
- * Verifica que el usuario autenticado tenga rol ADMIN.
- * Debe aplicarse después de authMiddleware.
+ * Verifies that the authenticated user has ADMIN role.
+ * Must be applied after authMiddleware.
  */
 export const isAdmin = (
     req: AuthRequest,

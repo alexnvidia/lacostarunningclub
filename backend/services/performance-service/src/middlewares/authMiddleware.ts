@@ -10,8 +10,8 @@ export interface AuthRequest extends Request {
 }
 
 /**
- * Middleware de autenticación: verifica el JWT y extrae el usuario.
- * Se aplica antes de las rutas que requieren autenticación.
+ * Authentication middleware: verifies the JWT and extracts the user.
+ * Applied before routes that require authentication.
  */
 export const authMiddleware = (
     req: AuthRequest,
@@ -75,8 +75,8 @@ export const authMiddleware = (
 };
 
 /**
- * Middleware de autorización: verifica que el usuario autenticado sea ADMIN.
- * Debe usarse DESPUÉS de authMiddleware.
+ * Authorization middleware: verifies that the authenticated user is ADMIN.
+ * Must be used AFTER authMiddleware.
  */
 export const isAdmin = (
     req: AuthRequest,

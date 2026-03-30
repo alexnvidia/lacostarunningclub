@@ -3,7 +3,7 @@ import { getWorkoutByWeekAndYear } from './performanceworkoutsControllerService'
 
 /**
  * GET /performance/workouts/:week/:year
- * Devuelve el entrenamiento de una semana y año específicos desde la BD.
+ * Returns the workout for a specific week and year from the DB.
  */
 export const getWorkoutByWeek = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {

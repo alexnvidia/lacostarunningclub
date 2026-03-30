@@ -46,7 +46,7 @@ if (args.length > 0) {
 } else if (!process.stdin.isTTY) {
     rawBody = fs.readFileSync('/dev/stdin', 'utf8').trim();
 } else {
-    // Modo interactivo: mostrar ejemplos
+    // Interactive mode: show examples
     const now = Math.floor(Date.now() / 1000);
     const examples = {
         'membership.started': {
@@ -88,28 +88,28 @@ if (args.length > 0) {
     process.exit(1);
 }
 
-// ── Validar JSON ──────────────────────────────────────────────────────────────
+// ── Validate JSON ──────────────────────────────────────────────────────────────
 let parsed;
 try {
     parsed = JSON.parse(rawBody);
 } catch {
-    console.error('❌  JSON inválido.');
+    console.error('❌  Invalid JSON.');
     process.exit(1);
 }
 
-// ── Validar secret ────────────────────────────────────────────────────────────
+// ── Validate secret ────────────────────────────────────────────────────────────
 const secret = process.env.BMC_WEBHOOK_SECRET;
 if (!secret) {
-    console.error('❌  BMC_WEBHOOK_SECRET no está definido. Revisa el .env');
+    console.error('❌  BMC_WEBHOOK_SECRET is not defined. Check .env');
     process.exit(1);
 }
 
-// ── Calcular firma (igual que el controller) ──────────────────────────────────
-// Siempre usa la forma minificada del JSON (sin espacios extra)
+// ── Calculate signature (same as controller) ──────────────────────────────────
+// Always use the minified form of JSON (without extra spaces)
 const bodyStr = JSON.stringify(parsed);
 const signature = crypto.createHmac('sha256', secret).update(bodyStr).digest('hex');
 
-// ── Mostrar resultado ─────────────────────────────────────────────────────────
+// ── Show result ─────────────────────────────────────────────────────────
 if (pretty) {
     console.log('\n══════════════════════════════════════════════════════════');
     console.log('  🔐  BMC Webhook — Firma HMAC-SHA256');

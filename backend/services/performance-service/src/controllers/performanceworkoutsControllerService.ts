@@ -33,7 +33,7 @@ function mapWorkout(w: any) {
 
 /**
  * GET /performance/workouts
- * Devuelve el entrenamiento publicado de la semana actual.
+ * Returns the published workout for the current week.
  */
 export const getCurrentWorkout = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
@@ -65,7 +65,7 @@ export const getCurrentWorkout = async (_req: Request, res: Response, next: Next
 
 /**
  * POST /performance/workouts
- * Crea o actualiza un entrenamiento semanal. Solo ADMIN.
+ * Creates or updates a weekly workout. ADMIN only.
  */
 export const createWorkout = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
@@ -149,7 +149,7 @@ export const createWorkout = async (req: AuthRequest, res: Response, next: NextF
       publishedAt: new Date(),
     };
 
-    // Upsert: crea si no existe, actualiza si ya existe para esa semana/año
+    // Upsert: creates if not exists, updates if exists for that week/year
     const workout = await prisma.weeklyWorkout.upsert({
       where: { weekNumber_year: { weekNumber: parsedWeek, year: parsedYear } },
       create: data,
@@ -163,7 +163,7 @@ export const createWorkout = async (req: AuthRequest, res: Response, next: NextF
 };
 
 /**
- * Helper: devuelve un workout por semana y año desde la BD.
+ * Helper: returns a workout by week and year from the DB.
  */
 export async function getWorkoutByWeekAndYear(week: number, year: number) {
   return prisma.weeklyWorkout.findUnique({

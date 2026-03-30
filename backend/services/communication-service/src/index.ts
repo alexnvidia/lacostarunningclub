@@ -308,31 +308,31 @@ if (USE_MOCK) {
     startServer();
   } else {
 
-    // ===== RUTAS AUTENTICADAS (usuario) =====
+    // ===== AUTHENTICATED ROUTES (USER) =====
 
-    // POST /messages - Crear nuevo mensaje
+    // POST /messages - Create new message
     app.post('/communication/messages', authMiddleware, (req: Request, res: Response, next: NextFunction) => {
       messagesController.createMessage(req, res, next);
     });
 
-    // GET /messages - Listar mensajes del usuario
+    // GET /messages - List user messages
     app.get('/communication/messages', authMiddleware, (req: Request, res: Response, next: NextFunction) => {
       messagesController.listMessages(req, res, next);
     });
 
-    // GET /messages/:id - Ver detalle de un mensaje
+    // GET /messages/:id - View message details
     app.get('/communication/messages/:id', authMiddleware, (req: Request, res: Response, next: NextFunction) => {
       messagesIdController.getMessage(req, res, next);
     });
 
-    // POST /messages/:id/replies - Responder a un mensaje
+    // POST /messages/:id/replies - Reply to a message
     app.post('/communication/messages/:id/replies', authMiddleware, (req: Request, res: Response, next: NextFunction) => {
       repliesController.replyToMessage(req, res, next);
     });
 
-    // ===== RUTA ADMIN (authMiddleware → isAdmin → controller) =====
+    // ===== ADMIN ROUTE (authMiddleware → isAdmin → controller) =====
 
-    // PATCH /messages/:id - Actualizar estado del mensaje (ADMIN)
+    // PATCH /messages/:id - Update message status (ADMIN)
     app.patch('/communication/messages/:id', authMiddleware, isAdmin, (req: Request, res: Response, next: NextFunction) => {
       messagesIdController.updateMessage(req, res, next);
     });

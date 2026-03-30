@@ -17,8 +17,8 @@ app.use((req, _res, next) => {
 });
 
 app.get('/health', (_req: Request, res: Response) => {
-  res.json({ 
-    status: 'ok', 
+  res.json({
+    status: 'ok',
     service: 'order-service',
     mode: USE_MOCK ? 'mock' : 'production',
     timestamp: new Date().toISOString()
@@ -43,10 +43,10 @@ const startServer = () => {
 
 if (USE_MOCK) {
   console.log('🎭 Starting Order Service in MOCK mode...');
-  
+
   // Mock orders database
   const mockOrders: any[] = [];
-  
+
   app.get('/', (_req: Request, res: Response) => {
     res.json({
       service: 'order-service',
@@ -67,27 +67,27 @@ if (USE_MOCK) {
     const userId = req.headers['x-user-id'] as string;
     const userEmail = req.headers['x-user-email'] as string;
     const { items, shipping_address, customer_notes } = req.body;
-    
+
     console.log(`📦 Creating order for user: ${userId}`);
-    
+
     if (!items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({
         error: 'Items are required',
         code: 'VALIDATION_ERROR'
       });
     }
-    
+
     if (!shipping_address) {
       return res.status(400).json({
         error: 'Shipping address is required',
         code: 'VALIDATION_ERROR'
       });
     }
-    
+
     const subtotal = items.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
     const shippingCost = subtotal > 50 ? 0 : 5.99;
     const total = subtotal + shippingCost;
-    
+
     const newOrder = {
       id: `order-${Date.now()}`,
       order_number: `ORD-${new Date().getFullYear()}-${String(mockOrders.length + 1).padStart(4, '0')}`,
@@ -110,25 +110,25 @@ if (USE_MOCK) {
         comment: 'Order created'
       }]
     };
-    
+
     mockOrders.push(newOrder);
-    
-    res.status(201).json(newOrder);
+
+    return res.status(201).json(newOrder);
   });
 
   // GET / - List user orders
   app.get('/orders/orders', (req: Request, res: Response) => {
     const userId = req.headers['x-user-id'] as string;
     const { status, page = 1, limit = 20 } = req.query;
-    
+
     console.log(`📦 Listing orders for user: ${userId}`);
-    
+
     let userOrders = mockOrders.filter(o => o.user_id === userId);
-    
+
     if (status) {
       userOrders = userOrders.filter(o => o.status === status);
     }
-    
+
     // If no orders, return mock data
     if (userOrders.length === 0) {
       userOrders = [
@@ -143,7 +143,7 @@ if (USE_MOCK) {
         }
       ];
     }
-    
+
     res.json({
       orders: userOrders,
       pagination: {
@@ -159,11 +159,11 @@ if (USE_MOCK) {
   app.get('/orders/orders/:id', (req: Request, res: Response) => {
     const { id } = req.params;
     const userId = req.headers['x-user-id'] as string;
-    
+
     console.log(`📦 Get order details: ${id}`);
-    
+
     const order = mockOrders.find(o => o.id === id && o.user_id === userId);
-    
+
     if (!order) {
       // Return mock order
       return res.json({
@@ -211,35 +211,35 @@ if (USE_MOCK) {
         ]
       });
     }
-    
-    res.json(order);
+
+    return res.json(order);
   });
 
   // DELETE /:id - Cancel order
   app.delete('/orders/orders/:id', (req: Request, res: Response) => {
     const { id } = req.params;
     const userId = req.headers['x-user-id'] as string;
-    
+
     console.log(`❌ Cancel order: ${id} by user: ${userId}`);
-    
+
     const orderIndex = mockOrders.findIndex(o => o.id === id && o.user_id === userId);
-    
+
     if (orderIndex === -1) {
       return res.status(404).json({
         error: 'Order not found',
         code: 'NOT_FOUND'
       });
     }
-    
+
     const order = mockOrders[orderIndex];
-    
+
     if (!['pending', 'confirmed'].includes(order.status)) {
       return res.status(400).json({
         error: 'Order cannot be cancelled',
         code: 'INVALID_STATUS'
       });
     }
-    
+
     order.status = 'cancelled';
     order.status_history.push({
       previous_status: order.status,
@@ -247,101 +247,101 @@ if (USE_MOCK) {
       changed_at: new Date().toISOString(),
       comment: 'Cancelled by user'
     });
-    
-    res.json({ message: 'Order cancelled successfully', order });
+
+    return res.json({ message: 'Order cancelled successfully', order });
   });
 
   // PATCH /:id/status - Update order status (ADMIN ONLY)
-app.patch('/orders/:id/status', (req: Request, res: Response) => {
-  const { id } = req.params;
-  const userRole = req.headers['x-user-role'] as string;
-  const { status, tracking_number, admin_notes } = req.body;
-  
-  console.log(`📝 Update order status: ${id} by admin`);
-  
-  // Verificar que quien actualiza es admin
-  if (userRole !== 'admin') {
-    return res.status(403).json({
-      error: 'Forbidden - Admin access required',
-      code: 'FORBIDDEN'
-    });
-  }
-  
-  if (!status) {
-    return res.status(400).json({
-      error: 'Status is required',
-      code: 'VALIDATION_ERROR'
-    });
-  }
-  
-  // Validar que el status es válido
-  const validStatuses = ['pending', 'confirmed', 'preparing', 'shipped', 'delivered', 'cancelled'];
-  if (!validStatuses.includes(status)) {
-    return res.status(400).json({
-      error: `Invalid status. Valid values: ${validStatuses.join(', ')}`,
-      code: 'INVALID_STATUS'
-    });
-  }
-  
-  const orderIndex = mockOrders.findIndex(o => o.id === id);
-  
-  if (orderIndex === -1) {
-    return res.status(404).json({
-      error: 'Order not found',
-      code: 'NOT_FOUND'
-    });
-  }
-  
-  const order = mockOrders[orderIndex];
-  const previousStatus = order.status;
-  
-  // Actualizar el estado
-  order.status = status;
-  
-  // Actualizar tracking number si se proporciona
-  if (tracking_number) {
-    order.tracking_number = tracking_number;
-  }
-  
-  // Actualizar notas de admin si se proporcionan
-  if (admin_notes) {
-    order.admin_notes = admin_notes;
-  }
-  
-  // Añadir al historial de estado
-  order.status_history.push({
-    previous_status: previousStatus,
-    new_status: status,
-    changed_at: new Date().toISOString(),
-    comment: admin_notes || `Status changed to ${status} by admin`
-  });
-  
-  res.json({
-    message: 'Order status updated successfully',
-    order: {
-      id: order.id,
-      order_number: order.order_number,
-      status: order.status,
-      tracking_number: order.tracking_number,
-      admin_notes: order.admin_notes,
-      updated_at: new Date().toISOString()
+  app.patch('/orders/:id/status', (req: Request, res: Response) => {
+    const { id } = req.params;
+    const userRole = req.headers['x-user-role'] as string;
+    const { status, tracking_number, admin_notes } = req.body;
+
+    console.log(`📝 Update order status: ${id} by admin`);
+
+    // Verify that the updater is an admin
+    if (userRole !== 'admin') {
+      return res.status(403).json({
+        error: 'Forbidden - Admin access required',
+        code: 'FORBIDDEN'
+      });
     }
+
+    if (!status) {
+      return res.status(400).json({
+        error: 'Status is required',
+        code: 'VALIDATION_ERROR'
+      });
+    }
+
+    // Validate that the status is valid
+    const validStatuses = ['pending', 'confirmed', 'preparing', 'shipped', 'delivered', 'cancelled'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        error: `Invalid status. Valid values: ${validStatuses.join(', ')}`,
+        code: 'INVALID_STATUS'
+      });
+    }
+
+    const orderIndex = mockOrders.findIndex(o => o.id === id);
+
+    if (orderIndex === -1) {
+      return res.status(404).json({
+        error: 'Order not found',
+        code: 'NOT_FOUND'
+      });
+    }
+
+    const order = mockOrders[orderIndex];
+    const previousStatus = order.status;
+
+    // Update the status
+    order.status = status;
+
+    // Update tracking number if provided
+    if (tracking_number) {
+      order.tracking_number = tracking_number;
+    }
+
+    // Update admin notes if provided
+    if (admin_notes) {
+      order.admin_notes = admin_notes;
+    }
+
+    // Add to status history
+    order.status_history.push({
+      previous_status: previousStatus,
+      new_status: status,
+      changed_at: new Date().toISOString(),
+      comment: admin_notes || `Status changed to ${status} by admin`
+    });
+
+    return res.json({
+      message: 'Order status updated successfully',
+      order: {
+        id: order.id,
+        order_number: order.order_number,
+        status: order.status,
+        tracking_number: order.tracking_number,
+        admin_notes: order.admin_notes,
+        updated_at: new Date().toISOString()
+      }
+    });
   });
-});
 
   // GET /history - Order history with filters
   app.get('/orders/orders/history', (req: Request, res: Response) => {
     const userId = req.headers['x-user-id'] as string;
     const { from_date, to_date, status } = req.query;
-    
+
     console.log(`📜 Order history for user: ${userId}`);
-    
+
     let userOrders = mockOrders.filter(o => o.user_id === userId);
-    
+
     if (status) {
       userOrders = userOrders.filter(o => o.status === status);
     }
-    
+
     res.json({
       orders: userOrders.length > 0 ? userOrders : [
         {
@@ -377,12 +377,12 @@ app.patch('/orders/:id/status', (req: Request, res: Response) => {
   });
 
   startServer();
-  
+
 } else {
   console.log('🚀 Starting Order Service in PRODUCTION mode with OAS Tools...');
-  
+
   const oasFilePath = path.resolve(process.cwd(), '../../docs/openapi/order-service.yaml');
-  
+
   if (!fs.existsSync(oasFilePath)) {
     console.warn(`⚠️  OpenAPI file not found: ${oasFilePath}`);
     app.get('*', (_req, res) => {

@@ -128,7 +128,7 @@ if (USE_MOCK) {
 
     mockResults.push(newResult);
 
-    res.status(201).json(newResult);
+    return res.status(201).json(newResult);
   });
 
   // GET /performance/results - Get user's race results
@@ -257,7 +257,7 @@ if (USE_MOCK) {
     }
 
     // Return mock workout
-    res.json({
+    return res.json({
       id: `workout-${year}-${week}`,
       week_number: Number(week),
       year: Number(year),
@@ -344,7 +344,7 @@ if (USE_MOCK) {
 
     mockWorkouts.push(newWorkout);
 
-    res.status(201).json(newWorkout);
+    return res.status(201).json(newWorkout);
   });
 
   app.use('*', (req: Request, res: Response) => {
@@ -377,36 +377,36 @@ if (USE_MOCK) {
 
   // ===== PUBLIC ROUTES =====
 
-  // GET /performance/results/public - Resultados públicos de carrera (sin auth)
+  // GET /performance/results/public - Public race results (no auth)
   app.get('/performance/results/public', (req: Request, res: Response, next: NextFunction) => {
     publicResultsController.getPublicResults(req, res, next);
   });
 
-  // GET /performance/workouts - Entrenamiento de la semana actual (sin auth)
+  // GET /performance/workouts - Current week's workout (no auth)
   app.get('/performance/workouts', (req: Request, res: Response, next: NextFunction) => {
     workoutsController.getCurrentWorkout(req, res, next);
   });
 
-  // GET /performance/workouts/:week/:year - Entrenamiento por semana/año (sin auth)
+  // GET /performance/workouts/:week/:year - Workout by week/year (no auth)
   app.get('/performance/workouts/:week/:year', (req: Request, res: Response, next: NextFunction) => {
     workoutsByWeekController.getWorkoutByWeek(req, res, next);
   });
 
   // ===== AUTHENTICATED USER ROUTES =====
 
-  // POST /performance/results - Subir resultado de carrera (requiere auth)
+  // POST /performance/results - Upload race result (requires auth)
   app.post('/performance/results', authMiddleware, (req: Request, res: Response, next: NextFunction) => {
     resultsController.uploadRaceResult(req, res, next);
   });
 
-  // GET /performance/results - Consultar propios resultados (requiere auth)
+  // GET /performance/results - Get user's own results (requires auth)
   app.get('/performance/results', authMiddleware, (req: Request, res: Response, next: NextFunction) => {
     resultsController.getUserResults(req, res, next);
   });
 
   // ===== ADMIN-ONLY ROUTES =====
 
-  // POST /performance/workouts - Crear entrenamiento semanal (solo ADMIN)
+  // POST /performance/workouts - Create weekly workout (ADMIN only)
   app.post('/performance/workouts', authMiddleware, isAdmin, (req: Request, res: Response, next: NextFunction) => {
     workoutsController.createWorkout(req, res, next);
   });

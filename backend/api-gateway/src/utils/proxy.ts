@@ -2,14 +2,14 @@ import axios, { AxiosRequestConfig, AxiosInstance } from 'axios';
 import { Request, Response } from 'express';
 import logger from './logger';
 
-// Crear instancia de Axios reutilizable con configuración optimizada
+// Create reusable Axios instance with optimized configuration
 const proxyClient: AxiosInstance = axios.create({
   timeout: 30000,
   maxRedirects: 5,
   validateStatus: () => true,
 });
 
-// Headers que NO deben ser forwardeados
+// Headers that should NOT be forwarded
 const HEADERS_BLACKLIST = [
   'host',
   'connection',
@@ -19,7 +19,7 @@ const HEADERS_BLACKLIST = [
   'content-length',
 ];
 
-// Métodos HTTP que NO deben tener body
+// HTTP methods that should NOT have body
 const NO_BODY_METHODS = ['GET', 'HEAD'];
 
 export const proxyRequest = async (
@@ -39,7 +39,7 @@ export const proxyRequest = async (
     //  req.path = "/results/public"
     //
     //  requestPath = "/performance/results/public"
-    
+
     const API_PREFIX = process.env.API_PREFIX || '/api';
     // we obtain the service prefix from baseUrl by removing the API_PREFIX
     const servicePrefixFromBase = req.baseUrl.replace(API_PREFIX, '');
@@ -82,10 +82,10 @@ export const proxyRequest = async (
       }
     });
 
-    // Manejar diferentes tipos de respuesta
+    // Manage different response types
     const contentType = response.headers['content-type'];
     res.status(response.status);
-    
+
     if (contentType?.includes('application/json')) {
       res.json(response.data);
     } else if (contentType?.includes('text')) {
@@ -103,23 +103,23 @@ export const proxyRequest = async (
     };
 
     if (error.response) {
-      // El microservicio respondió con error
+      // The microservice responded with an error
       logger.error(
         `Proxy error: ${error.response.status} from ${targetUrl}`,
         { ...errorContext, status: error.response.status }
       );
-      
-      // Forward headers de error también
+
+      // Forward error headers too
       Object.entries(error.response.headers || {}).forEach(([key, value]) => {
         if (!HEADERS_BLACKLIST.includes(key.toLowerCase())) {
           res.setHeader(key, value as string);
         }
       });
-      
+
       res.status(error.response.status).json(error.response.data);
-      
+
     } else if (error.request) {
-      // No se pudo conectar al microservicio
+      // Could not connect to the microservice
       logger.error(
         `Service unavailable: ${targetUrl} - ${error.message}`,
         errorContext
@@ -129,9 +129,9 @@ export const proxyRequest = async (
         code: 'SERVICE_UNAVAILABLE',
         message: 'The requested service is currently unavailable.',
       });
-      
+
     } else if (error.code === 'ECONNABORTED') {
-      // Timeout específico
+      // Specific timeout
       logger.error(
         `Service timeout: ${targetUrl} exceeded 30s`,
         errorContext
@@ -141,9 +141,9 @@ export const proxyRequest = async (
         code: 'GATEWAY_TIMEOUT',
         message: 'The service took too long to respond.',
       });
-      
+
     } else {
-      // Error en la configuración de la request
+      // Error in the request configuration
       logger.error(
         `Proxy configuration error: ${error.message}`,
         errorContext

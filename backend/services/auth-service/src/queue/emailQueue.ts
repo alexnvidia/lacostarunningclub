@@ -1,21 +1,20 @@
 import Bull from 'bull';
-import Redis from 'ioredis';
 
-// Configuración para Bull - sin maxRetriesPerRequest
+// Configuration for Bull - without maxRetriesPerRequest
 const redisConfig = {
   host: process.env.REDIS_HOST || 'localhost',
   port: parseInt(process.env.REDIS_PORT || '6379', 10),
   password: process.env.REDIS_PASSWORD || undefined,
-  maxRetriesPerRequest: null, // Importante para Bull
-  enableReadyCheck: false,    // Importante para Bull
+  maxRetriesPerRequest: null, // Important for Bull
+  enableReadyCheck: false,    // Important for Bull
 };
 
-// Crear cola de emails
+// Create email queue
 export const emailQueue = new Bull('email-queue', {
   redis: redisConfig,
 });
 
-// Configuración de la cola
+// Queue configuration
 emailQueue.on('error', (error) => {
   console.error('❌ Email queue error:', error);
 });

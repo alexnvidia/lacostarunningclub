@@ -149,7 +149,7 @@ if (USE_MOCK) {
       });
     }
 
-    res.json({
+    return res.json({
       product_id: id,
       product_name: product.name,
       stock: product.stock,
@@ -179,7 +179,7 @@ if (USE_MOCK) {
       });
     }
 
-    res.json(product);
+    return res.json(product);
   });
 
   // POST / - Create product (ADMIN)
@@ -219,7 +219,7 @@ if (USE_MOCK) {
 
     mockProducts.push(newProduct);
 
-    res.status(201).json(newProduct);
+    return res.status(201).json(newProduct);
   });
 
   // PUT /:id - Update product (ADMIN)
@@ -251,7 +251,7 @@ if (USE_MOCK) {
       id // Preserve ID
     };
 
-    res.json(mockProducts[productIndex]);
+    return res.json(mockProducts[productIndex]);
   });
 
   // DELETE /:id - Delete product (ADMIN)
@@ -279,7 +279,7 @@ if (USE_MOCK) {
 
     mockProducts.splice(productIndex, 1);
 
-    res.json({ message: 'Product deleted successfully' });
+    return res.json({ message: 'Product deleted successfully' });
   });
 
 
