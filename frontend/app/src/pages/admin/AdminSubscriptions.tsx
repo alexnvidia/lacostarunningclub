@@ -148,7 +148,7 @@ function RewardsBadge({ userId }: { userId: string }) {
 }
 
 // ── Main page ────────────────────────────────────────────────────────────────
-export default function AdminSuscripciones() {
+export default function AdminSubscriptions() {
     const [page, setPage] = useState(1)
     const [showForm, setShowForm] = useState(false)
     const qc = useQueryClient()

@@ -7,7 +7,7 @@ const api = axios.create({
     timeout: 15000,
 })
 
-// Inyectar JWT en cada request
+// Inject JWT in each request
 api.interceptors.request.use((config) => {
     const token = useAuthStore.getState().token
     if (token) {
@@ -27,8 +27,8 @@ api.interceptors.response.use(
                 const refreshToken = useAuthStore.getState().refreshToken
                 if (!refreshToken) {
                     useAuthStore.getState().logout()
-                    // Solo redirigimos si NO estamos ya en una página de autenticación
-                    // (evita el reload al hacer login con credenciales incorrectas)
+                    // Only redirect if we are NOT already on an authentication page
+                    // (avoids reload when logging in with incorrect credentials)
                     const authPaths = ['/login', '/registro']
                     if (!authPaths.some(p => window.location.pathname.startsWith(p))) {
                         window.location.href = '/login'

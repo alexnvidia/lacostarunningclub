@@ -11,7 +11,7 @@ interface MyResult {
     location?: string; surface_type?: string; is_public: boolean
 }
 
-export default function MisCarreras() {
+export default function MyRaces() {
     const { data, isLoading } = useQuery({
         queryKey: queryKeys.performance.resultsMine(),
         queryFn: () => api.get<{ results: MyResult[] }>('/api/performance/results').then(r => r.data),

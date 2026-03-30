@@ -14,7 +14,7 @@ const STATUS: Record<string, { label: string; color: string }> = {
     RETURNED: { label: 'Devuelto', color: 'text-[var(--t-accent)] bg-[var(--t-accent)]/10' },
 }
 
-export default function Pedidos() {
+export default function Orders() {
     const { data, isLoading } = useQuery({
         queryKey: queryKeys.orders.list(),
         queryFn: () => api.get('/api/orders').then(r => r.data),

@@ -97,7 +97,7 @@ function ProductThumbnail({ src, alt }: { src: string | null; alt: string }) {
 
 // ─── Main component ─────────────────────────────────────────────────────────
 
-export default function AdminProductos() {
+export default function AdminProducts() {
     const qc = useQueryClient()
 
     // filters

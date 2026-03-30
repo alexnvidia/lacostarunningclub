@@ -12,7 +12,7 @@ const STATUS: Record<string, { label: string; color: string }> = {
     CLOSED: { label: 'Cerrado', color: 'text-[var(--t-fg-dimmed)]' },
 }
 
-export default function Soporte() {
+export default function Support() {
     const { data, isLoading } = useQuery({
         queryKey: queryKeys.tickets.list(),
         queryFn: () => api.get('/api/communication/messages').then(r => r.data),

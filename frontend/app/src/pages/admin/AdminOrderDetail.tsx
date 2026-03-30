@@ -45,7 +45,7 @@ interface UpdateForm {
     tracking_number: string
 }
 
-export default function AdminPedidoDetalle() {
+export default function AdminOrderDetail() {
     const { id } = useParams<{ id: string }>()
     const qc = useQueryClient()
 

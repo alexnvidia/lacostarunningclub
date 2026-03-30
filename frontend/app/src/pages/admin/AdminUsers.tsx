@@ -31,7 +31,7 @@ function useDebounce(fn: (v: string) => void, delay: number) {
     }, [fn, delay]) // eslint-disable-line react-hooks/exhaustive-deps
 }
 
-export default function AdminUsuarios() {
+export default function AdminUsers() {
     const [search, setSearch] = useState('')
     const [debouncedSearch, setDebouncedSearch] = useState('')
     const [roleFilter, setRoleFilter] = useState('')
@@ -119,8 +119,8 @@ export default function AdminUsuarios() {
                                 </div>
                                 <p className="text-[var(--t-fg-muted)] text-sm truncate">{user.email}</p>
                                 <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium w-fit ${user.role === 'ADMIN'
-                                        ? 'bg-[var(--t-accent)]/10 text-[var(--t-accent)]'
-                                        : 'bg-gray-500/10 text-[var(--t-fg-muted)]'
+                                    ? 'bg-[var(--t-accent)]/10 text-[var(--t-accent)]'
+                                    : 'bg-gray-500/10 text-[var(--t-fg-muted)]'
                                     }`}>
                                     {user.role}
                                 </span>

@@ -33,7 +33,7 @@ const STATUS_COLORS: Record<string, string> = {
     RETURNED: 'bg-gray-500/10 text-[var(--t-fg-muted)]',
 }
 
-export default function AdminPedidos() {
+export default function AdminOrders() {
     const [status, setStatus] = useState('')
     const [page, setPage] = useState(1)
 

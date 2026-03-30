@@ -24,7 +24,7 @@ interface TicketData {
     replies: Reply[]
 }
 
-export default function TicketDetalle() {
+export default function TicketDetail() {
     const { id } = useParams<{ id: string }>()
     const qc = useQueryClient()
     const msgEndRef = useRef<HTMLDivElement>(null)
@@ -33,7 +33,7 @@ export default function TicketDetalle() {
         queryKey: queryKeys.tickets.detail(id!),
         queryFn: () => api.get(`/api/communication/messages/${id}`).then(r => r.data),
         enabled: !!id,
-        staleTime: 0,          // siempre refresca al entrar para tener el status real
+        staleTime: 0,          // always refreshes when entering to have the real status
         refetchInterval: 15000,
     })
 

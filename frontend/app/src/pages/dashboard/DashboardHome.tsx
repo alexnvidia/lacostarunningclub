@@ -54,7 +54,7 @@ export default function DashboardHome() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Últimos pedidos */}
+                {/* Latest orders */}
                 <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-xl overflow-hidden">
                     <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--t-border)]">
                         <h2 className="font-semibold text-[var(--t-fg)]">Últimos pedidos</h2>
@@ -83,7 +83,7 @@ export default function DashboardHome() {
                     )}
                 </div>
 
-                {/* Mis resultados recientes */}
+                {/* Recent results */}
                 <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-xl overflow-hidden">
                     <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--t-border)]">
                         <h2 className="font-semibold text-[var(--t-fg)]">Mis carreras</h2>

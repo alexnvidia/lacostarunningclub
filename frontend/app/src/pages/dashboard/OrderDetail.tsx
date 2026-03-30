@@ -6,7 +6,7 @@ import { queryKeys } from '@/lib/query-keys'
 import { formatDate, formatPrice } from '@/lib/utils'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-export default function PedidoDetalle() {
+export default function OrderDetail() {
     const { id } = useParams<{ id: string }>()
     const navigate = useNavigate()
     const qc = useQueryClient()

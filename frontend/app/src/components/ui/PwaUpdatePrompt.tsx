@@ -1,10 +1,10 @@
 import { useRegisterSW } from 'virtual:pwa-register/react'
 
 /**
- * Muestra un toast en la esquina inferior derecha cuando hay una nueva
- * versión del Service Worker lista para activarse.
+ * Show a toast in the bottom right corner when there is a new
+ * version of the Service Worker ready to be activated.
  *
- * Patrón: registerType: 'prompt' → el usuario elige cuándo actualizar.
+ * Pattern: registerType: 'prompt' → the user chooses when to update.
  */
 export function PwaUpdatePrompt() {
   const {

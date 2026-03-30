@@ -19,7 +19,7 @@ interface FormFields {
     is_public: boolean
 }
 
-export default function SubirResultado() {
+export default function UploadResult() {
     const navigate = useNavigate()
     const qc = useQueryClient()
 

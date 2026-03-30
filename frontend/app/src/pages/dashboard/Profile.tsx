@@ -54,10 +54,10 @@ type FormData = z.infer<typeof schema>
 const MILESTONES = [3, 6, 9, 12]
 
 const MILESTONE_META: Record<number, { label: string; emoji: string; gift: string }> = {
-    3:  { label: '3 meses',  emoji: '🎽', gift: 'Camiseta exclusiva LCRC' },
-    6:  { label: '6 meses',  emoji: '🧢', gift: 'Gorra de corredor LCRC'  },
-    9:  { label: '9 meses',  emoji: '🎒', gift: 'Mochila de trail running' },
-    12: { label: '1 año',    emoji: '🏅', gift: 'Medalla de oro aniversario' },
+    3: { label: '3 meses', emoji: '🎽', gift: 'Camiseta exclusiva LCRC' },
+    6: { label: '6 meses', emoji: '🧢', gift: 'Gorra de corredor LCRC' },
+    9: { label: '9 meses', emoji: '🎒', gift: 'Mochila de trail running' },
+    12: { label: '1 año', emoji: '🏅', gift: 'Medalla de oro aniversario' },
 }
 
 // ── Sub-component: Milestone card ─────────────────────────────────────────────
@@ -167,7 +167,7 @@ function SubscriptionJourneyLegacy({
                     La zona de Performance, los rankings y entrenamientos del club están reservados solo para los miembros con suscripción activa.
                 </p>
                 <div className="flex flex-col items-center justify-center gap-4 relative z-10">
-                    <a 
+                    <a
                         href="https://buymeacoffee.com/lacostarunningclub/membership"
                         target="_blank"
                         rel="noopener noreferrer"
@@ -305,7 +305,7 @@ function SubscriptionJourney({
                     La zona de Performance, los rankings y entrenamientos del club están reservados solo para los miembros con suscripción activa.
                 </p>
                 <div className="flex flex-col items-center justify-center gap-4 relative z-10">
-                    <a 
+                    <a
                         href="https://buymeacoffee.com/lacostarunningclub/membership"
                         target="_blank"
                         rel="noopener noreferrer"
@@ -408,7 +408,7 @@ function SubscriptionJourney({
 
 // ── Main Page ──────────────────────────────────────────────────────────────────
 
-export default function Perfil() {
+export default function Profile() {
     const [saved, setSaved] = useState(false)
     const qc = useQueryClient()
     const { updateUser } = useAuthStore()

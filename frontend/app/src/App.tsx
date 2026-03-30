@@ -8,34 +8,34 @@ import { PwaUpdatePrompt } from '@/components/ui/PwaUpdatePrompt'
 
 // Lazy pages — public
 const Home = lazy(() => import('@/pages/public/Home'))
-const Tienda = lazy(() => import('@/pages/public/Tienda'))
-const ProductoDetalle = lazy(() => import('@/pages/public/ProductoDetalle'))
+const Store = lazy(() => import('@/pages/public/Shop'))
+const ProductDetail = lazy(() => import('@/pages/public/ProductDetail'))
 const Performance = lazy(() => import('@/pages/public/Performance'))
 
 // Lazy pages — auth
 const Login = lazy(() => import('@/pages/auth/Login'))
-const Registro = lazy(() => import('@/pages/auth/Registro'))
-const RecuperarContrasena = lazy(() => import('@/pages/auth/RecuperarContrasena'))
+const Register = lazy(() => import('@/pages/auth/Register'))
+const RecoverPassword = lazy(() => import('@/pages/auth/RecoverPassword'))
 
 // Lazy pages — dashboard (protected)
 const DashboardHome = lazy(() => import('@/pages/dashboard/DashboardHome'))
-const Perfil = lazy(() => import('@/pages/dashboard/Perfil'))
-const Pedidos = lazy(() => import('@/pages/dashboard/Pedidos'))
-const PedidoDetalle = lazy(() => import('@/pages/dashboard/PedidoDetalle'))
-const Soporte = lazy(() => import('@/pages/dashboard/Soporte'))
-const TicketDetalle = lazy(() => import('@/pages/dashboard/TicketDetalle'))
-const NuevoTicket = lazy(() => import('@/pages/dashboard/NuevoTicket'))
-const MisCarreras = lazy(() => import('@/pages/dashboard/MisCarreras'))
-const SubirResultado = lazy(() => import('@/pages/dashboard/SubirResultado'))
+const Profile = lazy(() => import('@/pages/dashboard/Profile'))
+const Orders = lazy(() => import('@/pages/dashboard/Orders'))
+const OrderDetail = lazy(() => import('@/pages/dashboard/OrderDetail'))
+const Support = lazy(() => import('@/pages/dashboard/Support'))
+const TicketDetail = lazy(() => import('@/pages/dashboard/TicketDetail'))
+const NewTicket = lazy(() => import('@/pages/dashboard/NewTicket'))
+const MyRaces = lazy(() => import('@/pages/dashboard/MyRaces'))
+const UploadResult = lazy(() => import('@/pages/dashboard/UploadResult'))
 
 // Lazy pages — admin (protected + role ADMIN)
 const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard'))
-const AdminPedidos = lazy(() => import('@/pages/admin/AdminPedidos'))
-const AdminPedidoDetalle = lazy(() => import('@/pages/admin/AdminPedidoDetalle'))
-const AdminUsuarios = lazy(() => import('@/pages/admin/AdminUsuarios'))
-const AdminSuscripciones = lazy(() => import('@/pages/admin/AdminSuscripciones'))
+const AdminOrders = lazy(() => import('@/pages/admin/AdminOrders'))
+const AdminOrderDetail = lazy(() => import('@/pages/admin/AdminOrderDetail'))
+const AdminUsers = lazy(() => import('@/pages/admin/AdminUsers'))
+const AdminSubscriptions = lazy(() => import('@/pages/admin/AdminSubscriptions'))
 const AdminTickets = lazy(() => import('@/pages/admin/AdminTickets'))
-const AdminProductos = lazy(() => import('@/pages/admin/AdminProductos'))
+const AdminProducts = lazy(() => import('@/pages/admin/AdminProducts'))
 
 function PageLoader() {
   return (
@@ -64,51 +64,52 @@ function PublicLayout() {
 export default function App() {
   return (
     <>
-    <Suspense fallback={<PageLoader />}>
-      <Routes>
-        {/* Public routes */}
-        <Route element={<PublicLayout />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/tienda" element={<Tienda />} />
-          <Route path="/tienda/:id" element={<ProductoDetalle />} />
-          <Route path="/performance" element={<Performance />} />
-        </Route>
-
-        {/* Auth routes (sin Navbar/Footer) */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/registro" element={<Registro />} />
-        <Route path="/recuperar-contrasena" element={<RecuperarContrasena />} />
-
-        {/* Protected routes */}
-        <Route element={<ProtectedRoute />}>
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          {/* Public routes */}
           <Route element={<PublicLayout />}>
-            <Route path="/dashboard" element={<DashboardHome />} />
-            <Route path="/perfil" element={<Perfil />} />
-            <Route path="/pedidos" element={<Pedidos />} />
-            <Route path="/pedidos/:id" element={<PedidoDetalle />} />
-            <Route path="/soporte" element={<Soporte />} />
-            <Route path="/soporte/nuevo" element={<NuevoTicket />} />
-            <Route path="/soporte/:id" element={<TicketDetalle />} />
-            <Route path="/mis-carreras" element={<MisCarreras />} />
-            <Route path="/subir-resultado" element={<SubirResultado />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/tienda" element={<Store />} />
+            <Route path="/tienda/:id" element={<ProductDetail />} />
+            <Route path="/performance" element={<Performance />} />
           </Route>
-        </Route>
 
-        {/* Admin routes — requires ADMIN role */}
-        <Route element={<AdminRoute />}>
-          <Route element={<PublicLayout />}>
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/pedidos" element={<AdminPedidos />} />
-            <Route path="/admin/pedidos/:id" element={<AdminPedidoDetalle />} />
-            <Route path="/admin/usuarios" element={<AdminUsuarios />} />
-            <Route path="/admin/suscripciones" element={<AdminSuscripciones />} />
-            <Route path="/admin/tickets" element={<AdminTickets />} />
-            <Route path="/admin/productos" element={<AdminProductos />} />
+          {/* Auth routes (sin Navbar/Footer) */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/registro" element={<Register />} />
+          <Route path="/recuperar-contrasena" element={<RecoverPassword />} />
+
+          {/* Protected routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route element={<PublicLayout />}>
+              <Route path="/dashboard" element={<DashboardHome />} />
+              <Route path="/perfil" element={<Profile />} />
+              <Route path="/pedidos" element={<Orders />} />
+              <Route path="/pedidos/:id" element={<OrderDetail />} />
+              <Route path="/soporte" element={<Support />} />
+              <Route path="/soporte/nuevo" element={<NewTicket />} />
+              <Route path="/soporte/:id" element={<TicketDetail />} />
+              <Route path="/mis-carreras" element={<MyRaces />} />
+              <Route path="/subir-resultado" element={<UploadResult />} />
+            </Route>
           </Route>
-        </Route>
-      </Routes>
-    </Suspense>
-    <PwaUpdatePrompt />
+
+          {/* Admin routes — requires ADMIN role */}
+          <Route element={<AdminRoute />}>
+            <Route element={<PublicLayout />}>
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/pedidos" element={<AdminOrders />} />
+              <Route path="/admin/pedidos/:id" element={<AdminOrderDetail />} />
+              <Route path="/admin/usuarios" element={<AdminUsers />} />
+              <Route path="/admin/suscripciones" element={<AdminSubscriptions />} />
+              <Route path="/admin/tickets" element={<AdminTickets />} />
+              <Route path="/admin/productos" element={<AdminProducts />} />
+            </Route>
+
+          </Route>
+        </Routes>
+      </Suspense>
+      <PwaUpdatePrompt />
     </>
   )
 }

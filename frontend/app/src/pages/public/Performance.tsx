@@ -182,7 +182,7 @@ export default function Performance() {
                         La zona de Performance, los rankings y entrenamientos del club están reservados solo para los miembros con suscripción activa.
                     </p>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 relative z-10">
-                        <a 
+                        <a
                             href="https://buymeacoffee.com/lacostarunningclub/membership"
                             target="_blank"
                             rel="noopener noreferrer"
@@ -191,7 +191,7 @@ export default function Performance() {
                             Suscribirme a LCRC Pass
                         </a>
                         {!isAuthenticated && (
-                            <Link 
+                            <Link
                                 to="/login"
                                 className="w-full sm:w-auto bg-[var(--t-bg)] border border-[var(--t-border)] hover:border-[var(--t-accent)] text-[var(--t-fg)] font-semibold py-3.5 px-8 rounded-xl transition-colors"
                             >
@@ -272,7 +272,7 @@ export default function Performance() {
                         </div>
                     )}
 
-                    {/* CTA subir resultado & Mis Carreras */}
+                    {/* CTA to upload result & My Races */}
                     {isAuthenticated ? (
                         <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <Link to="/mis-carreras" className="flex items-center justify-center gap-2 bg-[var(--t-bg2)] hover:bg-[#2a2a2a] border border-[var(--t-border)] text-[var(--t-fg)] py-3 rounded-xl font-medium text-sm transition-colors">
@@ -317,7 +317,7 @@ export default function Performance() {
                 </div>
             </div>
 
-            {/* ── Admin: Modal crear/actualizar workout ──────────────────────── */}
+            {/* ── Admin: Modal to create/update workout ──────────────────────── */}
             {showModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     {/* Backdrop */}
@@ -342,10 +342,10 @@ export default function Performance() {
                                 </div>
                             )}
 
-                            {/* Semana / Año */}
+                            {/* Week / Year */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs text-[var(--t-fg-muted)] mb-1.5 font-medium">Semana ISO *</label>
+                                    <label className="block text-xs text-[var(--t-fg-muted)] mb-1.5 font-medium">ISO Week *</label>
                                     <input
                                         id="field-week"
                                         type="number" min="1" max="53"
@@ -366,9 +366,9 @@ export default function Performance() {
                                 </div>
                             </div>
 
-                            {/* Título */}
+                            {/* Title */}
                             <div>
-                                <label className="block text-xs text-[var(--t-fg-muted)] mb-1.5 font-medium">Título *</label>
+                                <label className="block text-xs text-[var(--t-fg-muted)] mb-1.5 font-medium">Title *</label>
                                 <input
                                     id="field-title"
                                     value={form.title}
@@ -378,9 +378,9 @@ export default function Performance() {
                                 />
                             </div>
 
-                            {/* Descripción */}
+                            {/* Description */}
                             <div>
-                                <label className="block text-xs text-[var(--t-fg-muted)] mb-1.5 font-medium">Descripción *</label>
+                                <label className="block text-xs text-[var(--t-fg-muted)] mb-1.5 font-medium">Description *</label>
                                 <textarea
                                     id="field-description"
                                     rows={3}
@@ -391,10 +391,10 @@ export default function Performance() {
                                 />
                             </div>
 
-                            {/* Tipo / Dificultad / Duración / Distancia */}
+                            {/* Type / Difficulty / Duration / Distance */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs text-[var(--t-fg-muted)] mb-1.5 font-medium">Tipo</label>
+                                    <label className="block text-xs text-[var(--t-fg-muted)] mb-1.5 font-medium">Type</label>
                                     <select id="field-type" value={form.workout_type} onChange={e => handleField('workout_type', e.target.value)} className={inputCls}>
                                         <option value="technique">Técnica</option>
                                         <option value="speed">Velocidad</option>
@@ -436,9 +436,9 @@ export default function Performance() {
                                 </div>
                             </div>
 
-                            {/* Calentamiento */}
+                            {/* Warmup */}
                             <div>
-                                <label className="block text-xs text-[var(--t-fg-muted)] mb-1.5 font-medium">Calentamiento</label>
+                                <label className="block text-xs text-[var(--t-fg-muted)] mb-1.5 font-medium">Warmup</label>
                                 <textarea
                                     id="field-warmup"
                                     rows={2}
@@ -449,9 +449,9 @@ export default function Performance() {
                                 />
                             </div>
 
-                            {/* Parte principal */}
+                            {/* Main set */}
                             <div>
-                                <label className="block text-xs text-[var(--t-accent)] mb-1.5 font-medium uppercase tracking-wider">Parte principal</label>
+                                <label className="block text-xs text-[var(--t-accent)] mb-1.5 font-medium uppercase tracking-wider">Main set</label>
                                 <textarea
                                     id="field-main-set"
                                     rows={3}
@@ -462,9 +462,9 @@ export default function Performance() {
                                 />
                             </div>
 
-                            {/* Vuelta a la calma */}
+                            {/* Cooldown */}
                             <div>
-                                <label className="block text-xs text-[var(--t-fg-muted)] mb-1.5 font-medium">Vuelta a la calma</label>
+                                <label className="block text-xs text-[var(--t-fg-muted)] mb-1.5 font-medium">Cooldown</label>
                                 <textarea
                                     id="field-cooldown"
                                     rows={2}

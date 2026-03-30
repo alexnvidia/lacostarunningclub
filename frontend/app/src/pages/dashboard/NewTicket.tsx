@@ -28,7 +28,7 @@ const PRIORITIES = [
     { value: 'urgent', label: 'Urgente' },
 ]
 
-export default function NuevoTicket() {
+export default function NewTicket() {
     const navigate = useNavigate()
     const qc = useQueryClient()
 

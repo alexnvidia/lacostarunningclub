@@ -22,7 +22,7 @@ interface ProductDetail {
 
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
-export default function ProductoDetalle() {
+export default function ProductDetail() {
     const { id } = useParams<{ id: string }>()
     const [selectedSize, setSelectedSize] = useState('')
     const [added, setAdded] = useState(false)
@@ -91,8 +91,8 @@ export default function ProductoDetalle() {
                                     key={size}
                                     onClick={() => setSelectedSize(size)}
                                     className={`w-12 h-12 rounded-lg text-sm font-medium border transition-all ${selectedSize === size
-                                            ? 'bg-[var(--t-accent)] border-[var(--t-accent)] text-[var(--t-fg)] scale-105'
-                                            : 'bg-[var(--t-bg2)] border-[var(--t-border)] text-[var(--t-fg-muted)] hover:border-[var(--t-accent)]/40 hover:text-[var(--t-fg)]'
+                                        ? 'bg-[var(--t-accent)] border-[var(--t-accent)] text-[var(--t-fg)] scale-105'
+                                        : 'bg-[var(--t-bg2)] border-[var(--t-border)] text-[var(--t-fg-muted)] hover:border-[var(--t-accent)]/40 hover:text-[var(--t-fg)]'
                                         }`}
                                 >
                                     {size}

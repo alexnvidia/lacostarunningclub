@@ -19,7 +19,7 @@ interface Product {
     active: boolean
 }
 
-export default function Tienda() {
+export default function Shop() {
     const [search, setSearch] = useState('')
     const [category, setCategory] = useState('')
 
