@@ -81,6 +81,65 @@ paths:
                   pagination:
                     $ref: '#/components/schemas/Pagination'
 
+  /performance/results/{id}:
+    patch:
+      tags:
+        - Race Results
+      summary: Update race result
+      description: Updates an existing race result. Only the owner can edit their own result.
+      operationId: updateRaceResult
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRaceResultRequest'
+      responses:
+        '200':
+          description: Race result updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RaceResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Race Results
+      summary: Delete race result
+      description: Deletes a race result. Only the owner can delete their own result.
+      operationId: deleteRaceResult
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Race result deleted successfully
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /performance/results/public:
     get:
       tags:
@@ -158,6 +217,65 @@ paths:
                 $ref: '#/components/schemas/WeeklyWorkout'
         '403':
           $ref: '#/components/responses/Forbidden'
+
+  /performance/workouts/{id}:
+    patch:
+      tags:
+        - Workouts
+      summary: Update workout (Admin only)
+      description: Updates an existing weekly workout. Admin access required.
+      operationId: updateWorkout
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateWorkoutRequest'
+      responses:
+        '200':
+          description: Workout updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeeklyWorkout'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Workouts
+      summary: Delete workout (Admin only)
+      description: Deletes a weekly workout. Admin access required.
+      operationId: deleteWorkout
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Workout deleted successfully
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /performance/workouts/{week}/{year}:
     get:
@@ -243,6 +361,49 @@ components:
         is_public:
           type: boolean
           default: true
+
+    UpdateRaceResultRequest:
+      type: object
+      description: All fields are optional. Only provided fields will be updated.
+      properties:
+        race_date:
+          type: string
+          format: date
+        race_name:
+          type: string
+          maxLength: 200
+        distance:
+          type: number
+          format: decimal
+          description: Distance in kilometers
+        time:
+          type: string
+          description: Race time in HH:MM:SS format
+          example: "01:30:45"
+        pace:
+          type: string
+          description: Pace in min/km
+          example: "5:30"
+        location:
+          type: string
+        surface_type:
+          type: string
+          enum: [road, trail, track, mixed]
+        elevation_gain:
+          type: integer
+          description: Elevation gain in meters
+        avg_heart_rate:
+          type: integer
+        max_heart_rate:
+          type: integer
+        temperature:
+          type: integer
+        notes:
+          type: string
+        attachment_url:
+          type: string
+        is_public:
+          type: boolean
 
     RaceResult:
       type: object
@@ -348,6 +509,48 @@ components:
         is_published:
           type: boolean
           default: true
+
+    UpdateWorkoutRequest:
+      type: object
+      description: All fields are optional. Only provided fields will be updated.
+      properties:
+        week_number:
+          type: integer
+          minimum: 1
+          maximum: 53
+        year:
+          type: integer
+        title:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+        workout_type:
+          type: string
+          enum: [technique, speed, endurance, recovery, strength, mixed]
+        estimated_duration:
+          type: integer
+          description: Duration in minutes
+        estimated_distance:
+          type: number
+          description: Distance in kilometers
+        difficulty_level:
+          type: string
+          enum: [beginner, intermediate, advanced]
+        warmup:
+          type: string
+        main_set:
+          type: string
+        cooldown:
+          type: string
+        week_start_date:
+          type: string
+          format: date
+        week_end_date:
+          type: string
+          format: date
+        is_published:
+          type: boolean
 
     WeeklyWorkout:
       type: object

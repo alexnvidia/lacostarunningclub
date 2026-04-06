@@ -153,6 +153,130 @@ export const getUserResults = async (req: AuthRequest, res: Response, next: Next
   }
 };
 
+/**
+ * PATCH /performance/results/:id
+ * Updates an existing race result. Only the owner can edit their own result.
+ */
+export const updateRaceResult = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      res.status(401).json({ error: 'Authentication required', code: 'UNAUTHORIZED' });
+      return;
+    }
+
+    const { id } = req.params;
+
+    // Verify ownership
+    const existing = await prisma.userPerformance.findUnique({ where: { id } });
+    if (!existing) {
+      res.status(404).json({ error: 'Race result not found', code: 'NOT_FOUND' });
+      return;
+    }
+    if (existing.userId !== userId) {
+      res.status(403).json({ error: 'Forbidden - you do not own this result', code: 'FORBIDDEN' });
+      return;
+    }
+
+    const {
+      race_date,
+      race_name,
+      distance,
+      time,
+      pace,
+      location,
+      surface_type,
+      elevation_gain,
+      avg_heart_rate,
+      max_heart_rate,
+      temperature,
+      notes,
+      attachment_url,
+      is_public,
+    } = req.body;
+
+    const updateData: any = {};
+
+    if (race_date !== undefined) {
+      const parsedDate = new Date(race_date);
+      if (isNaN(parsedDate.getTime())) {
+        res.status(400).json({ error: 'race_date must be a valid date (YYYY-MM-DD)', code: 'VALIDATION_ERROR' });
+        return;
+      }
+      updateData.date = parsedDate;
+    }
+    if (distance !== undefined) {
+      const parsedDistance = Number(distance);
+      if (isNaN(parsedDistance) || parsedDistance <= 0) {
+        res.status(400).json({ error: 'distance must be a positive number (km)', code: 'VALIDATION_ERROR' });
+        return;
+      }
+      updateData.distanceKm = parsedDistance;
+    }
+    if (surface_type !== undefined && !VALID_SURFACES.includes(surface_type)) {
+      res.status(400).json({
+        error: `Invalid surface_type. Allowed values: ${VALID_SURFACES.join(', ')}`,
+        code: 'VALIDATION_ERROR',
+      });
+      return;
+    }
+
+    if (race_name !== undefined) updateData.raceName = race_name;
+    if (time !== undefined) updateData.time = time;
+    if (pace !== undefined) updateData.pace = pace;
+    if (location !== undefined) updateData.location = location;
+    if (surface_type !== undefined) updateData.surfaceType = surface_type;
+    if (elevation_gain !== undefined) updateData.elevationGain = Number(elevation_gain);
+    if (avg_heart_rate !== undefined) updateData.avgHeartRate = Number(avg_heart_rate);
+    if (max_heart_rate !== undefined) updateData.maxHeartRate = Number(max_heart_rate);
+    if (temperature !== undefined) updateData.temperature = Number(temperature);
+    if (notes !== undefined) updateData.notes = notes;
+    if (attachment_url !== undefined) updateData.attachmentUrl = attachment_url;
+    if (is_public !== undefined) updateData.isPublic = Boolean(is_public);
+
+    const updated = await prisma.userPerformance.update({ where: { id }, data: updateData });
+
+    res.status(200).json(mapPerformance(updated));
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * DELETE /performance/results/:id
+ * Deletes a race result. Only the owner can delete their own result.
+ */
+export const deleteRaceResult = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      res.status(401).json({ error: 'Authentication required', code: 'UNAUTHORIZED' });
+      return;
+    }
+
+    const { id } = req.params;
+
+    // Verify ownership
+    const existing = await prisma.userPerformance.findUnique({ where: { id } });
+    if (!existing) {
+      res.status(404).json({ error: 'Race result not found', code: 'NOT_FOUND' });
+      return;
+    }
+    if (existing.userId !== userId) {
+      res.status(403).json({ error: 'Forbidden - you do not own this result', code: 'FORBIDDEN' });
+      return;
+    }
+
+    await prisma.userPerformance.delete({ where: { id } });
+
+    res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+};
+
 // ---- Helper ----
 
 function mapPerformance(p: any) {

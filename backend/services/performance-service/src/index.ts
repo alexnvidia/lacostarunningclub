@@ -404,11 +404,31 @@ if (USE_MOCK) {
     resultsController.getUserResults(req, res, next);
   });
 
+  // PATCH /performance/results/:id - Update race result (owner only)
+  app.patch('/performance/results/:id', authMiddleware, (req: Request, res: Response, next: NextFunction) => {
+    resultsController.updateRaceResult(req, res, next);
+  });
+
+  // DELETE /performance/results/:id - Delete race result (owner only)
+  app.delete('/performance/results/:id', authMiddleware, (req: Request, res: Response, next: NextFunction) => {
+    resultsController.deleteRaceResult(req, res, next);
+  });
+
   // ===== ADMIN-ONLY ROUTES =====
 
   // POST /performance/workouts - Create weekly workout (ADMIN only)
   app.post('/performance/workouts', authMiddleware, isAdmin, (req: Request, res: Response, next: NextFunction) => {
     workoutsController.createWorkout(req, res, next);
+  });
+
+  // PATCH /performance/workouts/:id - Update workout (ADMIN only)
+  app.patch('/performance/workouts/:id', authMiddleware, isAdmin, (req: Request, res: Response, next: NextFunction) => {
+    workoutsController.updateWorkout(req, res, next);
+  });
+
+  // DELETE /performance/workouts/:id - Delete workout (ADMIN only)
+  app.delete('/performance/workouts/:id', authMiddleware, isAdmin, (req: Request, res: Response, next: NextFunction) => {
+    workoutsController.deleteWorkout(req, res, next);
   });
 
   // ===== OAS TOOLS (docs + validation) =====
