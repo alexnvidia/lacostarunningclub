@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: La Costa Running Club - User Service
-  version: 1.0.0
+  version: 1.1.0
   description: User profile management service
   contact:
     name: LCRC Tech Team
@@ -51,7 +51,7 @@ paths:
       tags:
         - Profile
       summary: Get user profile
-      description: Returns authenticated user's profile
+      description: Returns authenticated user's profile including avatar URL
       operationId: getProfile
       security:
         - BearerAuth: []
@@ -69,7 +69,7 @@ paths:
       tags:
         - Profile
       summary: Update user profile
-      description: Updates authenticated user's profile information
+      description: Updates authenticated user's profile information (name, phone)
       operationId: updateProfile
       security:
         - BearerAuth: []
@@ -90,6 +90,51 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+
+  /users/profile/avatar:
+    post:
+      tags:
+        - Profile
+      summary: Upload profile picture
+      description: |
+        Uploads a profile picture for the authenticated user.
+        - Accepted formats: WebP, PNG
+        - Maximum file size: 5 MB
+        - The image is expected to be pre-processed (WebP conversion) on the client side.
+        - The file must be sent as `multipart/form-data` with the field name `avatar`.
+      operationId: uploadAvatar
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - avatar
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+                  description: Profile picture file (WebP or PNG, max 5 MB)
+      responses:
+        '200':
+          description: Avatar uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvatarUploadResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '413':
+          description: File too large (exceeds 5 MB limit)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /users/rewards/{milestone}/claim:
     post:
@@ -201,6 +246,12 @@ components:
         role:
           type: string
           enum: [user, admin, support, trainer]
+        avatar_url:
+          type: string
+          format: uri
+          nullable: true
+          description: URL to the user's profile picture (WebP or PNG, max 5 MB)
+          example: 'http://localhost:3002/uploads/avatars/abc123.webp'
         created_at:
           type: string
           format: date-time
@@ -215,6 +266,18 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/UserReward'
+
+    AvatarUploadResponse:
+      type: object
+      properties:
+        avatar_url:
+          type: string
+          format: uri
+          description: Public URL of the uploaded avatar
+          example: 'http://localhost:3002/uploads/avatars/abc123.webp'
+        message:
+          type: string
+          example: 'Avatar uploaded successfully'
 
     UserList:
       type: object

@@ -2,8 +2,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { User, Save, CheckCircle, Lock, Gift, Award, Calendar } from 'lucide-react'
-import { useState } from 'react'
+import { User, Save, CheckCircle, Lock, Gift, Award, Calendar, Camera, X, AlertCircle } from 'lucide-react'
+import { useState, useRef, useCallback } from 'react'
 import api from '@/lib/api'
 import { queryKeys } from '@/lib/query-keys'
 import { useAuthStore } from '@/store/auth.store'
@@ -11,6 +11,12 @@ import { AnimationErrorBoundary } from '@/components/subscription/AnimationError
 import { LcrcPassScene } from '@/components/subscription/LcrcPassScene'
 import { VerticalTimeline } from '@/components/subscription/VerticalTimeline'
 import { RewardModal } from '@/components/subscription/RewardModal'
+
+// ── Constants ──────────────────────────────────────────────────────────────────
+
+const AVATAR_MAX_SIZE_BYTES = 5 * 1024 * 1024 // 5 MB
+const AVATAR_ALLOWED_TYPES = ['image/webp', 'image/png']
+const AVATAR_ALLOWED_EXTENSIONS = '.webp,.png'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -36,6 +42,7 @@ interface UserProfile {
     phone?: string
     role: string
     email_verified: boolean
+    avatar_url?: string | null
     subscription?: UserSubscription | null
     rewards?: UserReward[]
 }
@@ -58,6 +65,226 @@ const MILESTONE_META: Record<number, { label: string; emoji: string; gift: strin
     6: { label: '6 meses', emoji: '🧢', gift: 'Gorra de corredor LCRC' },
     9: { label: '9 meses', emoji: '🎒', gift: 'Mochila de trail running' },
     12: { label: '1 año', emoji: '🏅', gift: 'Medalla de oro aniversario' },
+}
+
+// ── Helper: convert image to WebP via canvas ───────────────────────────────────
+
+function convertToWebP(file: File): Promise<File> {
+    return new Promise((resolve, reject) => {
+        // If already WebP, return as-is
+        if (file.type === 'image/webp') {
+            resolve(file)
+            return
+        }
+        const img = new Image()
+        const objectUrl = URL.createObjectURL(file)
+        img.onload = () => {
+            URL.revokeObjectURL(objectUrl)
+            const canvas = document.createElement('canvas')
+            canvas.width = img.naturalWidth
+            canvas.height = img.naturalHeight
+            const ctx = canvas.getContext('2d')
+            if (!ctx) {
+                reject(new Error('Canvas context not available'))
+                return
+            }
+            ctx.drawImage(img, 0, 0)
+            canvas.toBlob(
+                (blob) => {
+                    if (!blob) {
+                        reject(new Error('Failed to convert image to WebP'))
+                        return
+                    }
+                    const webpFile = new File(
+                        [blob],
+                        file.name.replace(/\.[^.]+$/, '.webp'),
+                        { type: 'image/webp' }
+                    )
+                    resolve(webpFile)
+                },
+                'image/webp',
+                0.88
+            )
+        }
+        img.onerror = () => {
+            URL.revokeObjectURL(objectUrl)
+            reject(new Error('Failed to load image'))
+        }
+        img.src = objectUrl
+    })
+}
+
+// ── Sub-component: AvatarUpload ────────────────────────────────────────────────
+
+function AvatarUpload({
+    currentAvatarUrl,
+    userName,
+    onUploadSuccess,
+}: {
+    currentAvatarUrl?: string | null
+    userName: string
+    onUploadSuccess: (url: string) => void
+}) {
+    const qc = useQueryClient()
+    const fileInputRef = useRef<HTMLInputElement>(null)
+    const [preview, setPreview] = useState<string | null>(null)
+    const [error, setError] = useState<string | null>(null)
+    const [isConverting, setIsConverting] = useState(false)
+
+    const uploadMutation = useMutation({
+        mutationFn: async (file: File) => {
+            const formData = new FormData()
+            formData.append('avatar', file)
+            const res = await api.post<{ avatar_url: string }>('/api/users/profile/avatar', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            })
+            return res.data
+        },
+        onSuccess: (data) => {
+            qc.invalidateQueries({ queryKey: queryKeys.user.profile() })
+            onUploadSuccess(data.avatar_url)
+            setPreview(null)
+        },
+        onError: () => {
+            setError('No se pudo subir la foto. Inténtalo de nuevo.')
+        },
+    })
+
+    const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+        setError(null)
+        const file = e.target.files?.[0]
+        if (!e.target.files) return
+        // Reset input so the same file can be re-selected
+        e.target.value = ''
+        if (!file) return
+
+        // Validate type
+        if (!AVATAR_ALLOWED_TYPES.includes(file.type)) {
+            setError('Solo se admiten imágenes en formato WebP o PNG.')
+            return
+        }
+
+        // Validate size before conversion
+        if (file.size > AVATAR_MAX_SIZE_BYTES) {
+            setError('La imagen no puede superar los 5 MB.')
+            return
+        }
+
+        // Show preview immediately
+        const previewUrl = URL.createObjectURL(file)
+        setPreview(previewUrl)
+
+        // Convert PNG → WebP on the client
+        setIsConverting(true)
+        let processedFile = file
+        try {
+            processedFile = await convertToWebP(file)
+        } catch {
+            setError('Error al procesar la imagen. Inténtalo con otro archivo.')
+            URL.revokeObjectURL(previewUrl)
+            setPreview(null)
+            setIsConverting(false)
+            return
+        }
+        setIsConverting(false)
+
+        // Upload
+        uploadMutation.mutate(processedFile)
+    }, [uploadMutation])
+
+    const handleRemovePreview = useCallback(() => {
+        if (preview) URL.revokeObjectURL(preview)
+        setPreview(null)
+        setError(null)
+    }, [preview])
+
+    const displaySrc = preview ?? currentAvatarUrl ?? null
+    const isPending = isConverting || uploadMutation.isPending
+
+    return (
+        <div className="flex items-center gap-5">
+            {/* Avatar circle */}
+            <div className="relative group flex-shrink-0">
+                <div
+                    className="w-20 h-20 rounded-full border-2 border-[var(--t-accent)]/30 overflow-hidden flex items-center justify-center"
+                    style={{ background: 'var(--t-accent-10, color-mix(in srgb, var(--t-accent) 10%, transparent))' }}
+                >
+                    {displaySrc ? (
+                        <img
+                            src={displaySrc}
+                            alt={`Foto de perfil de ${userName}`}
+                            className="w-full h-full object-cover"
+                        />
+                    ) : (
+                        <User className="w-9 h-9" style={{ color: 'var(--t-accent)' }} />
+                    )}
+                </div>
+
+                {/* Overlay on hover */}
+                <button
+                    type="button"
+                    id="avatar-upload-btn"
+                    aria-label="Cambiar foto de perfil"
+                    disabled={isPending}
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute inset-0 rounded-full flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity cursor-pointer disabled:cursor-not-allowed"
+                >
+                    {isPending ? (
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                        <Camera className="w-5 h-5 text-white" />
+                    )}
+                </button>
+
+                {/* Remove preview button */}
+                {preview && !isPending && (
+                    <button
+                        type="button"
+                        aria-label="Cancelar cambio de foto"
+                        onClick={handleRemovePreview}
+                        className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[var(--t-accent)] flex items-center justify-center text-white hover:scale-110 transition-transform"
+                    >
+                        <X className="w-3 h-3" />
+                    </button>
+                )}
+            </div>
+
+            {/* Right side: button + constraints */}
+            <div className="flex-1 min-w-0">
+                <button
+                    type="button"
+                    id="avatar-change-label-btn"
+                    disabled={isPending}
+                    onClick={() => fileInputRef.current?.click()}
+                    className="text-sm font-medium text-[var(--t-accent)] hover:underline disabled:opacity-50 disabled:no-underline transition-opacity"
+                >
+                    {isPending
+                        ? isConverting ? 'Procesando imagen…' : 'Subiendo foto…'
+                        : 'Cambiar foto de perfil'}
+                </button>
+                <p className="text-xs text-[var(--t-fg-dimmed)] mt-0.5">
+                    WebP o PNG · máx. 5 MB
+                </p>
+                {error && (
+                    <div className="flex items-center gap-1.5 mt-1.5">
+                        <AlertCircle className="w-3.5 h-3.5 text-[var(--t-accent)] flex-shrink-0" />
+                        <p className="text-xs text-[var(--t-accent)]">{error}</p>
+                    </div>
+                )}
+            </div>
+
+            {/* Hidden file input */}
+            <input
+                ref={fileInputRef}
+                type="file"
+                accept={AVATAR_ALLOWED_EXTENSIONS}
+                aria-hidden="true"
+                tabIndex={-1}
+                className="sr-only"
+                onChange={handleFileChange}
+            />
+        </div>
+    )
 }
 
 // ── Sub-component: Milestone card ─────────────────────────────────────────────
@@ -189,7 +416,6 @@ function SubscriptionJourneyLegacy({
         return found ?? { milestone_months: m, unlocked: monthsActive >= m, claimed: false, unlocked_at: null }
     })
 
-    // Progress bar: 0–12 months mapped to 0–100%
     const progressPct = Math.min((monthsActive / 12) * 100, 100)
 
     const activeSince = subscription.active_since
@@ -236,7 +462,6 @@ function SubscriptionJourneyLegacy({
                     className="h-full bg-gradient-to-r from-[#e63946] to-[#f4a261] rounded-full transition-all duration-700"
                     style={{ width: `${progressPct}%` }}
                 />
-                {/* Milestone ticks */}
                 {MILESTONES.map(m => (
                     <div
                         key={m}
@@ -411,7 +636,7 @@ function SubscriptionJourney({
 export default function Profile() {
     const [saved, setSaved] = useState(false)
     const qc = useQueryClient()
-    const { updateUser } = useAuthStore()
+    const { updateUser, user: authUser } = useAuthStore()
 
     const { data: profile, isLoading } = useQuery({
         queryKey: queryKeys.user.profile(),
@@ -456,12 +681,20 @@ export default function Profile() {
 
             {/* ── Profile card ── */}
             <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-2xl p-6">
-                <div className="flex items-center gap-4 mb-6">
-                    <div className="w-16 h-16 bg-[var(--t-accent)]/10 border border-[var(--t-accent)]/20 rounded-full flex items-center justify-center">
-                        <User className="w-7 h-7 text-[var(--t-accent)]" />
-                    </div>
-                    <div>
-                        <p className="font-bold text-[var(--t-fg)] text-lg">{profile?.first_name} {profile?.last_name}</p>
+
+                {/* Avatar + name header */}
+                <div className="mb-6 pb-5 border-b border-[var(--t-border)]">
+                    <AvatarUpload
+                        currentAvatarUrl={profile?.avatar_url ?? authUser?.avatarUrl}
+                        userName={`${profile?.first_name ?? ''} ${profile?.last_name ?? ''}`.trim()}
+                        onUploadSuccess={(url) => {
+                            updateUser({ avatarUrl: url })
+                        }}
+                    />
+                    <div className="mt-3 pl-1">
+                        <p className="font-bold text-[var(--t-fg)] text-lg">
+                            {profile?.first_name} {profile?.last_name}
+                        </p>
                         <p className="text-[var(--t-fg-muted)] text-sm">{profile?.email}</p>
                         <div className="flex items-center gap-2 mt-1 flex-wrap">
                             {profile?.email_verified ? (
@@ -480,6 +713,7 @@ export default function Profile() {
                     </div>
                 </div>
 
+                {/* Form */}
                 <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="space-y-4">
                     <div className="grid grid-cols-2 gap-3">
                         <div>

@@ -10,7 +10,6 @@ import { formatDate } from '@/lib/utils'
 import slide1 from '@/assets/carousel/people.jpg'
 import slide2 from '@/assets/carousel/staff.jpg'
 import slide3 from '@/assets/carousel/paseo.jpg'
-import runnerWebm from '@/assets/carousel/runner.webm'
 import locFuengirola from '@/assets/carousel/loc-fuengirola.webp'
 import locTorreon from '@/assets/carousel/loc-torreon.jpg'
 
@@ -20,9 +19,7 @@ const SLIDES = [
     { src: slide3, alt: 'Ruta por el paseo marítimo', caption: 'Rutas por el paseo marítimo' },
 ]
 
-// Runner video speed constants (mirrored from reference scripts.js)
-const SPEED_NORMAL = 0.7
-const SPEED_SLOW = 0.3
+
 
 interface WorkoutData {
     title: string
@@ -46,7 +43,6 @@ interface PublicResult {
 /* ─── Image Carousel ─── */
 function ImageCarousel() {
     const [current, setCurrent] = useState(0)
-    const vidRef = useRef<HTMLVideoElement>(null)
 
     const next = useCallback(() => setCurrent(c => (c + 1) % SLIDES.length), [])
     const prev = useCallback(() => setCurrent(c => (c - 1 + SLIDES.length) % SLIDES.length), [])
@@ -66,19 +62,12 @@ function ImageCarousel() {
         return () => stopTimer()
     }, [startTimer, stopTimer])
 
-    // Set initial playback rate once video is ready
-    const handleVideoLoad = () => {
-        if (vidRef.current) vidRef.current.playbackRate = SPEED_NORMAL
-    }
-
-    // Slow down runner video on hover, speed up when leaving
+    // Pause auto-advance timer on hover
     const handleMouseEnter = () => {
         stopTimer()
-        if (vidRef.current) vidRef.current.playbackRate = SPEED_SLOW
     }
     const handleMouseLeave = () => {
         startTimer()
-        if (vidRef.current) vidRef.current.playbackRate = SPEED_NORMAL
     }
 
     return (
@@ -179,14 +168,14 @@ function ImageCarousel() {
                 <ChevronRight size={20} />
             </button>
 
-            {/* Runner indicator — centered pill at bottom (matches reference CSS .runner-indicator) */}
+            {/* SVG Dot Indicators — centered pill at bottom */}
             <div
                 aria-label="Indicador carrusel"
                 style={{
-                    position: 'absolute', left: '50%', bottom: '12px',
+                    position: 'absolute', left: '50%', bottom: '20px',
                     transform: 'translateX(-50%)',
-                    display: 'grid', placeItems: 'center',
-                    height: '44px', padding: '4px 10px',
+                    display: 'flex', gap: '8px', alignItems: 'center',
+                    height: '40px', padding: '0 16px',
                     background: 'var(--t-pill-bg)',
                     border: '1px solid var(--t-pill-border)',
                     borderRadius: '999px',
@@ -194,41 +183,33 @@ function ImageCarousel() {
                     zIndex: 5,
                 }}
             >
-                <video
-                    ref={vidRef}
-                    src={runnerWebm}
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    onLoadedMetadata={handleVideoLoad}
-                    style={{ width: 40, height: 40, objectFit: 'contain' }}
-                />
-            </div>
-
-            {/* Dot indicators — centered above runner pill */}
-            <div
-                style={{
-                    position: 'absolute', bottom: '66px', left: '50%', transform: 'translateX(-50%)',
-                    display: 'flex', gap: '8px', zIndex: 2,
-                }}
-            >
                 {SLIDES.map((_, i) => (
-                    <button
+                    <svg
                         key={i}
+                        width={i === current ? 24 : 8}
+                        height="8"
+                        viewBox={`0 0 ${i === current ? 24 : 8} 8`}
                         onClick={() => { setCurrent(i); startTimer() }}
-                        aria-label={`Ir a slide ${i + 1}`}
                         style={{
-                            width: i === current ? 24 : 8,
-                            height: 8,
-                            borderRadius: 999,
-                            border: 'none',
-                            background: i === current ? 'var(--t-accent)' : 'rgba(255,255,255,0.4)',
                             cursor: 'pointer',
-                            padding: 0,
-                            transition: 'width 0.3s, background 0.3s',
+                            display: 'block',
+                            transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
                         }}
-                    />
+                        aria-label={`Ir a slide ${i + 1}`}
+                        role="button"
+                    >
+                        <rect
+                            x="0"
+                            y="0"
+                            width={i === current ? 24 : 8}
+                            height="8"
+                            rx="4"
+                            fill={i === current ? 'var(--t-accent)' : 'rgba(255,255,255,0.4)'}
+                            style={{
+                                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+                            }}
+                        />
+                    </svg>
                 ))}
             </div>
         </section>

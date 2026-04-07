@@ -1,5 +1,20 @@
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '@lcrc/shared';
+import path from 'path';
+import fs from 'fs';
+
+// ── Allowed MIME types & size limit ──────────────────────────────────────────
+const ALLOWED_MIME_TYPES = ['image/webp', 'image/png'];
+const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function getAvatarPublicUrl(filename: string): string {
+  // Use a relative path so it routes seamlessly via the API Gateway
+  return `/api/users/uploads/avatars/${filename}`;
+}
+
+// ── GET /users/profile ────────────────────────────────────────────────────────
 
 export const getProfile = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -28,9 +43,7 @@ export const getProfile = async (req: Request, res: Response, next: NextFunction
     if (user.subscription && user.subscription.startDate) {
       const now = new Date();
       const start = new Date(user.subscription.startDate);
-      // Simple month difference calculation
       monthsActive = (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth());
-      // Adjust if day of month hasn't passed yet
       if (now.getDate() < start.getDate()) {
         monthsActive--;
       }
@@ -46,7 +59,7 @@ export const getProfile = async (req: Request, res: Response, next: NextFunction
         milestone_months: milestone,
         unlocked: isUnlocked,
         claimed: userReward?.isClaimed || false,
-        unlocked_at: isUnlocked ? (userReward?.unlockedAt || null) : null // Logic could be improved to estimate unlock date
+        unlocked_at: isUnlocked ? (userReward?.unlockedAt || null) : null
       };
     });
 
@@ -57,6 +70,7 @@ export const getProfile = async (req: Request, res: Response, next: NextFunction
       last_name: user.lastName,
       phone: user.phone,
       role: user.role.toLowerCase(),
+      avatar_url: user.avatarUrl || null,
       created_at: user.createdAt,
       last_login: user.lastLogin,
       email_verified: user.emailVerified,
@@ -72,6 +86,8 @@ export const getProfile = async (req: Request, res: Response, next: NextFunction
     next(error);
   }
 };
+
+// ── PUT /users/profile ────────────────────────────────────────────────────────
 
 export const updateProfile = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -129,7 +145,7 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
       });
       return;
     }
-    // check if user exists
+
     const user = await prisma.user.findUnique({
       where: { id: userId },
     });
@@ -147,7 +163,6 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
       }
     });
 
-
     res.json({
       id: updatedUser.id,
       email: updatedUser.email,
@@ -155,8 +170,90 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
       last_name: updatedUser.lastName,
       phone: updatedUser.phone,
       role: updatedUser.role.toLowerCase(),
+      avatar_url: updatedUser.avatarUrl || null,
       created_at: updatedUser.createdAt,
       last_login: updatedUser.lastLogin
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ── POST /users/profile/avatar ────────────────────────────────────────────────
+
+export const uploadAvatar = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.headers['x-user-id'] as string;
+
+    if (!userId) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
+    if (!req.file) {
+      res.status(400).json({
+        error: 'No file uploaded',
+        code: 'BAD_REQUEST',
+        details: ['A file must be provided in the "avatar" field']
+      });
+      return;
+    }
+
+    // Validate MIME type (multer fileFilter already does this, but double-check)
+    if (!ALLOWED_MIME_TYPES.includes(req.file.mimetype)) {
+      // Remove uploaded file if rejected
+      fs.unlinkSync(req.file.path);
+      res.status(400).json({
+        error: 'Invalid file type',
+        code: 'BAD_REQUEST',
+        details: ['Only WebP and PNG images are allowed']
+      });
+      return;
+    }
+
+    // Validate file size
+    if (req.file.size > MAX_FILE_SIZE_BYTES) {
+      fs.unlinkSync(req.file.path);
+      res.status(413).json({
+        error: 'File too large',
+        code: 'PAYLOAD_TOO_LARGE',
+        details: ['Profile picture must be 5 MB or smaller']
+      });
+      return;
+    }
+
+    // Check user exists
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      fs.unlinkSync(req.file.path);
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    // Delete previous avatar file if it existed and is stored locally
+    if (user.avatarUrl) {
+      const previousFilename = path.basename(user.avatarUrl);
+      // Ensure we don't delete the newly uploaded file if it has the same name
+      if (previousFilename !== req.file.filename) {
+        const previousFilePath = path.join(process.cwd(), 'uploads', 'avatars', previousFilename);
+        if (fs.existsSync(previousFilePath)) {
+          try { fs.unlinkSync(previousFilePath); } catch { /* ignore */ }
+        }
+      }
+    }
+
+    // Build public URL and persist to DB
+    const avatarUrl = getAvatarPublicUrl(req.file.filename);
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { avatarUrl }
+    });
+
+    res.json({
+      avatar_url: updatedUser.avatarUrl,
+      message: 'Avatar uploaded successfully'
     });
 
   } catch (error) {

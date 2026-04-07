@@ -15,6 +15,13 @@ export const authMiddleware = (
   res: Response,
   next: NextFunction
 ): void => {
+  // Allow public access to uploaded assets (like avatars) 
+  // since <img> tags don't send Authorization headers
+  if (req.path.startsWith('/uploads/')) {
+    next();
+    return;
+  }
+
   const authHeader = req.headers.authorization;
 
   // Check if Authorization header exists

@@ -8,6 +8,7 @@ interface AuthUser {
     lastName?: string
     role: 'USER' | 'ADMIN' | 'SUPPORT' | 'TRAINER'
     emailVerified?: boolean
+    avatarUrl?: string | null
 }
 
 interface AuthState {

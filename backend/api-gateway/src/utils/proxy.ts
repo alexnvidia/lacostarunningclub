@@ -47,13 +47,25 @@ export const proxyRequest = async (
 
     // filter headers to forward
     const forwardHeaders: Record<string, string | string[]> = {};
+    const isMultipart = req.headers['content-type']?.includes('multipart/form-data');
+
     Object.entries(req.headers).forEach(([key, value]) => {
-      if (!HEADERS_BLACKLIST.includes(key.toLowerCase()) && value !== undefined) {
+      const isBlacklisted = HEADERS_BLACKLIST.includes(key.toLowerCase());
+      const isContentLength = key.toLowerCase() === 'content-length';
+
+      let shouldForward = !isBlacklisted;
+      if (isMultipart && isContentLength) {
+        shouldForward = true; // Rescate de content-length para subida de ficheros
+      }
+
+      if (shouldForward && value !== undefined) {
         forwardHeaders[key] = value;
       }
     });
 
-    const requestData = NO_BODY_METHODS.includes(req.method) ? undefined : req.body;
+    const requestData = NO_BODY_METHODS.includes(req.method.toUpperCase()) 
+      ? undefined 
+      : (isMultipart ? req : req.body);
 
     const config: AxiosRequestConfig = {
       method: req.method,
@@ -61,6 +73,7 @@ export const proxyRequest = async (
       headers: forwardHeaders,
       params: req.query,
       data: requestData,
+      responseType: 'arraybuffer', // Forzar bytes crudos para no corromper imágenes
     };
 
     logger.debug({
@@ -87,10 +100,16 @@ export const proxyRequest = async (
     res.status(response.status);
 
     if (contentType?.includes('application/json')) {
-      res.json(response.data);
-    } else if (contentType?.includes('text')) {
-      res.send(response.data);
+      try {
+        const jsonStr = Buffer.isBuffer(response.data) 
+          ? response.data.toString('utf-8') 
+          : response.data;
+        res.json(JSON.parse(jsonStr));
+      } catch (e) {
+        res.send(response.data);
+      }
     } else {
+      // res.send soporta Buffers nativamente sin añadir charset=utf-8
       res.send(response.data);
     }
 

@@ -38,7 +38,7 @@ export default function Shop() {
             {/* Header */}
             <div className="mb-8">
                 <p className="text-[var(--t-accent)] text-sm font-medium uppercase tracking-wider mb-2">Tienda oficial</p>
-                <h1 className="text-4xl font-black text-[var(--t-fg)]">Camisetas LCRC</h1>
+                <h1 className="text-4xl font-black text-[var(--t-fg)]">Productos LCRC</h1>
             </div>
 
             {/* Filters */}

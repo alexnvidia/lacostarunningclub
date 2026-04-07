@@ -3,9 +3,45 @@ import { ShoppingCart, User, Menu, X, Activity, Shield } from 'lucide-react'
 import { useState } from 'react'
 import { useAuthStore } from '@/store/auth.store'
 import { useCartStore } from '@/store/cart.store'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQueryClient, useQuery } from '@tanstack/react-query'
 import api from '@/lib/api'
+import { queryKeys } from '@/lib/query-keys'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
+
+// ── UserAvatar ─────────────────────────────────────────────────────────────────
+// Small circular avatar that shows the profile picture or a fallback icon.
+// Reads from TanStack Query cache (same key as Profile page) — no extra request.
+
+function UserAvatar({ size = 28 }: { size?: number }) {
+    const { isAuthenticated, user } = useAuthStore()
+
+    const { data: profile } = useQuery({
+        queryKey: queryKeys.user.profile(),
+        queryFn: () => api.get<{ avatar_url?: string | null }>('/api/users/profile').then(r => r.data),
+        enabled: isAuthenticated,
+        staleTime: 5 * 60 * 1000, // 5 min — reuses cache from Profile page
+    })
+
+    // Prefer server data, fall back to what's in the auth store
+    const avatarUrl = profile?.avatar_url ?? user?.avatarUrl ?? null
+
+    if (avatarUrl) {
+        return (
+            <img
+                src={avatarUrl}
+                alt="Foto de perfil"
+                width={size}
+                height={size}
+                className="rounded-full object-cover border border-[var(--t-border)] flex-shrink-0"
+                style={{ width: size, height: size }}
+            />
+        )
+    }
+
+    return <User style={{ width: size - 4, height: size - 4 }} />
+}
+
+// ── Navbar ─────────────────────────────────────────────────────────────────────
 
 export function Navbar() {
     const [menuOpen, setMenuOpen] = useState(false)
@@ -95,12 +131,13 @@ export function Navbar() {
                             <div className="hidden md:flex items-center gap-3">
                                 <Link
                                     to="/perfil"
+                                    id="navbar-profile-link"
                                     className="flex items-center gap-2 text-sm transition-colors"
                                     style={{ color: 'var(--t-fg-muted)' }}
                                     onMouseEnter={e => (e.currentTarget.style.color = 'var(--t-fg)')}
                                     onMouseLeave={e => (e.currentTarget.style.color = 'var(--t-fg-muted)')}
                                 >
-                                    <User className="w-4 h-4" />
+                                    <UserAvatar size={28} />
                                     <span>{user?.firstName}</span>
                                 </Link>
                                 <button
@@ -174,10 +211,11 @@ export function Navbar() {
                         <>
                             <Link
                                 to="/perfil"
-                                className="py-2 text-sm transition-colors"
+                                className="flex items-center gap-2.5 py-2 text-sm transition-colors"
                                 style={{ color: 'var(--t-fg-muted)' }}
                                 onClick={() => setMenuOpen(false)}
                             >
+                                <UserAvatar size={24} />
                                 Mi Perfil
                             </Link>
                             {user?.role === 'ADMIN' && (

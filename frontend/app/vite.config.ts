@@ -92,16 +92,9 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    allowedHosts: true, // Permite tunnelmole y otros proxies externos
     proxy: {
       '/api': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-      },
-      '/auth': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-      },
-      '/performance': {
         target: 'http://localhost:3000',
         changeOrigin: true,
       },

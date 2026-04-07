@@ -3,10 +3,43 @@ import http from 'http';
 import path from 'path';
 import { initialize } from '@oas-tools/core';
 import fs from 'fs';
+import multer from 'multer';
 import * as usersprofileControllerService from './controllers/usersprofileControllerService';
 import * as usersrewardsmilestoneclaimControllerService from './controllers/usersrewardsmilestoneclaimControllerService';
 import * as usersidControllerService from './controllers/usersidControllerService';
 import { listUsersByRole } from './controllers/usersidControllerService';
+
+// ── Multer configuration ──────────────────────────────────────────────────────
+
+const ALLOWED_MIME_TYPES = ['image/webp', 'image/png'];
+const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
+const UPLOADS_DIR = path.join(process.cwd(), 'uploads', 'avatars');
+
+// Ensure upload directory exists
+fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+
+const avatarStorage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, UPLOADS_DIR),
+  filename: (req, file, cb) => {
+    const userId = req.headers['x-user-id'] as string || 'unknown';
+    const ext = file.mimetype === 'image/webp' ? 'webp' : 'png';
+    cb(null, `${userId}.${ext}`);
+  },
+});
+
+const avatarUpload = multer({
+  storage: avatarStorage,
+  limits: { fileSize: MAX_FILE_SIZE_BYTES },
+  fileFilter: (_req, file, cb) => {
+    if (ALLOWED_MIME_TYPES.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only WebP and PNG images are allowed'));
+    }
+  },
+});
+
+// ── App setup ─────────────────────────────────────────────────────────────────
 
 const app = express();
 const PORT = process.env.PORT || 3002;
@@ -14,6 +47,9 @@ const USE_MOCK = process.env.USE_MOCK === 'true';
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve uploaded avatars as static files, aligned with the /users prefix
+app.use('/users/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 app.use((req, _res, next) => {
   console.log(`📝 user-service: ${req.method} ${req.path}`);
@@ -38,6 +74,7 @@ const startServer = () => {
     console.log(`    Mode:        ${USE_MOCK ? '🎭 MOCK' : '🚀 OAS Tools'}`);
     console.log('───────────────────────────────────────────────');
     console.log(`    ❤️  Health:     http://localhost:${PORT}/health`);
+    console.log(`    🖼️  Avatars:    http://localhost:${PORT}/uploads/avatars/`);
     if (!USE_MOCK) {
       console.log(`    📚 API Docs:   http://localhost:${PORT}/docs`);
     }
@@ -55,6 +92,7 @@ if (USE_MOCK) {
       mode: 'mock',
       endpoints: {
         profile: 'GET/PUT /users/profile',
+        avatar: 'POST /users/profile/avatar',
         userById: 'GET /users/:id',
         claimReward: 'POST /users/rewards/:milestone/claim'
       }
@@ -76,6 +114,7 @@ if (USE_MOCK) {
       last_name: 'User',
       phone: '+34600123456',
       role: userRole || 'user',
+      avatar_url: null,
       created_at: '2024-01-01T00:00:00Z',
       last_login: new Date().toISOString()
     });
@@ -96,8 +135,23 @@ if (USE_MOCK) {
       last_name: last_name || 'User',
       phone: phone || '+34600123456',
       role: req.headers['x-user-role'] || 'user',
+      avatar_url: null,
       created_at: '2024-01-01T00:00:00Z',
       last_login: new Date().toISOString()
+    });
+  });
+
+  // POST /users/profile/avatar - Upload avatar (MOCK)
+  app.post('/users/profile/avatar', avatarUpload.single('avatar'), (req: Request, res: Response) => {
+    const userId = req.headers['x-user-id'] as string;
+    console.log(`🖼️ Avatar upload for user: ${userId}`);
+    if (!req.file) {
+      res.status(400).json({ error: 'No file uploaded', code: 'BAD_REQUEST' });
+      return;
+    }
+    res.json({
+      avatar_url: `/api/users/uploads/avatars/${req.file.filename}`,
+      message: 'Avatar uploaded successfully'
     });
   });
 
@@ -156,6 +210,7 @@ if (USE_MOCK) {
       last_name: id.substring(0, 4),
       phone: '+34600123456',
       role: 'user',
+      avatar_url: null,
       created_at: '2024-01-01T00:00:00Z',
       last_login: new Date().toISOString()
     });
@@ -169,6 +224,7 @@ if (USE_MOCK) {
       available_endpoints: [
         'GET /users/profile',
         'PUT /users/profile',
+        'POST /users/profile/avatar',
         'GET /users/:id (admin)'
       ]
     });
@@ -188,33 +244,42 @@ if (USE_MOCK) {
     });
     startServer();
   } else {
-    // Register controllers manually if needed before OAS
+    // Register controllers manually before OAS initialization
 
-    //register get user profile
+    // GET /users/profile
     app.get('/users/profile', (req: Request, res: Response, next: NextFunction) => {
       usersprofileControllerService.getProfile(req, res, next);
     });
 
-    //register user profile update
+    // PUT /users/profile
     app.put('/users/profile', (req: Request, res: Response, next: NextFunction) => {
       usersprofileControllerService.updateProfile(req, res, next);
     });
 
-    //register claim reward
+    // POST /users/profile/avatar (multipart)
+    app.post('/users/profile/avatar',
+      avatarUpload.single('avatar'),
+      (req: Request, res: Response, next: NextFunction) => {
+        usersprofileControllerService.uploadAvatar(req, res, next);
+      }
+    );
+
+    // POST /users/rewards/:milestone/claim
     app.post('/users/rewards/:milestone/claim', (req: Request, res: Response, next: NextFunction) => {
       usersrewardsmilestoneclaimControllerService.claimReward(req, res, next);
     });
 
-    //register list rewards for a user (admin only)
+    // GET /users/:userId/rewards
     app.get('/users/:userId/rewards', (req: Request, res: Response, next: NextFunction) => {
       usersrewardsmilestoneclaimControllerService.listRewards(req, res, next);
     });
 
-    //register get user by id (admin only)
+    // GET /users (admin list)
     app.get('/users', (req: Request, res: Response, next: NextFunction) => {
       listUsersByRole(req, res, next);
     });
 
+    // GET /users/:id
     app.get('/users/:id', (req: Request, res: Response, next: NextFunction) => {
       usersidControllerService.getUserById(req, res, next);
     });

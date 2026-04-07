@@ -32,6 +32,7 @@ model User {
   resetPasswordToken       String?              @map("reset_password_token")
   resetPasswordExpires     DateTime?            @map("reset_password_expires")
   bmcEmail                 String?              @map("bmc_email")
+  avatarUrl                String?              @map("avatar_url")
   sessions                 Session[]
   addresses                Address[]
   productReviews           ProductReview[]
