@@ -35,8 +35,9 @@ export default function ProductDetail() {
     })
 
     const handleAddToCart = () => {
-        if (!product || !selectedSize) return
-        addItem({ productId: product.id, name: product.name, price: product.price, quantity: 1, size: selectedSize, imageUrl: product.front_image_url })
+        const isTShirt = product?.category?.toLowerCase() === 't-shirts'
+        if (!product || (isTShirt && !selectedSize)) return
+        addItem({ productId: product.id, name: product.name, price: product.price, quantity: 1, size: isTShirt ? selectedSize : undefined, imageUrl: product.front_image_url })
         setAdded(true)
         setTimeout(() => setAdded(false), 2000)
     }
@@ -61,9 +62,9 @@ export default function ProductDetail() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                 {/* Image */}
-                <div className="aspect-square bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-2xl overflow-hidden">
+                <div className="aspect-square bg-[var(--t-bg)] border border-[var(--t-border)] rounded-2xl overflow-hidden p-8">
                     {product.front_image_url ? (
-                        <img src={product.front_image_url} alt={product.name} className="w-full h-full object-cover" />
+                        <img src={product.front_image_url} alt={product.name} className="w-full h-full object-contain" />
                     ) : (
                         <div className="w-full h-full flex items-center justify-center">
                             <ShoppingCart className="w-16 h-16 text-[var(--t-fg-dimmed)]" />
@@ -83,31 +84,33 @@ export default function ProductDetail() {
                     )}
 
                     {/* Size selector */}
-                    <div className="mb-6">
-                        <p className="text-sm font-medium text-[var(--t-fg)] mb-3">Selecciona tu talla</p>
-                        <div className="flex flex-wrap gap-2">
-                            {SIZES.map(size => (
-                                <button
-                                    key={size}
-                                    onClick={() => setSelectedSize(size)}
-                                    className={`w-12 h-12 rounded-lg text-sm font-medium border transition-all ${selectedSize === size
-                                        ? 'bg-[var(--t-accent)] border-[var(--t-accent)] text-[var(--t-fg)] scale-105'
-                                        : 'bg-[var(--t-bg2)] border-[var(--t-border)] text-[var(--t-fg-muted)] hover:border-[var(--t-accent)]/40 hover:text-[var(--t-fg)]'
-                                        }`}
-                                >
-                                    {size}
-                                </button>
-                            ))}
+                    {product.category?.toLowerCase() === 't-shirts' && (
+                        <div className="mb-6">
+                            <p className="text-sm font-medium text-[var(--t-fg)] mb-3">Selecciona tu talla</p>
+                            <div className="flex flex-wrap gap-2">
+                                {SIZES.map(size => (
+                                    <button
+                                        key={size}
+                                        onClick={() => setSelectedSize(size)}
+                                        className={`w-12 h-12 rounded-lg text-sm font-medium border transition-all ${selectedSize === size
+                                            ? 'bg-[var(--t-accent)] border-[var(--t-accent)] text-[var(--t-fg)] scale-105'
+                                            : 'bg-[var(--t-bg2)] border-[var(--t-border)] text-[var(--t-fg-muted)] hover:border-[var(--t-accent)]/40 hover:text-[var(--t-fg)]'
+                                            }`}
+                                    >
+                                        {size}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     <button
                         onClick={handleAddToCart}
-                        disabled={!selectedSize || product.stock_quantity === 0}
+                        disabled={(product.category?.toLowerCase() === 't-shirts' && !selectedSize) || product.stock_quantity === 0}
                         className="mt-auto bg-[var(--t-accent)] hover:bg-[var(--t-accent-hover)] disabled:opacity-40 disabled:cursor-not-allowed text-[var(--t-fg)] font-semibold py-4 px-8 rounded-xl transition-all hover:scale-[1.01] flex items-center justify-center gap-2"
                     >
                         <ShoppingCart className="w-4 h-4" />
-                        {added ? '✓ Añadido al carrito' : !selectedSize ? 'Selecciona una talla' : 'Añadir al carrito'}
+                        {added ? '✓ Añadido al carrito' : (product.category?.toLowerCase() === 't-shirts' && !selectedSize) ? 'Selecciona una talla' : 'Añadir al carrito'}
                     </button>
 
                     {product.stock_quantity === 0 && (

@@ -13,7 +13,6 @@ interface Product {
     price: number
     stock_quantity: number
     featured: boolean
-    in_stock: boolean
     front_image_url?: string
     category: string
     active: boolean
@@ -89,9 +88,9 @@ export default function Shop() {
                             className="group bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-xl overflow-hidden hover:border-[var(--t-accent)]/30 transition-all hover:-translate-y-1"
                         >
                             {/* Image */}
-                            <div className="aspect-square bg-[#2a2a2a] flex items-center justify-center overflow-hidden">
+                            <div className="aspect-square bg-[var(--t-bg)] flex items-center justify-center overflow-hidden p-4">
                                 {product.front_image_url ? (
-                                    <img src={product.front_image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                                    <img src={product.front_image_url} alt={product.name} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" loading="lazy" />
                                 ) : (
                                     <ShoppingBag className="w-10 h-10 text-[var(--t-fg-dimmed)]" />
                                 )}
@@ -101,8 +100,8 @@ export default function Shop() {
                                 <p className="text-[var(--t-fg)] font-medium text-sm line-clamp-1">{product.name}</p>
                                 <div className="flex items-center justify-between mt-1">
                                     <span className="text-[var(--t-accent)] font-bold">{formatPrice(product.price)}</span>
-                                    {!product.in_stock && (
-                                        <span className="text-xs text-[var(--t-fg-dimmed)] bg-[#2a2a2a] px-2 py-0.5 rounded">Sin stock</span>
+                                    {product.stock_quantity <= 0 && (
+                                        <span className="text-xs text-[var(--t-fg-dimmed)] bg-[var(--t-bg)] px-2 py-0.5 rounded border border-[var(--t-border)]">Sin stock</span>
                                     )}
                                 </div>
                             </div>

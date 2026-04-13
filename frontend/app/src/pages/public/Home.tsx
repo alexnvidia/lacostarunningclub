@@ -364,7 +364,7 @@ export default function Home() {
                                 style={{ background: 'color-mix(in srgb, var(--t-accent) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--t-accent) 20%, transparent)' }}
                             >
                                 <Timer className="w-3.5 h-3.5" style={{ color: 'var(--t-accent)' }} />
-                                <span className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--t-accent)' }}>Cada miércoles</span>
+                                <span className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--t-accent)' }}>Cada Lunes</span>
                             </div>
                             <h2 className="text-3xl sm:text-4xl font-black mb-3" style={{ color: 'var(--t-fg)' }}>
                                 Performance <span style={{ color: 'var(--t-accent)' }}>Crew</span>

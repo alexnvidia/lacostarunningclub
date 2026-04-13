@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { ShoppingCart, User, Menu, X, Activity, Shield } from 'lucide-react'
+import { ShoppingCart, User, Menu, X, Shield } from 'lucide-react'
 import { useState } from 'react'
 import { useAuthStore } from '@/store/auth.store'
 import { useCartStore } from '@/store/cart.store'
@@ -7,6 +7,7 @@ import { useQueryClient, useQuery } from '@tanstack/react-query'
 import api from '@/lib/api'
 import { queryKeys } from '@/lib/query-keys'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
+import logoUrl from '@/assets/logo.svg'
 
 // ── UserAvatar ─────────────────────────────────────────────────────────────────
 // Small circular avatar that shows the profile picture or a fallback icon.
@@ -66,12 +67,13 @@ export function Navbar() {
                 <div className="flex items-center justify-between h-16">
 
                     {/* Logo */}
-                    <Link to="/" className="flex items-center gap-2 group">
-                        <Activity
-                            className="w-6 h-6 group-hover:scale-110 transition-transform"
-                            style={{ color: 'var(--t-accent)' }}
+                    <Link to="/" className="flex items-center gap-3 group">
+                        <img 
+                            src={logoUrl} 
+                            alt="LCRC Logo" 
+                            className="w-10 h-10 rounded-xl object-cover group-hover:scale-105 transition-transform shadow-sm"
                         />
-                        <span className="font-bold text-lg tracking-tight" style={{ color: 'var(--t-fg)' }}>
+                        <span className="font-bold text-xl tracking-tight hidden sm:block" style={{ color: 'var(--t-fg)' }}>
                             LCRC<span style={{ color: 'var(--t-accent)' }}>.</span>
                         </span>
                     </Link>
