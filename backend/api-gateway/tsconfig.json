@@ -9,7 +9,7 @@
     
     /* Emit */
     "outDir": "./dist",
-    "rootDir": ".",
+    "rootDir": "./src",
     "removeComments": true,
     "sourceMap": true,
     
@@ -39,8 +39,7 @@
     "declarationMap": true
   },
   "include": [
-    "src/**/*",
-    "tests/**/*"
+    "src/**/*"
   ],
   "exclude": [
     "node_modules",
