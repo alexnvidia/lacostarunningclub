@@ -25,7 +25,6 @@ services/**/.env
 docker-compose.override.yml
 .dockerignore
 docker-compose.yml
-Dockerfile
 
 # PostgreSQL y bases de datos
 *.sql
