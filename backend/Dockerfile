@@ -35,10 +35,10 @@ COPY ${SERVICE_DIR} ./${SERVICE_DIR}
 WORKDIR /app/${SERVICE_DIR}
 RUN npm run build
 
-# 3. Imagen final de producción
+# 3. Imagen final de stage
 FROM node:20-alpine
 ARG SERVICE_DIR
-ENV NODE_ENV=production
+ENV NODE_ENV=stage
 
 WORKDIR /app
 
