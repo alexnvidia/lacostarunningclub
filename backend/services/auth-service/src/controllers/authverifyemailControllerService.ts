@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '@lcrc/shared';
 import { getEmailVerifiedPage } from '../templates/pages/emailVerifiedPage';
-import { getTokenExpiredPage } from 'src/templates/pages/tokenExpiredPage';
+import { getTokenExpiredPage } from '../templates/pages/tokenExpiredPage';
 
 const APP_URL = process.env.APP_URL || 'http://localhost:3000'; // point to frontend URL, at the moment is apigateway
 
