@@ -28,6 +28,8 @@ docker-compose.yml
 
 # PostgreSQL y bases de datos
 *.sql
+# Excepción: migraciones de Prisma sí deben versionarse (necesario para prisma migrate deploy)
+!backend/shared/prisma/migrations/**/*.sql
 *.sqlite
 *.db
 postgres-data/
@@ -68,9 +70,6 @@ Thumbs.db
 # Caché
 .npm
 .eslintcache
-# Prisma migrations NO versionar, pero sí la carpeta prisma en sí
-# Ignorar migraciones pero no otros archivos de prisma
-backend/services/auth-service/prisma/migrations/
 
 # Generated Prisma Client
 backend/shared/src/generated/
