@@ -18,6 +18,11 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const API_PREFIX = process.env.API_PREFIX || '/api';
 
+// Trust the first reverse proxy hop (required for Render and most cloud platforms).
+// Without this, express-rate-limit throws ERR_ERL_UNEXPECTED_X_FORWARDED_FOR
+// because Render injects X-Forwarded-For but Express doesn't trust it by default.
+app.set('trust proxy', 1);
+
 // Create logs directory if it doesn't exist
 if (!fs.existsSync('logs')) {
   fs.mkdirSync('logs');
