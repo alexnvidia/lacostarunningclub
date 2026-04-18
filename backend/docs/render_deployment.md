@@ -78,6 +78,60 @@ Una vez finalizado, Render te proporcionará una URL pública segura (https://lc
 
 ---
 
-### Migraciones (Paso Final)
-Como no hemos puesto un automigrado en el despliegue del Docker:
-1. Asegúrate de compilar y correr `npx prisma migrate deploy` o `npx prisma db push` apuntando a la **External Database URL** de tu PostgreSQL de Render temporalmente desde tu equipo local para sincronizar la BD al esquema, o usa las tareas de scripts de Render para invocar un build externo antes de la salida a producción.
+## 4. Migraciones de Base de Datos
+
+El Dockerfile no ejecuta migraciones automáticamente (correcto: las migraciones deben correr una sola vez, no en cada instancia del servicio). Tienes dos opciones:
+
+---
+
+### Opción A: Migración manual desde local (recomendado para el primer despliegue)
+
+Úsala la primera vez que despliegues o cuando tengas una migración nueva importante y quieras validarla antes.
+
+1. Ve al panel de Render → tu servicio PostgreSQL → copia la **External Database URL**.
+2. En tu terminal local, desde `backend/shared/`:
+
+```bash
+# Apunta temporalmente a la BD de Render
+DATABASE_URL="postgresql://..." npx prisma migrate deploy
+```
+
+3. Verifica en los logs que todas las migraciones se aplicaron sin error.
+4. El servicio PostgreSQL de Render mostrará las tablas creadas en su panel.
+
+> **Importante:** Usa siempre `migrate deploy` (no `migrate dev` ni `db push`) en producción — solo aplica migraciones ya existentes en `prisma/migrations/`, sin modificar el esquema.
+
+---
+
+### Opción B: Pre-Deploy Command en Render (automatizado, recomendado a largo plazo)
+
+Render permite ejecutar un comando antes de cada despliegue. Configúralo así para el servicio que gestiona la BD (normalmente `auth-service`):
+
+1. En el panel del servicio → **Settings** → **Pre-Deploy Command**.
+2. Escribe el siguiente comando:
+
+```bash
+cd /app/shared && npx prisma migrate deploy
+```
+
+3. Render ejecutará este comando antes de arrancar el nuevo contenedor. Si la migración falla, el despliegue se cancela y la versión anterior sigue en pie.
+
+> **Nota:** Este comando solo debe configurarse en **un único servicio** (el primero que arranca, generalmente `auth-service`). Configurarlo en todos los servicios causaría ejecuciones simultáneas de la misma migración.
+
+---
+
+### Creación de migraciones nuevas (flujo de desarrollo)
+
+Las migraciones se generan siempre en **local** y se suben al repositorio:
+
+```bash
+# Desde backend/shared/, con tu BD local
+npx prisma migrate dev --name nombre_descripivo
+
+# Sube la migración generada al repo
+git add prisma/migrations/
+git commit -m "db: add migration nombre_descriptivo"
+```
+
+Cuando el commit llega a `stage`, Render aplica la migración automáticamente (si tienes configurado el Pre-Deploy Command) o manualmente con la Opción A.
+
