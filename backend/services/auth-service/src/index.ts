@@ -1,9 +1,10 @@
+import path from 'path';
 import dotenv from 'dotenv';
-// Load environment variables from root
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+// En local carga el .env del servicio; en Docker/Render las vars las inyecta la plataforma.
+// El flag { override: false } garantiza que las vars de plataforma siempre tienen prioridad.
+dotenv.config({ path: path.resolve(__dirname, '../.env'), override: false });
 import express, { Request, Response, NextFunction } from 'express';
 import http from 'http';
-import path from 'path';
 import { initialize } from '@oas-tools/core';
 import * as authregisterControllerService from './controllers/authregisterControllerService.js';
 import * as authrefreshtokenControllerService from './controllers/authrefreshtokenControllerService.js';
