@@ -304,50 +304,50 @@ if (USE_MOCK) {
 } else {
   console.log('🚀 Starting Product Service in PRODUCTION mode with OAS Tools...');
   const { authMiddleware, isAdmin } = require('./middlewares/authMiddleware');
-  const oasFilePath = path.resolve(process.cwd(), '../../docs/openapi/product-service.yaml');
+
+  // ===== PUBLIC ROUTES =====
+
+  // GET /products - List all products (PUBLIC)
+  app.get('/products', (req: Request, res: Response, next: NextFunction) => {
+    productsController.listProducts(req, res, next);
+  });
+
+  // GET /products/:id - Get product details (PUBLIC)
+  app.get('/products/:id', (req: Request, res: Response, next: NextFunction) => {
+    productsIdController.getProduct(req, res, next);
+  });
+
+  // GET /products/:id/stock - Check product stock (PUBLIC)
+  app.get('/products/:id/stock', (req: Request, res: Response, next: NextFunction) => {
+    productsIdStockController.checkStock(req, res, next);
+  });
+
+  // ===== ADMIN-ONLY ROUTES (authMiddleware → isAdmin → controller) =====
+
+  // POST /products - Create new product (ADMIN)
+  app.post('/products', authMiddleware, isAdmin, (req: Request, res: Response, next: NextFunction) => {
+    productsController.createProduct(req, res, next);
+  });
+
+  // PUT /products/:id - Update product (ADMIN)
+  app.put('/products/:id', authMiddleware, isAdmin, (req: Request, res: Response, next: NextFunction) => {
+    productsIdController.updateProduct(req, res, next);
+  });
+
+  // DELETE /products/:id - Delete product (ADMIN)
+  app.delete('/products/:id', authMiddleware, isAdmin, (req: Request, res: Response, next: NextFunction) => {
+    productsIdController.deleteProduct(req, res, next);
+  });
+
+  // ===== OAS TOOLS (docs + validation) =====
+
+  const oasFilePath = path.resolve(__dirname, 'openapi', 'product-service.yaml');
 
   if (!fs.existsSync(oasFilePath)) {
     console.warn(`⚠️  OpenAPI file not found: ${oasFilePath}`);
-    app.get('*', (_req, res) => {
-      res.status(503).json({ error: 'Service not fully configured' });
-    });
+    console.warn('   Routes are still active. Only OAS docs/validation will be missing.');
     startServer();
   } else {
-
-    // ===== PUBLIC ROUTES =====
-
-    // GET /products - List all products (PUBLIC)
-    app.get('/products', (req: Request, res: Response, next: NextFunction) => {
-      productsController.listProducts(req, res, next);
-    });
-
-    // GET /products/:id - Get product details (PUBLIC)
-    app.get('/products/:id', (req: Request, res: Response, next: NextFunction) => {
-      productsIdController.getProduct(req, res, next);
-    });
-
-    // GET /products/:id/stock - Check product stock (PUBLIC)
-    app.get('/products/:id/stock', (req: Request, res: Response, next: NextFunction) => {
-      productsIdStockController.checkStock(req, res, next);
-    });
-
-    // ===== ADMIN-ONLY ROUTES (authMiddleware → isAdmin → controller) =====
-
-    // POST /products - Create new product (ADMIN)
-    app.post('/products', authMiddleware, isAdmin, (req: Request, res: Response, next: NextFunction) => {
-      productsController.createProduct(req, res, next);
-    });
-
-    // PUT /products/:id - Update product (ADMIN)
-    app.put('/products/:id', authMiddleware, isAdmin, (req: Request, res: Response, next: NextFunction) => {
-      productsIdController.updateProduct(req, res, next);
-    });
-
-    // DELETE /products/:id - Delete product (ADMIN)
-    app.delete('/products/:id', authMiddleware, isAdmin, (req: Request, res: Response, next: NextFunction) => {
-      productsIdController.deleteProduct(req, res, next);
-    });
-
     const oasConfig: any = {
       oasFile: oasFilePath,
       useAnnotations: false,

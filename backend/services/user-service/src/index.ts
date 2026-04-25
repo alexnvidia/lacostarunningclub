@@ -235,55 +235,55 @@ if (USE_MOCK) {
 } else {
   console.log('🚀 Starting User Service in PRODUCTION mode with OAS Tools...');
 
-  const oasFilePath = path.resolve(process.cwd(), '../../docs/openapi/user-service.yaml');
+  // Register controllers manually before OAS initialization
+
+  // GET /users/profile
+  app.get('/users/profile', (req: Request, res: Response, next: NextFunction) => {
+    usersprofileControllerService.getProfile(req, res, next);
+  });
+
+  // PUT /users/profile
+  app.put('/users/profile', (req: Request, res: Response, next: NextFunction) => {
+    usersprofileControllerService.updateProfile(req, res, next);
+  });
+
+  // POST /users/profile/avatar (multipart)
+  app.post('/users/profile/avatar',
+    avatarUpload.single('avatar'),
+    (req: Request, res: Response, next: NextFunction) => {
+      usersprofileControllerService.uploadAvatar(req, res, next);
+    }
+  );
+
+  // POST /users/rewards/:milestone/claim
+  app.post('/users/rewards/:milestone/claim', (req: Request, res: Response, next: NextFunction) => {
+    usersrewardsmilestoneclaimControllerService.claimReward(req, res, next);
+  });
+
+  // GET /users/:userId/rewards
+  app.get('/users/:userId/rewards', (req: Request, res: Response, next: NextFunction) => {
+    usersrewardsmilestoneclaimControllerService.listRewards(req, res, next);
+  });
+
+  // GET /users (admin list)
+  app.get('/users', (req: Request, res: Response, next: NextFunction) => {
+    listUsersByRole(req, res, next);
+  });
+
+  // GET /users/:id
+  app.get('/users/:id', (req: Request, res: Response, next: NextFunction) => {
+    usersidControllerService.getUserById(req, res, next);
+  });
+
+  // ===== OAS TOOLS (docs + validation) =====
+
+  const oasFilePath = path.resolve(__dirname, 'openapi', 'user-service.yaml');
 
   if (!fs.existsSync(oasFilePath)) {
     console.warn(`⚠️  OpenAPI file not found: ${oasFilePath}`);
-    app.get('*', (_req, res) => {
-      res.status(503).json({ error: 'Service not fully configured' });
-    });
+    console.warn('   Routes are still active. Only OAS docs/validation will be missing.');
     startServer();
   } else {
-    // Register controllers manually before OAS initialization
-
-    // GET /users/profile
-    app.get('/users/profile', (req: Request, res: Response, next: NextFunction) => {
-      usersprofileControllerService.getProfile(req, res, next);
-    });
-
-    // PUT /users/profile
-    app.put('/users/profile', (req: Request, res: Response, next: NextFunction) => {
-      usersprofileControllerService.updateProfile(req, res, next);
-    });
-
-    // POST /users/profile/avatar (multipart)
-    app.post('/users/profile/avatar',
-      avatarUpload.single('avatar'),
-      (req: Request, res: Response, next: NextFunction) => {
-        usersprofileControllerService.uploadAvatar(req, res, next);
-      }
-    );
-
-    // POST /users/rewards/:milestone/claim
-    app.post('/users/rewards/:milestone/claim', (req: Request, res: Response, next: NextFunction) => {
-      usersrewardsmilestoneclaimControllerService.claimReward(req, res, next);
-    });
-
-    // GET /users/:userId/rewards
-    app.get('/users/:userId/rewards', (req: Request, res: Response, next: NextFunction) => {
-      usersrewardsmilestoneclaimControllerService.listRewards(req, res, next);
-    });
-
-    // GET /users (admin list)
-    app.get('/users', (req: Request, res: Response, next: NextFunction) => {
-      listUsersByRole(req, res, next);
-    });
-
-    // GET /users/:id
-    app.get('/users/:id', (req: Request, res: Response, next: NextFunction) => {
-      usersidControllerService.getUserById(req, res, next);
-    });
-
     const oasConfig: any = {
       oasFile: oasFilePath,
       useAnnotations: false,

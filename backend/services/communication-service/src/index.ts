@@ -298,45 +298,44 @@ if (USE_MOCK) {
   const messagesIdController = require('./controllers/messagesidControllerService');
   const repliesController = require('./controllers/messagesidrepliesControllerService');
 
-  const oasFilePath = path.resolve(process.cwd(), '../../docs/openapi/communication-service.yaml');
+  // ===== AUTHENTICATED ROUTES (USER) =====
+
+  // POST /messages - Create new message
+  app.post('/communication/messages', authMiddleware, (req: Request, res: Response, next: NextFunction) => {
+    messagesController.createMessage(req, res, next);
+  });
+
+  // GET /messages - List user messages
+  app.get('/communication/messages', authMiddleware, (req: Request, res: Response, next: NextFunction) => {
+    messagesController.listMessages(req, res, next);
+  });
+
+  // GET /messages/:id - View message details
+  app.get('/communication/messages/:id', authMiddleware, (req: Request, res: Response, next: NextFunction) => {
+    messagesIdController.getMessage(req, res, next);
+  });
+
+  // POST /messages/:id/replies - Reply to a message
+  app.post('/communication/messages/:id/replies', authMiddleware, (req: Request, res: Response, next: NextFunction) => {
+    repliesController.replyToMessage(req, res, next);
+  });
+
+  // ===== ADMIN ROUTE (authMiddleware → isAdmin → controller) =====
+
+  // PATCH /messages/:id - Update message status (ADMIN)
+  app.patch('/communication/messages/:id', authMiddleware, isAdmin, (req: Request, res: Response, next: NextFunction) => {
+    messagesIdController.updateMessage(req, res, next);
+  });
+
+  // ===== OAS TOOLS (docs + validation) =====
+
+  const oasFilePath = path.resolve(__dirname, 'openapi', 'communication-service.yaml');
 
   if (!fs.existsSync(oasFilePath)) {
     console.warn(`⚠️  OpenAPI file not found: ${oasFilePath}`);
-    app.get('*', (_req, res) => {
-      res.status(503).json({ error: 'Service not fully configured' });
-    });
+    console.warn('   Routes are still active. Only OAS docs/validation will be missing.');
     startServer();
   } else {
-
-    // ===== AUTHENTICATED ROUTES (USER) =====
-
-    // POST /messages - Create new message
-    app.post('/communication/messages', authMiddleware, (req: Request, res: Response, next: NextFunction) => {
-      messagesController.createMessage(req, res, next);
-    });
-
-    // GET /messages - List user messages
-    app.get('/communication/messages', authMiddleware, (req: Request, res: Response, next: NextFunction) => {
-      messagesController.listMessages(req, res, next);
-    });
-
-    // GET /messages/:id - View message details
-    app.get('/communication/messages/:id', authMiddleware, (req: Request, res: Response, next: NextFunction) => {
-      messagesIdController.getMessage(req, res, next);
-    });
-
-    // POST /messages/:id/replies - Reply to a message
-    app.post('/communication/messages/:id/replies', authMiddleware, (req: Request, res: Response, next: NextFunction) => {
-      repliesController.replyToMessage(req, res, next);
-    });
-
-    // ===== ADMIN ROUTE (authMiddleware → isAdmin → controller) =====
-
-    // PATCH /messages/:id - Update message status (ADMIN)
-    app.patch('/communication/messages/:id', authMiddleware, isAdmin, (req: Request, res: Response, next: NextFunction) => {
-      messagesIdController.updateMessage(req, res, next);
-    });
-
     const oasConfig: any = {
       oasFile: oasFilePath,
       useAnnotations: false,

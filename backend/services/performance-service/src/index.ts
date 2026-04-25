@@ -433,10 +433,11 @@ if (USE_MOCK) {
 
   // ===== OAS TOOLS (docs + validation) =====
 
-  const oasFilePath = path.resolve(process.cwd(), '../../docs/openapi/performance-service.yaml');
+  const oasFilePath = path.resolve(__dirname, 'openapi', 'performance-service.yaml');
 
   if (!fs.existsSync(oasFilePath)) {
     console.warn(`⚠️  OpenAPI file not found: ${oasFilePath}`);
+    console.warn('   Routes are still active. Only OAS docs/validation will be missing.');
     startServer();
   } else {
     const oasConfig = {
