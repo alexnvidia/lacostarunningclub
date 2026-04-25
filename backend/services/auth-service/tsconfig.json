@@ -36,8 +36,8 @@
     /* Other Options */
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "declaration": true,
-    "declarationMap": true,
+    "declaration": false,
+    "declarationMap": false,
     "baseUrl": ".",
     "paths": {
       "@shared/*": ["../../shared/src/*"]
