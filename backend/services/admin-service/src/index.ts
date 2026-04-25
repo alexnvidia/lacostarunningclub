@@ -461,7 +461,7 @@ if (USE_MOCK) {
       logger: { level: 'info' },
       middleware: {
         router: {
-          controllers: path.join(process.cwd(), 'src', 'controllers')
+          controllers: path.join(__dirname, 'controllers')
         },
         validator: {
           strict: true,

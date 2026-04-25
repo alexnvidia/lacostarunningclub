@@ -445,7 +445,7 @@ if (USE_MOCK) {
       useAnnotations: false,
       logger: { level: 'info' },
       middleware: {
-        router: { controllers: path.join(process.cwd(), 'src', 'controllers') },
+        router: { controllers: path.join(__dirname, 'controllers') },
         validator: { strict: true, requestValidation: true, responseValidation: true },
         security: { auth: false }
       }
