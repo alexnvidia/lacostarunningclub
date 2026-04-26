@@ -1,19 +1,18 @@
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '@lcrc/shared';
-import path from 'path';
-import fs from 'fs';
+import { v2 as cloudinary } from 'cloudinary';
+import streamifier from 'streamifier';
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 // ── Allowed MIME types & size limit ──────────────────────────────────────────
 const ALLOWED_MIME_TYPES = ['image/webp', 'image/png'];
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function getAvatarPublicUrl(filename: string): string {
-  // Use a relative path so it routes seamlessly via the API Gateway
-  return `/api/users/uploads/avatars/${filename}`;
-}
-
 // ── GET /users/profile ────────────────────────────────────────────────────────
 
 export const getProfile = async (req: Request, res: Response, next: NextFunction) => {
@@ -191,7 +190,7 @@ export const uploadAvatar = async (req: Request, res: Response, next: NextFuncti
       return;
     }
 
-    if (!req.file) {
+    if (!req.file || !req.file.buffer) {
       res.status(400).json({
         error: 'No file uploaded',
         code: 'BAD_REQUEST',
@@ -202,8 +201,6 @@ export const uploadAvatar = async (req: Request, res: Response, next: NextFuncti
 
     // Validate MIME type (multer fileFilter already does this, but double-check)
     if (!ALLOWED_MIME_TYPES.includes(req.file.mimetype)) {
-      // Remove uploaded file if rejected
-      fs.unlinkSync(req.file.path);
       res.status(400).json({
         error: 'Invalid file type',
         code: 'BAD_REQUEST',
@@ -214,7 +211,6 @@ export const uploadAvatar = async (req: Request, res: Response, next: NextFuncti
 
     // Validate file size
     if (req.file.size > MAX_FILE_SIZE_BYTES) {
-      fs.unlinkSync(req.file.path);
       res.status(413).json({
         error: 'File too large',
         code: 'PAYLOAD_TOO_LARGE',
@@ -226,25 +222,34 @@ export const uploadAvatar = async (req: Request, res: Response, next: NextFuncti
     // Check user exists
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
-      fs.unlinkSync(req.file.path);
       res.status(404).json({ error: 'User not found' });
       return;
     }
 
-    // Delete previous avatar file if it existed and is stored locally
-    if (user.avatarUrl) {
-      const previousFilename = path.basename(user.avatarUrl);
-      // Ensure we don't delete the newly uploaded file if it has the same name
-      if (previousFilename !== req.file.filename) {
-        const previousFilePath = path.join(process.cwd(), 'uploads', 'avatars', previousFilename);
-        if (fs.existsSync(previousFilePath)) {
-          try { fs.unlinkSync(previousFilePath); } catch { /* ignore */ }
-        }
-      }
-    }
+    // Stream upload to Cloudinary
+    const uploadStream = () => {
+      return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          {
+            folder: 'lcrc/avatars',
+            public_id: userId,
+            overwrite: true,
+            format: 'webp', // auto-convert to webp for better optimization
+          },
+          (error, result) => {
+            if (result) {
+              resolve(result);
+            } else {
+              reject(error);
+            }
+          }
+        );
+        streamifier.createReadStream(req.file!.buffer).pipe(stream);
+      });
+    };
 
-    // Build public URL and persist to DB
-    const avatarUrl = getAvatarPublicUrl(req.file.filename);
+    const cloudinaryResult: any = await uploadStream();
+    const avatarUrl = cloudinaryResult.secure_url;
 
     const updatedUser = await prisma.user.update({
       where: { id: userId },

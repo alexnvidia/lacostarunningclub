@@ -18,14 +18,7 @@ const UPLOADS_DIR = path.join(process.cwd(), 'uploads', 'avatars');
 // Ensure upload directory exists
 fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
-const avatarStorage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, UPLOADS_DIR),
-  filename: (req, file, cb) => {
-    const userId = req.headers['x-user-id'] as string || 'unknown';
-    const ext = file.mimetype === 'image/webp' ? 'webp' : 'png';
-    cb(null, `${userId}.${ext}`);
-  },
-});
+const avatarStorage = multer.memoryStorage();
 
 const avatarUpload = multer({
   storage: avatarStorage,
@@ -150,7 +143,7 @@ if (USE_MOCK) {
       return;
     }
     res.json({
-      avatar_url: `/api/users/uploads/avatars/${req.file.filename}`,
+      avatar_url: `/api/users/uploads/avatars/${userId}.webp`,
       message: 'Avatar uploaded successfully'
     });
   });
