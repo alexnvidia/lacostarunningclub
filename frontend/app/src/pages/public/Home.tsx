@@ -22,7 +22,7 @@ interface SlideData {
 }
 
 const SLIDES: SlideData[] = carouselFilenames.map((filename: string, index: number) => ({
-    src: `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/v1/lcrc/carousel/${filename}`,
+    src: `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/${filename}`,
     alt: `Momento LCRC ${index + 1}`,
     caption: `La Costa Running Club` // Puedes personalizar esto o quitarlo si lo deseas
 }));
@@ -262,8 +262,8 @@ export default function Home() {
         const mobileVideo = MOBILE_VIDEOS[Math.floor(Math.random() * MOBILE_VIDEOS.length)];
 
         return {
-            desktop: `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/video/upload/v1777284858/${desktopVideo}`,
-            mobile: `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/video/upload/v1777284859/${mobileVideo}`
+            desktop: `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/video/upload/${desktopVideo}`,
+            mobile: `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/video/upload/${mobileVideo}`
         };
     });
 
