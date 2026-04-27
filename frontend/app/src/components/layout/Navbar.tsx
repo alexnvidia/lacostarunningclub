@@ -1,8 +1,8 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { ShoppingCart, User, Menu, X, Shield } from 'lucide-react'
+import { User, Menu, X, Shield } from 'lucide-react'
 import { useState } from 'react'
 import { useAuthStore } from '@/store/auth.store'
-import { useCartStore } from '@/store/cart.store'
+// import { useCartStore } from '@/store/cart.store'
 import { useQueryClient, useQuery } from '@tanstack/react-query'
 import api from '@/lib/api'
 import { queryKeys } from '@/lib/query-keys'
@@ -47,7 +47,7 @@ function UserAvatar({ size = 28 }: { size?: number }) {
 export function Navbar() {
     const [menuOpen, setMenuOpen] = useState(false)
     const { isAuthenticated, user, logout } = useAuthStore()
-    const itemCount = useCartStore((s) => s.itemCount())
+    // const itemCount = useCartStore((s) => s.itemCount())
     const navigate = useNavigate()
     const queryClient = useQueryClient()
 

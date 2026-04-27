@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { ShoppingBag, ChevronRight } from 'lucide-react'
-import api from '@/lib/api'
+// import api from '@/lib/api'
 import { queryKeys } from '@/lib/query-keys'
 import { formatDate, formatPrice } from '@/lib/utils'
 

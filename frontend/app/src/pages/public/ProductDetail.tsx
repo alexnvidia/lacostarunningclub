@@ -5,7 +5,7 @@ import { useState } from 'react'
 import api from '@/lib/api'
 import { queryKeys } from '@/lib/query-keys'
 import { formatPrice } from '@/lib/utils'
-import { useCartStore } from '@/store/cart.store'
+// import { useCartStore } from '@/store/cart.store'
 
 interface ProductDetail {
     id: string
@@ -25,8 +25,8 @@ const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 export default function ProductDetail() {
     const { id } = useParams<{ id: string }>()
     const [selectedSize, setSelectedSize] = useState('')
-    const [added, setAdded] = useState(false)
-    const addItem = useCartStore(s => s.addItem)
+    // const [added, setAdded] = useState(false)
+    // const addItem = useCartStore(s => s.addItem)
 
     const { data: product, isLoading } = useQuery({
         queryKey: queryKeys.products.detail(id!),
@@ -34,6 +34,7 @@ export default function ProductDetail() {
         enabled: !!id,
     })
 
+    /*
     const handleAddToCart = () => {
         const isTShirt = product?.category?.toLowerCase() === 't-shirts'
         if (!product || (isTShirt && !selectedSize)) return
@@ -41,6 +42,7 @@ export default function ProductDetail() {
         setAdded(true)
         setTimeout(() => setAdded(false), 2000)
     }
+    */
 
     if (isLoading) return (
         <div className="max-w-5xl mx-auto px-4 py-12 grid grid-cols-1 md:grid-cols-2 gap-8">
