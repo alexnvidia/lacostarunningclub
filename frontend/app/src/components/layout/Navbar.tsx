@@ -113,7 +113,8 @@ export function Navbar() {
                         {/* Theme toggle */}
                         <ThemeToggle />
 
-                        {/* Cart */}
+                        {/* Cart (Desactivado para el despliegue) */}
+                        {/* 
                         <Link
                             to="/checkout"
                             className="relative p-2 transition-colors"
@@ -127,6 +128,7 @@ export function Navbar() {
                                 </span>
                             )}
                         </Link>
+                        */}
 
                         {/* Auth — Desktop */}
                         {isAuthenticated ? (

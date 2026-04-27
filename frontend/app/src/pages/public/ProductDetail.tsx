@@ -104,14 +104,11 @@ export default function ProductDetail() {
                         </div>
                     )}
 
-                    <button
-                        onClick={handleAddToCart}
-                        disabled={(product.category?.toLowerCase() === 't-shirts' && !selectedSize) || product.stock_quantity === 0}
-                        className="mt-auto bg-[var(--t-accent)] hover:bg-[var(--t-accent-hover)] disabled:opacity-40 disabled:cursor-not-allowed text-[var(--t-fg)] font-semibold py-4 px-8 rounded-xl transition-all hover:scale-[1.01] flex items-center justify-center gap-2"
-                    >
-                        <ShoppingCart className="w-4 h-4" />
-                        {added ? '✓ Añadido al carrito' : (product.category?.toLowerCase() === 't-shirts' && !selectedSize) ? 'Selecciona una talla' : 'Añadir al carrito'}
-                    </button>
+                    {/* Add to cart disabled */}
+                    <div className="mt-auto bg-[var(--t-bg2)] border border-[var(--t-border)] text-[var(--t-fg-muted)] text-sm text-center py-4 px-6 rounded-xl">
+                        <p className="font-semibold mb-1" style={{ color: 'var(--t-fg)' }}>🛒 Próximamente disponible</p>
+                        <p>Si quieres realizar un pedido, contacta con nuestro staff directamente para tramitarlo de forma personal.</p>
+                    </div>
 
                     {product.stock_quantity === 0 && (
                         <p className="text-center text-[var(--t-fg-dimmed)] text-sm mt-3">Este producto está agotado</p>

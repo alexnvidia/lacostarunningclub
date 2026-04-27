@@ -17,7 +17,8 @@ const STATUS: Record<string, { label: string; color: string }> = {
 export default function Orders() {
     const { data, isLoading } = useQuery({
         queryKey: queryKeys.orders.list(),
-        queryFn: () => api.get('/api/orders').then(r => r.data),
+        queryFn: () => Promise.resolve({ orders: [] }), // Desactivado
+        enabled: false,
     })
 
     const orders = data?.orders ?? []

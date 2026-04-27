@@ -13,8 +13,8 @@ export default function OrderDetail() {
 
     const { data: order, isLoading } = useQuery({
         queryKey: queryKeys.orders.detail(id!),
-        queryFn: () => api.get(`/api/orders/${id}`).then(r => r.data),
-        enabled: !!id,
+        queryFn: () => Promise.resolve(null as any), // Desactivado
+        enabled: false,
     })
 
     const cancelMutation = useMutation({

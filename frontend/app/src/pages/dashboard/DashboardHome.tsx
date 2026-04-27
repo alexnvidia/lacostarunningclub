@@ -11,7 +11,8 @@ export default function DashboardHome() {
 
     const { data: ordersData } = useQuery({
         queryKey: queryKeys.orders.list(),
-        queryFn: () => api.get('/api/orders?limit=3').then(r => r.data),
+        queryFn: () => Promise.resolve({ orders: [] }), // Desactivado
+        enabled: false,
     })
 
     const { data: resultsData } = useQuery({
