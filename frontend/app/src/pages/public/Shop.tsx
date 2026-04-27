@@ -25,7 +25,7 @@ export default function Shop() {
     const { data, isLoading } = useQuery({
         queryKey: queryKeys.products.list({ category, active: true }),
         queryFn: () => api.get<{ products: Product[] }>(`/api/products?active=true${category ? `&category=${category}` : ''}&limit=50`).then(r => r.data),
-        staleTime: 5 * 60 * 1000,
+        staleTime: 60 * 60 * 1000, // Cache de 1 hora
     })
 
     const products = (data?.products ?? []).filter(p =>

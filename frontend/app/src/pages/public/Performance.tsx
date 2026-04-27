@@ -158,6 +158,7 @@ export default function Performance() {
         queryKey: queryKeys.user.profile(),
         queryFn: () => api.get<{ subscription?: { status: string } | null }>('/api/users/profile').then(r => r.data),
         enabled: isAuthenticated,
+        staleTime: 60 * 60 * 1000, // Cache de 1 hora
     })
 
     const isSubscribed = profile?.subscription?.status === 'ACTIVE'
@@ -168,7 +169,7 @@ export default function Performance() {
     // Current week workout (for the "default" view and edit/delete reference)
     const { data: currentWorkout, isLoading: loadingCurrentWorkout } = useQuery({
         queryKey: queryKeys.performance.workout(),
-        queryFn: () => api.get<WorkoutData>('/api/performance/workouts').then(r => r.data),
+        queryFn: () => api.get<WorkoutData>('/api/performance/workouts').then(r => r.data).catch(e => e.response?.status === 404 ? null : Promise.reject(e)),
         staleTime: 60 * 60 * 1000,
     })
 
@@ -176,7 +177,7 @@ export default function Performance() {
     const { data: historicalWorkout, isLoading: loadingHistorical } = useQuery({
         queryKey: queryKeys.performance.workoutByWeek(selectedWeek, selectedYear),
         queryFn: () =>
-            api.get<WorkoutData>(`/api/performance/workouts/${selectedWeek}/${selectedYear}`).then(r => r.data),
+            api.get<WorkoutData>(`/api/performance/workouts/${selectedWeek}/${selectedYear}`).then(r => r.data).catch(e => e.response?.status === 404 ? null : Promise.reject(e)),
         enabled: !isCurrentWeek,
         staleTime: 60 * 60 * 1000,
         retry: false,
@@ -189,7 +190,7 @@ export default function Performance() {
     const { data: resultsData, isLoading: loadingResults } = useQuery({
         queryKey: queryKeys.performance.resultsPublic(1),
         queryFn: () => api.get<{ results: PublicResult[] }>('/api/performance/results/public?limit=10').then(r => r.data),
-        staleTime: 5 * 60 * 1000,
+        staleTime: 60 * 60 * 1000, // Cache de 1 hora
     })
 
     const results = resultsData?.results ?? []

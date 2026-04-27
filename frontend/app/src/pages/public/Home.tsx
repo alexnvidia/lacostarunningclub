@@ -228,14 +228,14 @@ function ImageCarousel() {
 export default function Home() {
     const { data: workout } = useQuery({
         queryKey: queryKeys.performance.workout(),
-        queryFn: () => api.get<WorkoutData>('/api/performance/workouts').then(r => r.data),
+        queryFn: () => api.get<WorkoutData>('/api/performance/workouts').then(r => r.data).catch(e => e.response?.status === 404 ? null : Promise.reject(e)),
         staleTime: 60 * 60 * 1000,
     })
 
     const { data: resultsData } = useQuery({
         queryKey: queryKeys.performance.resultsPublic(1),
         queryFn: () => api.get<{ results: PublicResult[] }>('/api/performance/results/public?limit=4').then(r => r.data),
-        staleTime: 5 * 60 * 1000,
+        staleTime: 60 * 60 * 1000, // Cache de 1 hora
     })
 
     const results = resultsData?.results ?? []

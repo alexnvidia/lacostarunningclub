@@ -32,6 +32,7 @@ export default function ProductDetail() {
         queryKey: queryKeys.products.detail(id!),
         queryFn: () => api.get<ProductDetail>(`/api/products/${id}`).then(r => r.data),
         enabled: !!id,
+        staleTime: 60 * 60 * 1000, // Cache de 1 hora
     })
 
     /*
