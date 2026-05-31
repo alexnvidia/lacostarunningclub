@@ -55,23 +55,6 @@ export function LcrcPassScene({ progressRatio, isCompleted, onCompleted }: Props
         if (!legL || !legR || !armL || !armR || !rig || !sweat || !bgBirds) return
 
         if (isCompleted) {
-            // Stop running animations
-            tl.run?.pause()
-            tl.sweat?.kill()
-            if (tl.dustId) clearInterval(tl.dustId)
-            if (sweatRef.current) gsap.set(sweatRef.current, { opacity: 0 })
-            if (faceRunRef.current) gsap.set(faceRunRef.current, { display: 'none' })
-            if (faceRestRef.current) gsap.set(faceRestRef.current, { display: 'block' })
-
-            // Celebrate: sit down
-            const sit = gsap.timeline()
-            sit.to([legL, legR, armL, armR], { rotation: 0, duration: 0.2 })
-            sit.to(rig,   { y: 15, rotate: -10, duration: 0.5, ease: 'back.out(1.7)' })
-            sit.to(legL,  { rotation: -90, x: -10, duration: 0.5 }, 0.2)
-            sit.to(legR,  { rotation: -90, x: 10,  duration: 0.5 }, 0.2)
-            sit.to(armL,  { rotation: 20, duration: 0.5 }, 0.2)
-            sit.to(armR,  { rotation: -20, duration: 0.5 }, 0.2)
-
             // Activate flag
             if (flagPoleRef.current) gsap.to(flagPoleRef.current,  { fill: '#e63946', duration: 0.5 })
             if (flagCheckRef.current) gsap.to(flagCheckRef.current, { fill: '#000', duration: 0.5, delay: 0.1 })
@@ -85,10 +68,9 @@ export function LcrcPassScene({ progressRatio, isCompleted, onCompleted }: Props
 
             // Trigger modal after brief delay
             if (onCompleted) setTimeout(onCompleted, 1200)
-            return
         }
 
-        // Running loop
+        // Running loop (always runs)
         if (tl.run) tl.run.kill()
         const runTl = gsap.timeline({ repeat: -1, yoyo: true })
         runTl.to(legL, { rotation: 45,  duration: 0.3, ease: 'sine.inOut', transformOrigin: '50% 0%' }, 0)
@@ -99,9 +81,13 @@ export function LcrcPassScene({ progressRatio, isCompleted, onCompleted }: Props
 
         gsap.to(rig, { y: -5, rotation: 2, duration: 0.15, repeat: -1, yoyo: true, ease: 'sine.inOut' })
 
-        // Sweat drop
+        // Sweat drop (only if not completed)
         if (tl.sweat) tl.sweat.kill()
-        tl.sweat = gsap.to(sweat, { opacity: 1, y: 10, duration: 0.8, repeat: -1, ease: 'power1.in' })
+        if (!isCompleted) {
+            tl.sweat = gsap.to(sweat, { opacity: 1, y: 10, duration: 0.8, repeat: -1, ease: 'power1.in' })
+        } else {
+            gsap.set(sweat, { opacity: 0 })
+        }
 
         // Birds
         if (tl.bg) tl.bg.kill()
@@ -123,9 +109,14 @@ export function LcrcPassScene({ progressRatio, isCompleted, onCompleted }: Props
         }
         tl.flag = flagTl
 
-        // Reset faces
-        if (faceRunRef.current) gsap.set(faceRunRef.current, { display: 'block' })
-        if (faceRestRef.current) gsap.set(faceRestRef.current, { display: 'none' })
+        // Set faces
+        if (isCompleted) {
+            if (faceRunRef.current) gsap.set(faceRunRef.current, { display: 'none' })
+            if (faceRestRef.current) gsap.set(faceRestRef.current, { display: 'block' })
+        } else {
+            if (faceRunRef.current) gsap.set(faceRunRef.current, { display: 'block' })
+            if (faceRestRef.current) gsap.set(faceRestRef.current, { display: 'none' })
+        }
 
         return () => {
             runTl.kill()
