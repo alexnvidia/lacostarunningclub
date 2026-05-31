@@ -3,6 +3,7 @@ node_modules/
 dist/
 build/
 *.tsbuildinfo
+frontend/app/dev-dist/
 
 # Archivos de producción
 *.log
@@ -23,9 +24,12 @@ services/**/.env
 # Docker
 docker-compose.override.yml
 .dockerignore
+docker-compose.yml
 
 # PostgreSQL y bases de datos
 *.sql
+# Excepción: migraciones de Prisma sí deben versionarse (necesario para prisma migrate deploy)
+!backend/shared/prisma/migrations/**/*.sql
 *.sqlite
 *.db
 postgres-data/
@@ -66,3 +70,6 @@ Thumbs.db
 # Caché
 .npm
 .eslintcache
+
+# Generated Prisma Client
+backend/shared/src/generated/

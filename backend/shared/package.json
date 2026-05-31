@@ -1,0 +1,24 @@
+{
+  "name": "@lcrc/shared",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc && cp -R src/generated dist/generated",
+    "prisma:generate": "prisma generate"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.3.0",
+    "@prisma/client": "^7.3.0",
+    "bull": "^4.16.5",
+    "ioredis": "^5.8.2",
+    "nodemailer": "^7.0.10"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "@types/pg": "^8.16.0",
+    "pg": "^8.18.0",
+    "prisma": "^7.3.0",
+    "typescript": "^5.3.3"
+  }
+}

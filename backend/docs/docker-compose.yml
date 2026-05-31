@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  api-docs:
+    image: nginx:alpine
+    container_name: lcrc-api-docs
+    ports:
+      - "8080:80"
+    volumes:
+      - ./index.html:/usr/share/nginx/html/index.html:ro
+      - ./openapi:/usr/share/nginx/html/openapi:ro
+    networks:
+      - lcrc-network
+
+networks:
+  lcrc-network:
+    name: lcrc-network

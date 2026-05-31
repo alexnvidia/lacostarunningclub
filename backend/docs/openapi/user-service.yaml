@@ -1,0 +1,389 @@
+openapi: 3.0.3
+info:
+  title: La Costa Running Club - User Service
+  version: 1.1.0
+  description: User profile management service
+  contact:
+    name: LCRC Tech Team
+
+servers:
+  - url: http://localhost:3002/api
+    description: Local development
+
+tags:
+  - name: Profile
+    description: User profile operations
+  - name: Admin
+    description: Admin-only user management operations
+
+paths:
+  /users:
+    get:
+      tags:
+        - Admin
+      summary: List users by role (Admin/Support only)
+      description: Returns a list of active users filtered by role. Only accessible by ADMIN or SUPPORT.
+      operationId: listUsersByRole
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: role
+          in: query
+          required: true
+          description: Role to filter users by
+          schema:
+            type: string
+            enum: [USER, ADMIN, SUPPORT, TRAINER]
+      responses:
+        '200':
+          description: Users retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /users/profile:
+    get:
+      tags:
+        - Profile
+      summary: Get user profile
+      description: Returns authenticated user's profile including avatar URL
+      operationId: getProfile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    put:
+      tags:
+        - Profile
+      summary: Update user profile
+      description: Updates authenticated user's profile information (name, phone)
+      operationId: updateProfile
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileRequest'
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /users/profile/avatar:
+    post:
+      tags:
+        - Profile
+      summary: Upload profile picture
+      description: |
+        Uploads a profile picture for the authenticated user.
+        - Accepted formats: WebP, PNG
+        - Maximum file size: 5 MB
+        - The image is expected to be pre-processed (WebP conversion) on the client side.
+        - The file must be sent as `multipart/form-data` with the field name `avatar`.
+      operationId: uploadAvatar
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - avatar
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+                  description: Profile picture file (WebP or PNG, max 5 MB)
+      responses:
+        '200':
+          description: Avatar uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvatarUploadResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '413':
+          description: File too large (exceeds 5 MB limit)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/rewards/{milestone}/claim:
+    post:
+      tags:
+        - Profile
+      summary: Claim reward
+      description: Claim a reward for a specific milestone
+      operationId: claimReward
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: milestone
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Reward claimed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserReward'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /users/{id}:
+    get:
+      tags:
+        - Profile
+      summary: Get user by ID (Admin only)
+      description: Returns user profile by ID. Admin access required.
+      operationId: getUserById
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /users/{userId}/rewards:
+    get:
+      tags:
+        - Admin
+      summary: List rewards for a specific user (Admin only)
+      description: Returns all milestone rewards for a given user, including unlocked and claimed status. Only accessible by ADMIN.
+      operationId: listRewards
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: UUID of the user whose rewards to fetch
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Rewards retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRewardsList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        first_name:
+          type: string
+        last_name:
+          type: string
+        phone:
+          type: string
+        role:
+          type: string
+          enum: [user, admin, support, trainer]
+        avatar_url:
+          type: string
+          format: uri
+          nullable: true
+          description: URL to the user's profile picture (WebP or PNG, max 5 MB)
+          example: 'http://localhost:3002/uploads/avatars/abc123.webp'
+        created_at:
+          type: string
+          format: date-time
+        last_login:
+          type: string
+          format: date-time
+        email_verified:
+          type: boolean
+        subscription:
+          $ref: '#/components/schemas/UserSubscription'
+        rewards:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserReward'
+
+    AvatarUploadResponse:
+      type: object
+      properties:
+        avatar_url:
+          type: string
+          format: uri
+          description: Public URL of the uploaded avatar
+          example: 'http://localhost:3002/uploads/avatars/abc123.webp'
+        message:
+          type: string
+          example: 'Avatar uploaded successfully'
+
+    UserList:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              email:
+                type: string
+                format: email
+              first_name:
+                type: string
+              last_name:
+                type: string
+              role:
+                type: string
+
+    UserSubscription:
+      type: object
+      properties:
+        status:
+          type: string
+        active_since:
+          type: string
+          format: date-time
+        months_active:
+          type: integer
+
+    UserReward:
+      type: object
+      properties:
+        milestone_months:
+          type: integer
+        unlocked:
+          type: boolean
+        claimed:
+          type: boolean
+        unlocked_at:
+          type: string
+          format: date-time
+
+    UserRewardsList:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        months_active:
+          type: integer
+        rewards:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserReward'
+
+    UpdateProfileRequest:
+      type: object
+      properties:
+        first_name:
+          type: string
+          minLength: 2
+          maxLength: 100
+        last_name:
+          type: string
+          maxLength: 100
+        phone:
+          type: string
+          pattern: '^\+?[1-9]\d{1,14}$'
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        code:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    
+    Forbidden:
+      description: Forbidden - Admin access required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

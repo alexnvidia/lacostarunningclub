@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Costa Running Club - API Documentation</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        .header p {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+        }
+        .service-selector {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            text-align: center;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .service-selector select {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            min-width: 300px;
+        }
+        .service-selector select:hover {
+            border-color: #764ba2;
+        }
+        #swagger-ui {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .service-info {
+            background: #e7f3ff;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+        }
+        .service-info h3 {
+            margin: 0 0 0.5rem 0;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏃 La Costa Running Club</h1>
+        <p>Microservices API Documentation</p>
+    </div>
+
+    <div class="service-selector">
+        <label for="service-select" style="margin-right: 1rem; font-weight: 600;">Select Service:</label>
+        <select id="service-select" onchange="loadService(this.value)">
+            <option value="">-- Choose a microservice --</option>
+            <option value="auth">Auth Service (Port 3001)</option>
+            <option value="user">User Service (Port 3002)</option>
+            <option value="order">Order Service (Port 3003)</option>
+            <option value="product">Product Service (Port 3004)</option>
+            <option value="admin">Admin Service (Port 3005)</option>
+            <option value="communication">Communication Service (Port 3006)</option>
+            <option value="performance">Performance Service (Port 3007)</option>
+        </select>
+    </div>
+
+    <div id="service-description"></div>
+    <div id="swagger-ui"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-standalone-preset.js"></script>
+    
+    <script>
+        const services = {
+            auth: {
+                name: 'Auth Service',
+                port: 3001,
+                description: 'Authentication and authorization service. Handles user registration, login, JWT tokens, and password management.',
+                url: './openapi/AuthService.yaml'
+            },
+            user: {
+                name: 'User Service',
+                port: 3002,
+                description: 'User profile management service. Handles user information and preferences.',
+                url: './openapi/UserService.yaml'
+            },
+            order: {
+                name: 'Order Service',
+                port: 3003,
+                description: 'Order management service. Handles t-shirt orders, order status, and history.',
+                url: './openapi/OrderService.yaml'
+            },
+            product: {
+                name: 'Product Service',
+                port: 3004,
+                description: 'Product catalog and inventory management. Manages t-shirt products and stock.',
+                url: './openapi/ProductService.yaml'
+            },
+            admin: {
+                name: 'Admin Service',
+                port: 3005,
+                description: 'Administrative operations service. All endpoints require admin role.',
+                url: './openapi/AdminService.yaml'
+            },
+            communication: {
+                name: 'Communication Service',
+                port: 3006,
+                description: 'Messaging and communication service for user support and club contact.',
+                url: './openapi/CommunicationService.yaml'
+            },
+            performance: {
+                name: 'Performance Service',
+                port: 3007,
+                description: 'Performance Crew service. Manages race results and weekly training plans.',
+                url: './openapi/PerformanceService.yaml'
+            }
+        };
+
+        let ui;
+
+        function loadService(serviceKey) {
+            if (!serviceKey) {
+                document.getElementById('service-description').innerHTML = '';
+                document.getElementById('swagger-ui').innerHTML = '';
+                return;
+            }
+
+            const service = services[serviceKey];
+            
+            // Show service info
+            document.getElementById('service-description').innerHTML = `
+                <div class="service-info" style="max-width: 1400px; margin: 1rem auto;">
+                    <h3>${service.name}</h3>
+                    <p><strong>Port:</strong> ${service.port}</p>
+                    <p>${service.description}</p>
+                </div>
+            `;
+
+            // Load Swagger UI
+            ui = SwaggerUIBundle({
+                url: service.url,
+                dom_id: '#swagger-ui',
+                deepLinking: true,
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIStandalonePreset
+                ],
+                plugins: [
+                    SwaggerUIBundle.plugins.DownloadUrl
+                ],
+                layout: "StandaloneLayout",
+                tryItOutEnabled: true
+            });
+        }
+
+        // Load first service by default
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('service-select').value = 'auth';
+            loadService('auth');
+        });
+    </script>
+</body>
+</html>

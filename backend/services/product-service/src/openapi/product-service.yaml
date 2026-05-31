@@ -1,0 +1,359 @@
+openapi: 3.0.3
+info:
+  title: La Costa Running Club - Product Service
+  version: 1.0.0
+  description: T-shirt catalog and inventory management service
+  contact:
+    name: LCRC Tech Team
+
+servers:
+  - url: http://localhost:3004/api
+    description: Local development
+
+tags:
+  - name: Products
+    description: Product catalog operations
+  - name: Inventory
+    description: Stock management operations
+
+paths:
+  /products:
+    get:
+      tags:
+        - Products
+      summary: List all products
+      description: Returns list of available t-shirts
+      operationId: listProducts
+      parameters:
+        - name: size
+          in: query
+          schema:
+            type: string
+            enum: [XS, S, M, L, XL, XXL]
+        - name: color
+          in: query
+          schema:
+            type: string
+        - name: active
+          in: query
+          schema:
+            type: boolean
+            default: true
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [t-shirts, hats, accessories]
+      responses:
+        '200':
+          description: Products retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  products:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+    post:
+      tags:
+        - Products
+      summary: Create new product (Admin only)
+      description: Adds new product to catalog. Admin access required.
+      operationId: createProduct
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductRequest'
+      responses:
+        '201':
+          description: Product created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /products/{id}:
+    get:
+      tags:
+        - Products
+      summary: Get product details
+      description: Returns detailed information about specific product
+      operationId: getProduct
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Product found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Products
+      summary: Update product (Admin only)
+      description: Updates product information. Admin access required.
+      operationId: updateProduct
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProductRequest'
+      responses:
+        '200':
+          description: Product updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Products
+      summary: Delete product (Admin only)
+      description: Soft deletes product by setting active=false. Admin access required.
+      operationId: deleteProduct
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Product deleted successfully
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /products/{id}/stock:
+    get:
+      tags:
+        - Inventory
+      summary: Check product stock
+      description: Returns current stock availability
+      operationId: checkStock
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Stock information retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  product_id:
+                    type: string
+                    format: uuid
+                  stock_quantity:
+                    type: integer
+                  available_stock:
+                    type: integer
+                  in_stock:
+                    type: boolean
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        product_code:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+          format: decimal
+        stock_quantity:
+          type: integer
+        size:
+          type: string
+          enum: [XS, S, M, L, XL, XXL]
+        color:
+          type: string
+        category:
+          type: string
+          default: t-shirts
+        front_image_url:
+          type: string
+        back_image_url:
+          type: string
+        active:
+          type: boolean
+        featured:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    CreateProductRequest:
+      type: object
+      required:
+        - product_code
+        - name
+        - price
+        - size
+        - category_name
+      properties:
+        product_code:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+          format: decimal
+          minimum: 0
+        stock_quantity:
+          type: integer
+          minimum: 0
+          default: 0
+        size:
+          type: string
+          enum: [XS, S, M, L, XL, XXL]
+        color:
+          type: string
+        front_image_url:
+          type: string
+        back_image_url:
+          type: string
+        featured:
+          type: boolean
+          default: false
+        category_name:
+          type: string
+          enum: [t-shirts, hats, accessories]
+
+    UpdateProductRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+          format: decimal
+          minimum: 0
+        stock_quantity:
+          type: integer
+          minimum: 0
+        color:
+          type: string
+        front_image_url:
+          type: string
+        back_image_url:
+          type: string
+        active:
+          type: boolean
+        featured:
+          type: boolean
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        total_pages:
+          type: integer
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        code:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    
+    Forbidden:
+      description: Forbidden - Admin access required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    
+    NotFound:
+      description: Product not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

@@ -1,0 +1,15 @@
+[build]
+  # Comando de build (desde el root del repo, con base en el directorio del frontend)
+  base    = "frontend/app"
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Node version
+  NODE_VERSION = "20"
+
+# SPA fallback: todas las rutas van a index.html para que React Router las maneje
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200
