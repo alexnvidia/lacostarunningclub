@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import { authMiddleware } from './middlewares/auth.middleware';
 import { rateLimitMiddleware, authRateLimiter } from './middlewares/rateLimit.middleware';
 import { loggerMiddleware } from './middlewares/logger.middleware';
+import { requestIdMiddleware } from './middlewares/requestId.middleware';
 import { errorHandler } from './middlewares/errorHandler';
 import { proxyRequest } from './utils/proxy';
 import { services } from './config/services.config';
@@ -61,6 +62,7 @@ app.use(
     return next(err);
   }
 );
+app.use(requestIdMiddleware);
 app.use(loggerMiddleware);
 
 // Health check endpoints (no auth required)
