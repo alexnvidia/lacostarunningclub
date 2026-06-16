@@ -1,6 +1,9 @@
 import morgan from 'morgan';
 import logger from '../utils/logger';
 
+// Register custom morgan token for x-request-id
+morgan.token('request-id', (req: any) => (req.headers['x-request-id'] as string) || '-');
+
 const stream = {
   write: (message: string) => {
     logger.http(message.trim());
@@ -8,11 +11,10 @@ const stream = {
 };
 
 const skip = () => {
-  const env = process.env.NODE_ENV || 'development';
-  return env !== 'development';
+  return process.env.DISABLE_HTTP_LOGS === 'true';
 };
 
 export const loggerMiddleware = morgan(
-  ':method :url :status :res[content-length] - :response-time ms',
+  '[:request-id] :method :url :status :res[content-length] - :response-time ms',
   { stream, skip }
 );

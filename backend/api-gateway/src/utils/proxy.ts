@@ -78,6 +78,7 @@ export const proxyRequest = async (
 
     logger.debug({
       message: `Proxying ${req.method} ${req.originalUrl}`,
+      requestId: req.headers['x-request-id'],
       routeMap: {
         baseUrl: req.baseUrl,
         path: req.path,
