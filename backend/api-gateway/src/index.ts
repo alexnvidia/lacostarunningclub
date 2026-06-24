@@ -31,10 +31,20 @@ if (!fs.existsSync('logs')) {
 
 // Middlewares globales
 app.use(helmet());
-// Only allow CORS for development; adjust for production as needed
-// change '*' to specific origins in production and add whitelist logic if necessary
+// CORS Configuration
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',')
+  : ['http://localhost:5173', 'http://localhost:5500', 'http://192.168.64.2'];
+
 app.use(cors({
-  origin: (origin, callback) => callback(null, origin || '*'),
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, or server-to-server)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
 }));
 app.use(express.json());
