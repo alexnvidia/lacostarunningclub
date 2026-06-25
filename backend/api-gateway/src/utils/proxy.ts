@@ -65,7 +65,7 @@ export const proxyRequest = async (
 
     const requestData = NO_BODY_METHODS.includes(req.method.toUpperCase()) 
       ? undefined 
-      : (isMultipart ? req : req.body);
+      : (isMultipart ? req : ((req as any).rawBody || req.body));
 
     const config: AxiosRequestConfig = {
       method: req.method,

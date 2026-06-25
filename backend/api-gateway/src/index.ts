@@ -37,7 +37,12 @@ app.use(cors({
   origin: (origin, callback) => callback(null, origin || '*'),
   credentials: true,
 }));
-app.use(express.json());
+// Capture raw body buffer for webhook signature validation (Stripe, BMC)
+app.use(express.json({
+  verify: (req: any, _res, buf) => {
+    req.rawBody = buf;
+  }
+}));
 app.use(express.urlencoded({ extended: true }));
 // catch JSON parsing errors
 app.use(

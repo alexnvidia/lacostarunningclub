@@ -11,6 +11,7 @@ import * as adminstatsControllerService from './controllers/adminstatsController
 import * as adminstatssalesControllerService from './controllers/adminstatssalesControllerService';
 import * as adminsubscriptionsControllerService from './controllers/adminsubscriptionsControllerService';
 import { bmcWebhookHandler } from './controllers/bmcWebhookController';
+import { stripeWebhookHandler } from './controllers/stripeWebhookController';
 import { isAdmin } from './middlewares/authMiddleware';
 import fs from 'fs';
 
@@ -20,6 +21,9 @@ const USE_MOCK = process.env.USE_MOCK === 'true';
 
 // BMC webhook needs raw body for HMAC signature validation — registered BEFORE express.json()
 app.post('/admin/webhooks/bmc', express.raw({ type: '*/*' }), bmcWebhookHandler);
+
+// Stripe webhook needs raw body for signature validation — registered BEFORE express.json()
+app.post('/admin/webhooks/stripe', express.raw({ type: '*/*' }), stripeWebhookHandler);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -390,7 +394,12 @@ if (USE_MOCK) {
   console.log('🚀 Starting in PRODUCTION mode with OAS Tools...');
   // Middleware de autenticación (excuyendo /docs)
   app.use((req: Request, res: Response, next: NextFunction) => {
-    if (req.path.startsWith('/docs') || req.path.startsWith('/queues') || req.path.startsWith('/admin/webhooks/bmc')) {
+    if (
+      req.path.startsWith('/docs') ||
+      req.path.startsWith('/queues') ||
+      req.path.startsWith('/admin/webhooks/bmc') ||
+      req.path.startsWith('/admin/webhooks/stripe')
+    ) {
       return next();
     }
     return isAdmin(req, res, next);
