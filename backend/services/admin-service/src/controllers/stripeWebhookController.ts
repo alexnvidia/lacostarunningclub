@@ -8,8 +8,10 @@ import { upsertSubscription } from './adminsubscriptionsControllerService';
 // ─────────────────────────────────────────────
 const HANDLED_EVENTS: Stripe.Event.Type[] = [
     'checkout.session.completed',
+    'customer.subscription.created',
     'customer.subscription.updated',
     'customer.subscription.deleted',
+    'invoice.payment_succeeded',
 ];
 
 // ─────────────────────────────────────────────
@@ -31,6 +33,41 @@ function resolveStatusFromSubscription(sub: Stripe.Subscription): string {
             return 'INACTIVE';
     }
 }
+
+// ─────────────────────────────────────────────
+// Helper: extract dates from Stripe subscription object
+// ─────────────────────────────────────────────
+function getStripeSubscriptionDates(stripeSub: Stripe.Subscription): {
+    startDate?: Date;
+    endDate?: Date;
+    lastPaymentDate?: Date;
+} {
+    const stripeItem = stripeSub.items?.data?.[0] as any;
+
+    const startDate =
+        (stripeSub as any).start_date
+            ? new Date((stripeSub as any).start_date * 1000)
+            : stripeItem?.current_period_start
+                ? new Date(stripeItem.current_period_start * 1000)
+                : undefined;
+
+    const endDate =
+        stripeItem?.current_period_end
+            ? new Date(stripeItem.current_period_end * 1000)
+            : (stripeSub as any).current_period_end
+                ? new Date((stripeSub as any).current_period_end * 1000)
+                : undefined;
+
+    const lastPaymentDate =
+        stripeItem?.current_period_start
+            ? new Date(stripeItem.current_period_start * 1000)
+            : (stripeSub as any).current_period_start
+                ? new Date((stripeSub as any).current_period_start * 1000)
+                : undefined;
+
+    return { startDate, endDate, lastPaymentDate };
+}
+
 
 // ─────────────────────────────────────────────
 // Register idempotency record in stripe_webhook_events
@@ -119,10 +156,13 @@ export const stripeWebhookHandler = async (req: Request, res: Response): Promise
         if (event.type === 'checkout.session.completed') {
             await handleCheckoutSessionCompleted(event, stripe);
         } else if (
+            event.type === 'customer.subscription.created' ||
             event.type === 'customer.subscription.updated' ||
             event.type === 'customer.subscription.deleted'
         ) {
             await handleSubscriptionChange(event, stripe);
+        } else if (event.type === 'invoice.payment_succeeded') {
+            await handleInvoicePaymentSucceeded(event, stripe);
         }
 
         res.status(200).json({ received: true, processed: true });
@@ -209,9 +249,10 @@ async function handleSubscriptionChange(event: Stripe.Event, stripe: Stripe): Pr
     }
 
     const status = resolveStatusFromSubscription(stripeSub);
-    const startDate = (stripeSub as any).start_date ? new Date((stripeSub as any).start_date * 1000) : undefined;
-    const endDate = (stripeSub as any).current_period_end ? new Date((stripeSub as any).current_period_end * 1000) : undefined;
-    const lastPaymentDate = (stripeSub as any).current_period_start ? new Date((stripeSub as any).current_period_start * 1000) : undefined;
+    const { startDate, endDate, lastPaymentDate } = getStripeSubscriptionDates(stripeSub);
+
+
+    console.log(`📝 Updating subscription dates via change for user ${resolvedUserId}: status=${status}, startDate=${startDate?.toISOString()}, endDate=${endDate?.toISOString()}, lastPaymentDate=${lastPaymentDate?.toISOString()}`);
 
     const subscription = await upsertSubscription({
         userId: resolvedUserId,
@@ -220,6 +261,7 @@ async function handleSubscriptionChange(event: Stripe.Event, stripe: Stripe): Pr
         endDate,
         externalId: stripeSub.id,
         lastPaymentDate,
+        cancelAtPeriodEnd: stripeSub.cancel_at_period_end,
     });
 
     // Mark provider as stripe
@@ -249,6 +291,7 @@ async function upsertStripeSubscription(params: {
     let lastPaymentDate: Date = new Date();
     let externalId: string = session.id;
     let stripeStatus = 'ACTIVE';
+    let cancelAtPeriodEnd = false;
 
     // If the session is subscription-mode, fetch the Stripe subscription for exact dates
     if (session.subscription && typeof session.subscription === 'string') {
@@ -256,14 +299,20 @@ async function upsertStripeSubscription(params: {
             const stripeSub = await stripe.subscriptions.retrieve(session.subscription);
             externalId = stripeSub.id;
             stripeStatus = resolveStatusFromSubscription(stripeSub);
-            startDate = (stripeSub as any).start_date ? new Date((stripeSub as any).start_date * 1000) : new Date();
-            endDate = (stripeSub as any).current_period_end ? new Date((stripeSub as any).current_period_end * 1000) : undefined;
-            lastPaymentDate = (stripeSub as any).current_period_start ? new Date((stripeSub as any).current_period_start * 1000) : new Date();
+            cancelAtPeriodEnd = stripeSub.cancel_at_period_end;
+            const periodDates = getStripeSubscriptionDates(stripeSub);
+
+            startDate = periodDates.startDate ?? startDate;
+            endDate = periodDates.endDate;
+            lastPaymentDate = periodDates.lastPaymentDate ?? lastPaymentDate;
         } catch (err) {
             console.warn('⚠️  Stripe webhook: could not retrieve subscription details, using session id as externalId', err);
             externalId = session.subscription;
         }
     }
+
+    console.log(`📝 Creating/updating subscription via checkout for user ${userId}: status=${stripeStatus}, startDate=${startDate.toISOString()}, endDate=${endDate?.toISOString()}, lastPaymentDate=${lastPaymentDate.toISOString()}`);
+
 
     const subscription = await upsertSubscription({
         userId,
@@ -272,6 +321,7 @@ async function upsertStripeSubscription(params: {
         endDate,
         externalId,
         lastPaymentDate,
+        cancelAtPeriodEnd,
     });
 
     // Mark provider as stripe
@@ -282,4 +332,74 @@ async function upsertStripeSubscription(params: {
 
     console.log(`✅ Stripe webhook: subscription created/updated for user ${userId} → ${stripeStatus}`);
     await registerStripeEvent(eventId, eventType, subscription.id);
+}
+
+// ─────────────────────────────────────────────
+// Handler: invoice.payment_succeeded
+// ─────────────────────────────────────────────
+async function handleInvoicePaymentSucceeded(event: Stripe.Event, stripe: Stripe): Promise<void> {
+    const invoice = event.data.object as any;
+    const subscriptionId = invoice.subscription;
+
+    if (!subscriptionId || typeof subscriptionId !== 'string') {
+        console.log(`📝 Stripe webhook: invoice.payment_succeeded — no subscription in invoice ${invoice.id}`);
+        await registerStripeEvent(event.id, event.type);
+        return;
+    }
+
+    console.log(`💳 invoice.payment_succeeded — invoice=${invoice.id}, subscription=${subscriptionId}`);
+
+    const stripeSub = await stripe.subscriptions.retrieve(subscriptionId);
+
+    const userId: string | undefined =
+        stripeSub.metadata?.userId ?? stripeSub.metadata?.user_id ?? undefined;
+
+    let resolvedUserId: string | undefined = userId;
+
+    if (!resolvedUserId) {
+        let customerEmail: string | null = null;
+        if (typeof stripeSub.customer === 'string') {
+            try {
+                const customer = await stripe.customers.retrieve(stripeSub.customer) as Stripe.Customer;
+                customerEmail = customer.email ?? null;
+            } catch (err) {
+                console.warn('⚠️  Stripe webhook: could not retrieve customer', err);
+            }
+        }
+        if (customerEmail) {
+            const userByEmail = await prisma.user.findFirst({
+                where: { email: { equals: customerEmail, mode: 'insensitive' } },
+            });
+            resolvedUserId = userByEmail?.id;
+        }
+    }
+
+    if (!resolvedUserId) {
+        console.warn(`⚠️  Stripe webhook: cannot resolve user for subscription ${subscriptionId}`);
+        await registerStripeEvent(event.id, event.type);
+        return;
+    }
+
+    const status = resolveStatusFromSubscription(stripeSub);
+    const { startDate, endDate, lastPaymentDate } = getStripeSubscriptionDates(stripeSub);
+
+    console.log(`📝 Updating subscription dates via invoice for user ${resolvedUserId}: status=${status}, startDate=${startDate?.toISOString()}, endDate=${endDate?.toISOString()}, lastPaymentDate=${lastPaymentDate?.toISOString()}`);
+
+    const subscription = await upsertSubscription({
+        userId: resolvedUserId,
+        status,
+        startDate,
+        endDate,
+        externalId: stripeSub.id,
+        lastPaymentDate,
+        cancelAtPeriodEnd: stripeSub.cancel_at_period_end,
+    });
+
+    await prisma.subscription.update({
+        where: { userId: resolvedUserId },
+        data: { provider: 'stripe' },
+    });
+
+    console.log(`✅ Stripe webhook: subscription payment succeeded for user ${resolvedUserId} → ${status}`);
+    await registerStripeEvent(event.id, event.type, subscription.id);
 }

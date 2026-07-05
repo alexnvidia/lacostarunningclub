@@ -70,13 +70,15 @@ export const getProfile = async (req: Request, res: Response, next: NextFunction
       phone: user.phone,
       role: user.role.toLowerCase(),
       avatar_url: user.avatarUrl || null,
+      photo_consent: user.photoConsent,
       created_at: user.createdAt,
       last_login: user.lastLogin,
       email_verified: user.emailVerified,
       subscription: user.subscription ? {
         status: user.subscription.status,
         active_since: user.subscription.startDate,
-        months_active: monthsActive
+        months_active: monthsActive,
+        cancel_at_period_end: user.subscription.cancelAtPeriodEnd,
       } : null,
       rewards: rewardsStatus
     });
@@ -91,7 +93,7 @@ export const getProfile = async (req: Request, res: Response, next: NextFunction
 export const updateProfile = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = req.headers['x-user-id'] as string;
-    const { first_name, last_name, phone } = req.body;
+    const { first_name, last_name, phone, photo_consent } = req.body;
 
     if (!userId) {
       res.status(401).json({ error: 'Unauthorized' });
@@ -128,6 +130,10 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
       }
     }
 
+    if (photo_consent !== undefined && typeof photo_consent !== 'boolean') {
+      errors.push('photo_consent must be a boolean');
+    }
+
     if (errors.length > 0) {
       res.status(400).json({
         error: 'Validation failed',
@@ -137,9 +143,9 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
       return;
     }
 
-    if (first_name === undefined && last_name === undefined && phone === undefined) {
+    if (first_name === undefined && last_name === undefined && phone === undefined && photo_consent === undefined) {
       res.status(400).json({
-        error: 'At least one field (first_name, last_name, or phone) must be provided',
+        error: 'At least one field (first_name, last_name, phone, or photo_consent) must be provided',
         code: 'BAD_REQUEST'
       });
       return;
@@ -158,7 +164,8 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
       data: {
         firstName: first_name,
         lastName: last_name,
-        phone: phone
+        phone: phone,
+        ...(photo_consent !== undefined && { photoConsent: photo_consent }),
       }
     });
 
@@ -170,6 +177,7 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
       phone: updatedUser.phone,
       role: updatedUser.role.toLowerCase(),
       avatar_url: updatedUser.avatarUrl || null,
+      photo_consent: updatedUser.photoConsent,
       created_at: updatedUser.createdAt,
       last_login: updatedUser.lastLogin
     });

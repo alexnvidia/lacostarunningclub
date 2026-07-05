@@ -3,11 +3,12 @@ export interface EmailVerifiedPageData {
   firstName: string;
   lastName: string | null;
   appUrl: string;
+  frontendUrl: string;
   currentYear: number;
 }
 
 export function getEmailVerifiedPage(data: EmailVerifiedPageData): string {
-  const { email, firstName, lastName, appUrl, currentYear } = data;
+  const { email, firstName, lastName, frontendUrl, currentYear } = data;
 
   return `
     <!DOCTYPE html>
@@ -105,7 +106,7 @@ export function getEmailVerifiedPage(data: EmailVerifiedPageData): string {
             <p><strong>Nombre:</strong> ${firstName} ${lastName || ''}</p>
           </div>
 
-          <a href="${appUrl}/login" class="button">
+          <a href="${frontendUrl}/login" class="button">
             Iniciar Sesión
           </a>
 

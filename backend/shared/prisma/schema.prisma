@@ -33,6 +33,7 @@ model User {
   resetPasswordExpires     DateTime?            @map("reset_password_expires")
   bmcEmail                 String?              @map("bmc_email")
   avatarUrl                String?              @map("avatar_url")
+  photoConsent             Boolean              @default(false) @map("photo_consent")
   sessions                 Session[]
   addresses                Address[]
   productReviews           ProductReview[]
@@ -550,6 +551,7 @@ model Subscription {
   lastPaymentDate DateTime? @map("last_payment_date")
   provider        String    @default("buymeacoffee")
   externalId      String?   @map("external_id")
+  cancelAtPeriodEnd Boolean? @default(false) @map("cancel_at_period_end")
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 

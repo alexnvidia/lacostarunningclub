@@ -14,12 +14,14 @@ type PasswordResetData = {
   firstName: string;
   resetToken: string;
   appUrl: string;
+  frontendUrl: string;
 };
 
 type EmailVerificationData = {
   firstName: string;
   verificationToken: string;
   appUrl: string;
+  frontendUrl: string;
 };
 
 // Union type for all possible data

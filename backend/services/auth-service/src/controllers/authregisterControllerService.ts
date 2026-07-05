@@ -20,7 +20,7 @@ export async function registerUser(req: Request, res: Response, next: NextFuncti
       console.log('[DB CONFIG] DATABASE_URL definida?:', process.env.DATABASE_URL);
       console.log('[DB CONFIG] Tipo DATABASE_URL:', typeof process.env.DATABASE_URL);
     }
-    const { email, password, first_name, last_name, phone } = req.body;
+    const { email, password, first_name, last_name, phone, photo_consent } = req.body;
 
     if (!email || !password || !first_name) {
       res.status(400).json({ error: 'Email, password and first name are required', code: 'VALIDATION_ERROR' });
@@ -53,6 +53,7 @@ export async function registerUser(req: Request, res: Response, next: NextFuncti
         firstName: first_name,
         lastName: last_name,
         phone,
+        photoConsent: photo_consent ?? false,
         role,
         active: true,
         emailVerified: false,
@@ -140,6 +141,7 @@ export async function registerUser(req: Request, res: Response, next: NextFuncti
         last_name: newUser.lastName,
         role: newUser.role,
         email_verified: newUser.emailVerified,
+        photo_consent: newUser.photoConsent,
         created_at: newUser.createdAt.toISOString(),
       },
     });

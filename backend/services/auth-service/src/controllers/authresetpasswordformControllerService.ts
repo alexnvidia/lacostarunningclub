@@ -20,8 +20,9 @@ export function getResetPasswordForm(req: Request, res: Response): void {
     `script-src 'self' 'nonce-${nonce}'; style-src 'self' 'nonce-${nonce}'`
   );
 
-  // 3. Generate the HTML form with the token and nonce
-  const html = getResetPasswordFormHtml(token, nonce);
+  // 3. Generate the HTML form with the token, nonce, and frontend URL
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const html = getResetPasswordFormHtml(token, nonce, frontendUrl);
 
   res.send(html);
 }

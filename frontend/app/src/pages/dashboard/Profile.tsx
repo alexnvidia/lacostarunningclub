@@ -2,15 +2,17 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { User, Save, CheckCircle, Lock, Gift, Award, Calendar, Camera, X, AlertCircle } from 'lucide-react'
+import { User, Save, CheckCircle, Lock, Gift, Award, Calendar, Camera, X, AlertCircle, XCircle } from 'lucide-react'
 import { useState, useRef, useCallback } from 'react'
 import api from '@/lib/api'
 import { queryKeys } from '@/lib/query-keys'
 import { useAuthStore } from '@/store/auth.store'
+import { formatDate } from '@/lib/utils'
 import { AnimationErrorBoundary } from '@/components/subscription/AnimationErrorBoundary'
 import { LcrcPassScene } from '@/components/subscription/LcrcPassScene'
 import { VerticalTimeline } from '@/components/subscription/VerticalTimeline'
 import { RewardModal } from '@/components/subscription/RewardModal'
+import SubscriptionCTA from '@/components/subscription/SubscriptionCTA'
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -32,6 +34,8 @@ interface UserSubscription {
     provider?: string
     active_since: string | null
     months_active: number
+    end_date?: string | null
+    cancel_at_period_end?: boolean
 }
 
 interface UserProfile {
@@ -43,6 +47,7 @@ interface UserProfile {
     role: string
     email_verified: boolean
     avatar_url?: string | null
+    photo_consent?: boolean
     subscription?: UserSubscription | null
     rewards?: UserReward[]
 }
@@ -53,6 +58,7 @@ const schema = z.object({
     first_name: z.string().min(2),
     last_name: z.string().optional(),
     phone: z.string().optional(),
+    photo_consent: z.boolean().optional(),
 })
 type FormData = z.infer<typeof schema>
 
@@ -370,6 +376,8 @@ function SubscriptionJourneyLegacy({
 }) {
     const qc = useQueryClient()
     const [claimingMilestone, setClaimingMilestone] = useState<number | null>(null)
+    const [showCancelDialog, setShowCancelDialog] = useState(false)
+    const [cancelSuccess, setCancelSuccess] = useState(false)
 
     const claimMutation = useMutation({
         mutationFn: (milestone: number) =>
@@ -377,6 +385,15 @@ function SubscriptionJourneyLegacy({
         onMutate: (milestone) => setClaimingMilestone(milestone),
         onSettled: () => {
             setClaimingMilestone(null)
+            qc.invalidateQueries({ queryKey: queryKeys.user.profile() })
+        },
+    })
+
+    const cancelMutation = useMutation({
+        mutationFn: () => api.post('/api/admin/stripe/subscription/cancel').then(r => r.data),
+        onSuccess: () => {
+            setCancelSuccess(true)
+            setShowCancelDialog(false)
             qc.invalidateQueries({ queryKey: queryKeys.user.profile() })
         },
     })
@@ -394,14 +411,7 @@ function SubscriptionJourneyLegacy({
                     La zona de Performance, los rankings y entrenamientos del club están reservados solo para los miembros con suscripción activa.
                 </p>
                 <div className="flex flex-col items-center justify-center gap-4 relative z-10">
-                    <a
-                        href="https://buymeacoffee.com/lacostarunningclub/membership"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full sm:w-auto bg-[var(--t-accent)] hover:bg-[var(--t-accent-hover)] text-[#ffffff] font-bold py-3 px-6 rounded-xl transition-all hover:-translate-y-1 shadow-lg shadow-[var(--t-accent)]/20 text-sm"
-                    >
-                        Suscribirme a LCRC Pass
-                    </a>
+                    <SubscriptionCTA className="w-full sm:w-auto" />
                 </div>
                 <p className="mt-6 text-xs text-[var(--t-fg-dimmed)] relative z-10">
                     ¿Prefieres hacerlo en persona? Contacta con el staff de La Costa para formalizar tu inscripción y pago en nuestros eventos.
@@ -423,6 +433,7 @@ function SubscriptionJourneyLegacy({
         : null
 
     return (
+        <>
         <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-2xl p-6">
             {/* Header */}
             <div className="flex items-center justify-between mb-5">
@@ -430,10 +441,33 @@ function SubscriptionJourneyLegacy({
                     <Award className="w-5 h-5 text-[var(--t-accent2)]" />
                     <h2 className="text-[var(--t-fg)] font-bold text-lg">Mi suscripción</h2>
                 </div>
-                <span className="text-xs bg-[var(--t-accent2)]/10 text-[var(--t-accent2)] border border-[var(--t-accent2)]/20 px-3 py-1 rounded-full font-medium">
-                    ⭐ Activa
-                </span>
+                <div className="flex items-center gap-2">
+                    <span className="text-xs bg-[var(--t-accent2)]/10 text-[var(--t-accent2)] border border-[var(--t-accent2)]/20 px-3 py-1 rounded-full font-medium">
+                        ⭐ Activa
+                    </span>
+                    {subscription.status === 'ACTIVE' && !subscription?.cancel_at_period_end && (
+                        <button
+                            id="cancel-subscription-btn-legacy"
+                            onClick={() => setShowCancelDialog(true)}
+                            className="text-xs text-red-400 hover:text-red-300 border border-red-400/30 hover:border-red-400/60 px-3 py-1 rounded-full transition-colors"
+                        >
+                            Cancelar
+                        </button>
+                    )}
+                </div>
             </div>
+
+            {/* Post-cancel feedback banner */}
+            {(cancelSuccess || subscription?.cancel_at_period_end) && (
+                <div className="flex items-start gap-3 bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-5 text-sm text-amber-300">
+                    <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>
+                        Tu suscripción se cancelará al final del período actual
+                        {subscription.end_date ? ` (${formatDate(subscription.end_date)})` : ''}.
+                        {' '}Puedes seguir disfrutando de todos los beneficios hasta entonces.
+                    </span>
+                </div>
+            )}
 
             {/* Stats row */}
             <div className="flex flex-wrap gap-4 mb-5">
@@ -450,6 +484,12 @@ function SubscriptionJourneyLegacy({
                         {' '}mes{monthsActive !== 1 ? 'es' : ''} activo{monthsActive !== 1 ? 's' : ''}
                     </span>
                 </div>
+                {subscription.end_date && (
+                    <div className="flex items-center gap-2 text-sm text-[var(--t-fg-muted)]">
+                        <Calendar className="w-4 h-4 text-[var(--t-fg-dimmed)]" />
+                        <span>Próxima renovación{' '}<span className="text-[var(--t-fg)] font-medium">{formatDate(subscription.end_date)}</span></span>
+                    </div>
+                )}
             </div>
 
             {/* Progress bar */}
@@ -491,6 +531,50 @@ function SubscriptionJourneyLegacy({
                 ))}
             </div>
         </div>
+
+        {/* Cancel confirmation dialog */}
+        {showCancelDialog && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-2xl p-6 max-w-sm w-full mx-4 space-y-4 shadow-2xl">
+                    <div className="flex items-start justify-between">
+                        <h3 className="font-bold text-[var(--t-fg)] text-lg">¿Cancelar suscripción?</h3>
+                        <button onClick={() => setShowCancelDialog(false)} className="text-[var(--t-fg-dimmed)] hover:text-[var(--t-fg)] transition-colors">
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
+                    <p className="text-sm text-[var(--t-fg-muted)] leading-relaxed">
+                        Puedes seguir usando tu suscripción hasta el final del período actual
+                        {subscription.end_date ? ` (${formatDate(subscription.end_date)})` : ''}.
+                        {' '}Después no se realizará ningún cargo más.
+                    </p>
+                    {cancelMutation.isError && (
+                        <p className="text-xs text-red-400">No se pudo cancelar la suscripción. Inténtalo de nuevo.</p>
+                    )}
+                    <div className="flex gap-3 justify-end pt-1">
+                        <button
+                            onClick={() => setShowCancelDialog(false)}
+                            className="text-sm px-4 py-2 rounded-lg border border-[var(--t-border)] text-[var(--t-fg-muted)] hover:text-[var(--t-fg)] transition-colors"
+                        >
+                            Mantener suscripción
+                        </button>
+                        <button
+                            id="confirm-cancel-subscription-btn-legacy"
+                            onClick={() => cancelMutation.mutate()}
+                            disabled={cancelMutation.isPending}
+                            className="text-sm px-4 py-2 rounded-lg bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 disabled:opacity-50 transition-colors flex items-center gap-2"
+                        >
+                            {cancelMutation.isPending ? (
+                                <div className="w-3.5 h-3.5 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" />
+                            ) : (
+                                <XCircle className="w-3.5 h-3.5" />
+                            )}
+                            Sí, cancelar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
+        </>
     )
 }
 
@@ -506,6 +590,8 @@ function SubscriptionJourney({
     const qc = useQueryClient()
     const [claimingMilestone, setClaimingMilestone] = useState<number | null>(null)
     const [showRewardModal, setShowRewardModal] = useState(false)
+    const [showCancelDialog, setShowCancelDialog] = useState(false)
+    const [cancelSuccess, setCancelSuccess] = useState(false)
 
     const claimMutation = useMutation({
         mutationFn: (milestone: number) =>
@@ -513,6 +599,15 @@ function SubscriptionJourney({
         onMutate: (milestone) => setClaimingMilestone(milestone),
         onSettled: () => {
             setClaimingMilestone(null)
+            qc.invalidateQueries({ queryKey: queryKeys.user.profile() })
+        },
+    })
+
+    const cancelMutation = useMutation({
+        mutationFn: () => api.post('/api/admin/stripe/subscription/cancel').then(r => r.data),
+        onSuccess: () => {
+            setCancelSuccess(true)
+            setShowCancelDialog(false)
             qc.invalidateQueries({ queryKey: queryKeys.user.profile() })
         },
     })
@@ -530,14 +625,7 @@ function SubscriptionJourney({
                     La zona de Performance, los rankings y entrenamientos del club están reservados solo para los miembros con suscripción activa.
                 </p>
                 <div className="flex flex-col items-center justify-center gap-4 relative z-10">
-                    <a
-                        href="https://buymeacoffee.com/lacostarunningclub/membership"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full sm:w-auto bg-[var(--t-accent)] hover:bg-[var(--t-accent-hover)] text-[#ffffff] font-bold py-3 px-6 rounded-xl transition-all hover:-translate-y-1 shadow-lg shadow-[var(--t-accent)]/20 text-sm"
-                    >
-                        Suscribirme a LCRC Pass
-                    </a>
+                    <SubscriptionCTA className="w-full sm:w-auto" />
                 </div>
                 <p className="mt-6 text-xs text-[var(--t-fg-dimmed)] relative z-10">
                     ¿Prefieres hacerlo en persona? Contacta con el staff de La Costa para formalizar tu inscripción y pago en nuestros eventos.
@@ -564,6 +652,7 @@ function SubscriptionJourney({
     )
 
     return (
+        <>
         <AnimationErrorBoundary fallback={legacyFallback}>
             <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-2xl overflow-hidden">
                 {/* Header */}
@@ -572,10 +661,33 @@ function SubscriptionJourney({
                         <Award className="w-5 h-5 text-[var(--t-accent2)]" />
                         <h2 className="text-[var(--t-fg)] font-bold text-lg">Mi suscripción</h2>
                     </div>
-                    <span className="text-xs bg-[var(--t-accent2)]/10 text-[var(--t-accent2)] border border-[var(--t-accent2)]/20 px-3 py-1 rounded-full font-medium">
-                        ⭐ Activa
-                    </span>
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs bg-[var(--t-accent2)]/10 text-[var(--t-accent2)] border border-[var(--t-accent2)]/20 px-3 py-1 rounded-full font-medium">
+                            ⭐ Activa
+                        </span>
+                        {subscription.status === 'ACTIVE' && !subscription?.cancel_at_period_end && (
+                            <button
+                                id="cancel-subscription-btn"
+                                onClick={() => setShowCancelDialog(true)}
+                                className="text-xs text-red-400 hover:text-red-300 border border-red-400/30 hover:border-red-400/60 px-3 py-1 rounded-full transition-colors"
+                            >
+                                Cancelar
+                            </button>
+                        )}
+                    </div>
                 </div>
+
+                {/* Post-cancel feedback banner */}
+                {(cancelSuccess || subscription?.cancel_at_period_end) && (
+                    <div className="flex items-start gap-3 bg-amber-500/10 border border-amber-500/20 rounded-xl mx-6 mb-2 p-4 text-sm text-amber-300">
+                        <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                        <span>
+                            Tu suscripción se cancelará al final del período actual
+                            {subscription.end_date ? ` (${formatDate(subscription.end_date)})` : ''}.
+                            {' '}Puedes seguir disfrutando de todos los beneficios hasta entonces.
+                        </span>
+                    </div>
+                )}
 
                 {/* Stats row */}
                 <div className="flex flex-wrap gap-4 px-6 pb-4">
@@ -592,6 +704,12 @@ function SubscriptionJourney({
                             {' '}mes{monthsActive !== 1 ? 'es' : ''} activo{monthsActive !== 1 ? 's' : ''}
                         </span>
                     </div>
+                    {subscription.end_date && (
+                        <div className="flex items-center gap-2 text-sm text-[var(--t-fg-muted)]">
+                            <Calendar className="w-4 h-4 text-[var(--t-fg-dimmed)]" />
+                            <span>Próxima renovación{' '}<span className="text-[var(--t-fg)] font-medium">{formatDate(subscription.end_date)}</span></span>
+                        </div>
+                    )}
                 </div>
 
                 {/* Animated Scene */}
@@ -628,6 +746,50 @@ function SubscriptionJourney({
             {/* Reward Modal */}
             <RewardModal isOpen={showRewardModal} onClose={() => setShowRewardModal(false)} />
         </AnimationErrorBoundary>
+
+        {/* Cancel confirmation dialog */}
+        {showCancelDialog && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-2xl p-6 max-w-sm w-full mx-4 space-y-4 shadow-2xl">
+                    <div className="flex items-start justify-between">
+                        <h3 className="font-bold text-[var(--t-fg)] text-lg">¿Cancelar suscripción?</h3>
+                        <button onClick={() => setShowCancelDialog(false)} className="text-[var(--t-fg-dimmed)] hover:text-[var(--t-fg)] transition-colors">
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
+                    <p className="text-sm text-[var(--t-fg-muted)] leading-relaxed">
+                        Puedes seguir usando tu suscripción hasta el final del período actual
+                        {subscription.end_date ? ` (${formatDate(subscription.end_date)})` : ''}.
+                        {' '}Después no se realizará ningún cargo más.
+                    </p>
+                    {cancelMutation.isError && (
+                        <p className="text-xs text-red-400">No se pudo cancelar la suscripción. Inténtalo de nuevo.</p>
+                    )}
+                    <div className="flex gap-3 justify-end pt-1">
+                        <button
+                            onClick={() => setShowCancelDialog(false)}
+                            className="text-sm px-4 py-2 rounded-lg border border-[var(--t-border)] text-[var(--t-fg-muted)] hover:text-[var(--t-fg)] transition-colors"
+                        >
+                            Mantener suscripción
+                        </button>
+                        <button
+                            id="confirm-cancel-subscription-btn"
+                            onClick={() => cancelMutation.mutate()}
+                            disabled={cancelMutation.isPending}
+                            className="text-sm px-4 py-2 rounded-lg bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 disabled:opacity-50 transition-colors flex items-center gap-2"
+                        >
+                            {cancelMutation.isPending ? (
+                                <div className="w-3.5 h-3.5 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" />
+                            ) : (
+                                <XCircle className="w-3.5 h-3.5" />
+                            )}
+                            Sí, cancelar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
+        </>
     )
 }
 
@@ -649,6 +811,7 @@ export default function Profile() {
             first_name: profile?.first_name ?? '',
             last_name: profile?.last_name ?? '',
             phone: profile?.phone ?? '',
+            photo_consent: profile?.photo_consent ?? false,
         },
     })
 
@@ -756,6 +919,17 @@ export default function Profile() {
                             className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] rounded-lg px-4 py-2.5 text-[var(--t-fg-dimmed)] text-sm cursor-not-allowed"
                         />
                     </div>
+                    <label className="flex items-start gap-3 cursor-pointer group py-2">
+                        <input
+                            type="checkbox"
+                            {...register('photo_consent')}
+                            id="photo_consent"
+                            className="mt-0.5 w-4 h-4 rounded border-[var(--t-border)] bg-[var(--t-bg)] text-[var(--t-accent)] accent-[var(--t-accent)] focus:ring-[var(--t-accent)] focus:ring-2 transition-colors"
+                        />
+                        <span className="text-sm text-[var(--t-fg-muted)] group-hover:text-[var(--t-fg)] transition-colors">
+                            Acepto que mis fotos e imágenes puedan ser publicadas en la web del club
+                        </span>
+                    </label>
                     <button
                         type="submit"
                         disabled={mutation.isPending}

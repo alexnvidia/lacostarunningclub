@@ -4,6 +4,7 @@ import { getEmailVerifiedPage } from '../templates/pages/emailVerifiedPage';
 import { getTokenExpiredPage } from '../templates/pages/tokenExpiredPage';
 
 const APP_URL = process.env.APP_URL || 'http://localhost:3000'; // point to frontend URL, at the moment is apigateway
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 export async function verifyEmail(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
@@ -33,6 +34,7 @@ export async function verifyEmail(req: Request, res: Response, next: NextFunctio
         const htmlExpiredPage = getTokenExpiredPage({
           email: user.email,
           appUrl: APP_URL,
+          frontendUrl: FRONTEND_URL,
           currentYear: new Date().getFullYear(),
         });
 
@@ -77,6 +79,7 @@ export async function verifyEmail(req: Request, res: Response, next: NextFunctio
       firstName: user.firstName,
       lastName: user.lastName,
       appUrl: APP_URL,
+      frontendUrl: FRONTEND_URL,
       currentYear: new Date().getFullYear(),
     });
 
