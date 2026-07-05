@@ -27,6 +27,8 @@ const TicketDetail = lazy(() => import('@/pages/dashboard/TicketDetail'))
 const NewTicket = lazy(() => import('@/pages/dashboard/NewTicket'))
 const MyRaces = lazy(() => import('@/pages/dashboard/MyRaces'))
 const UploadResult = lazy(() => import('@/pages/dashboard/UploadResult'))
+const CheckoutSuccess = lazy(() => import('@/pages/dashboard/CheckoutSuccess'))
+const CheckoutCancel = lazy(() => import('@/pages/dashboard/CheckoutCancel'))
 
 // Lazy pages — admin (protected + role ADMIN)
 const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard'))
@@ -91,6 +93,8 @@ export default function App() {
               <Route path="/soporte/:id" element={<TicketDetail />} />
               <Route path="/mis-carreras" element={<MyRaces />} />
               <Route path="/subir-resultado" element={<UploadResult />} />
+              <Route path="/checkout/success" element={<CheckoutSuccess />} />
+              <Route path="/checkout/cancel" element={<CheckoutCancel />} />
             </Route>
           </Route>
 

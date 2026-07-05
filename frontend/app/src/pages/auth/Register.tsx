@@ -14,6 +14,7 @@ const registerSchema = z.object({
     email: z.string().email('Email inválido'),
     password: z.string().min(8, 'Mínimo 8 caracteres'),
     phone: z.string().optional(),
+    photo_consent: z.boolean().optional(),
 })
 type RegisterForm = z.infer<typeof registerSchema>
 
@@ -92,6 +93,18 @@ export default function Registro() {
                             <label htmlFor="phone" className="block text-sm font-medium text-[var(--t-fg)] mb-1.5">Teléfono</label>
                             <input {...register('phone')} id="phone" type="tel" autoComplete="tel" placeholder="+34 600 000 000" className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] focus:border-[var(--t-accent)] rounded-lg px-4 py-3 text-[var(--t-fg)] placeholder-[var(--t-fg-dimmed)] outline-none text-sm transition-colors" />
                         </div>
+
+                        <label className="flex items-start gap-3 cursor-pointer group">
+                            <input
+                                type="checkbox"
+                                {...register('photo_consent')}
+                                id="photo_consent"
+                                className="mt-0.5 w-4 h-4 rounded border-[var(--t-border)] bg-[var(--t-bg)] text-[var(--t-accent)] accent-[var(--t-accent)] focus:ring-[var(--t-accent)] focus:ring-2 transition-colors"
+                            />
+                            <span className="text-sm text-[var(--t-fg-muted)] group-hover:text-[var(--t-fg)] transition-colors">
+                                Acepto que mis fotos e imágenes puedan ser publicadas en la web del club
+                            </span>
+                        </label>
 
                         {errorMsg && (
                             <div className="bg-[var(--t-accent)]/10 border border-[var(--t-accent)]/20 rounded-lg px-4 py-3">

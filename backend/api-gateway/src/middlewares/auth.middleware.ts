@@ -22,6 +22,12 @@ export const authMiddleware = (
     return;
   }
 
+  // Allow webhook routes — they authenticate via HMAC signature (Stripe, BMC)
+  if (req.path.includes('/webhooks/')) {
+    next();
+    return;
+  }
+
   const authHeader = req.headers.authorization;
 
   // Check if Authorization header exists

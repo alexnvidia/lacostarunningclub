@@ -5,6 +5,7 @@ import { emailQueue } from '../queue/emailQueue';
 import { EmailTemplate, getEmailContent } from '../utils/emailTemplates';
 
 const APP_URL = process.env.APP_URL || 'http://localhost:3000';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 export async function forgotPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
@@ -53,6 +54,7 @@ export async function forgotPassword(req: Request, res: Response, next: NextFunc
         firstName: user.firstName,
         resetToken,
         appUrl: APP_URL,
+        frontendUrl: FRONTEND_URL,
       },
     });
 

@@ -20,8 +20,8 @@ export const rateLimitMiddleware = rateLimit({
 });
 
 export const authRateLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 attempts
+  windowMs: parseInt(process.env.AUTH_RATE_LIMIT_WINDOW_MS || '900000'), // default 15 minutes
+  max: parseInt(process.env.AUTH_RATE_LIMIT_MAX_REQUESTS || '5'),        // default 5 attempts
   skipSuccessfulRequests: true,
   message: {
     error: 'Too many login attempts, please try again later.',

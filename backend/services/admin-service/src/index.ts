@@ -11,7 +11,10 @@ import * as adminstatsControllerService from './controllers/adminstatsController
 import * as adminstatssalesControllerService from './controllers/adminstatssalesControllerService';
 import * as adminsubscriptionsControllerService from './controllers/adminsubscriptionsControllerService';
 import { bmcWebhookHandler } from './controllers/bmcWebhookController';
-import { isAdmin } from './middlewares/authMiddleware';
+import { stripeWebhookHandler } from './controllers/stripeWebhookController';
+import { isAdmin, populateUser } from './middlewares/authMiddleware';
+import * as adminstripecheckoutsessionControllerService from './controllers/adminstripecheckoutsessionControllerService';
+import * as adminstripecheckoutsessionidControllerService from './controllers/adminstripecheckoutsessionidControllerService';
 import fs from 'fs';
 
 const app = express();
@@ -21,8 +24,12 @@ const USE_MOCK = process.env.USE_MOCK === 'true';
 // BMC webhook needs raw body for HMAC signature validation — registered BEFORE express.json()
 app.post('/admin/webhooks/bmc', express.raw({ type: '*/*' }), bmcWebhookHandler);
 
+// Stripe webhook needs raw body for signature validation — registered BEFORE express.json()
+app.post('/admin/webhooks/stripe', express.raw({ type: '*/*' }), stripeWebhookHandler);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(populateUser);
 
 // Logger middleware
 app.use((req, _res, next) => {
@@ -308,6 +315,57 @@ if (USE_MOCK) {
     });
   });
 
+  // POST /admin/stripe/checkout-session - Create mock Stripe checkout session
+  app.post('/admin/stripe/checkout-session', (req: Request, res: Response) => {
+    const { priceId } = req.body;
+    const user = req.user;
+    if (!user) {
+      res.status(401).json({ error: 'Authentication required' });
+      return;
+    }
+    if (!priceId) {
+      res.status(400).json({ error: 'Missing priceId parameter' });
+      return;
+    }
+    console.log(`🎭 Creating mock Stripe session for user ${user.id} and price ${priceId}`);
+    res.json({
+      sessionId: 'cs_test_mock12345',
+      url: 'https://checkout.stripe.com/pay/cs_test_mock12345'
+    });
+  });
+
+  // GET /admin/stripe/checkout-session/:sessionId - Get mock Stripe checkout session
+  app.get('/admin/stripe/checkout-session/:sessionId', (req: Request, res: Response) => {
+    const { sessionId } = req.params;
+    console.log(`🎭 Retrieving mock Stripe session: ${sessionId}`);
+    res.json({
+      id: sessionId,
+      status: 'complete',
+      payment_status: 'paid',
+      url: `https://checkout.stripe.com/pay/${sessionId}`,
+      customer_email: 'user@example.com',
+      amount_total: 4999,
+      currency: 'eur',
+      metadata: { userId: 'mock-user-id' },
+      created: Math.floor(Date.now() / 1000) - 3600,
+      expires_at: null,
+    });
+  });
+
+  // POST /admin/stripe/subscription/cancel - Cancel mock subscription
+  app.post('/admin/stripe/subscription/cancel', (req: Request, res: Response) => {
+    const user = req.user;
+    if (!user) {
+      res.status(401).json({ error: 'Authentication required' });
+      return;
+    }
+    console.log(`🎭 Mock cancelling subscription for user ${user.id}`);
+    res.json({
+      message: 'Subscription successfully scheduled for cancellation at the end of the period',
+      cancelAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+    });
+  });
+
   // ===== STATISTICS =====
 
   // GET /admin/stats - Get dashboard statistics
@@ -390,7 +448,15 @@ if (USE_MOCK) {
   console.log('🚀 Starting in PRODUCTION mode with OAS Tools...');
   // Middleware de autenticación (excuyendo /docs)
   app.use((req: Request, res: Response, next: NextFunction) => {
-    if (req.path.startsWith('/docs') || req.path.startsWith('/queues') || req.path.startsWith('/admin/webhooks/bmc')) {
+    if (
+      req.path.startsWith('/docs') ||
+      req.path.startsWith('/queues') ||
+      req.path.startsWith('/admin/webhooks/bmc') ||
+      req.path.startsWith('/admin/webhooks/stripe') ||
+      req.path.startsWith('/admin/stripe/checkout-session') ||
+      req.path.startsWith('/admin/stripe/subscription/cancel') ||
+      (req.path.startsWith('/admin/stripe/checkout-session/') && req.method === 'GET')
+    ) {
       return next();
     }
     return isAdmin(req, res, next);
@@ -438,6 +504,21 @@ if (USE_MOCK) {
 
   app.get('/admin/subscriptions', (req: Request, res: Response, next: NextFunction) => {
     adminsubscriptionsControllerService.listSubscriptions(req, res, next);
+  });
+
+  //register admin stripe checkout session controller
+  app.post('/admin/stripe/checkout-session', (req: Request, res: Response, next: NextFunction) => {
+    adminstripecheckoutsessionControllerService.createStripeCheckoutSession(req, res, next);
+  });
+
+  //register admin stripe checkout session get controller
+  app.get('/admin/stripe/checkout-session/:sessionId', (req: Request, res: Response, next: NextFunction) => {
+    adminstripecheckoutsessionidControllerService.getCheckoutSession(req, res, next);
+  });
+
+  //register admin stripe subscription cancel controller
+  app.post('/admin/stripe/subscription/cancel', (req: Request, res: Response, next: NextFunction) => {
+    adminstripecheckoutsessionControllerService.cancelSubscription(req, res, next);
   });
 
   const oasFilePath = path.resolve(process.cwd(), '../../docs/openapi/admin-service.yaml');

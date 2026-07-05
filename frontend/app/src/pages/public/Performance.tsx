@@ -6,6 +6,7 @@ import { useAuthStore } from '@/store/auth.store'
 import api from '@/lib/api'
 import { queryKeys } from '@/lib/query-keys'
 import { formatDate } from '@/lib/utils'
+import SubscriptionCTA from '@/components/subscription/SubscriptionCTA'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -315,23 +316,8 @@ export default function Performance() {
                     <p className="text-[var(--t-fg-muted)] mb-8 max-w-lg mx-auto leading-relaxed relative z-10">
                         La zona de Performance, los rankings y entrenamientos del club están reservados solo para los miembros con suscripción activa.
                     </p>
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 relative z-10">
-                        <a
-                            href="https://buymeacoffee.com/lacostarunningclub/membership"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-full sm:w-auto bg-[var(--t-accent)] hover:bg-[var(--t-accent-hover)] text-[#ffffff] font-bold py-3.5 px-8 rounded-xl transition-all hover:-translate-y-1 shadow-lg shadow-[var(--t-accent)]/20"
-                        >
-                            Suscribirme a LCRC Pass
-                        </a>
-                        {!isAuthenticated && (
-                            <Link
-                                to="/login"
-                                className="w-full sm:w-auto bg-[var(--t-bg)] border border-[var(--t-border)] hover:border-[var(--t-accent)] text-[var(--t-fg)] font-semibold py-3.5 px-8 rounded-xl transition-colors"
-                            >
-                                Ya soy miembro
-                            </Link>
-                        )}
+                    <div className="flex flex-col items-center justify-center gap-4 relative z-10">
+                        <SubscriptionCTA className="w-full sm:w-auto" />
                     </div>
                     <p className="mt-8 text-sm text-[var(--t-fg-dimmed)] relative z-10">
                         ¿Prefieres hacerlo en persona? Contacta con el staff de La Costa para formalizar tu inscripción y pago en nuestros eventos.

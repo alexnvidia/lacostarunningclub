@@ -568,6 +568,10 @@ components:
           type: string
           pattern: '^\+?[1-9]\d{1,14}$'
           example: "+34600123456"
+        photo_consent:
+          type: boolean
+          description: Consent to publish user photos/images on the website
+          default: false
 
     LoginRequest:
       type: object
@@ -646,6 +650,9 @@ components:
         role:
           type: string
           enum: [user, admin]
+        photo_consent:
+          type: boolean
+          description: Consent to publish user photos/images on the website
         created_at:
           type: string
           format: date-time

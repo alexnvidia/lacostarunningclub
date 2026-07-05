@@ -1,11 +1,12 @@
 export interface TokenExpiredPageData {
   email: string;
   appUrl: string;
+  frontendUrl: string;
   currentYear: number;
 }
 
 export function getTokenExpiredPage(data: TokenExpiredPageData): string {
-  const { email, appUrl, currentYear } = data;
+  const { email, appUrl, frontendUrl, currentYear } = data;
 
   return `
     <!DOCTYPE html>
@@ -124,7 +125,7 @@ export function getTokenExpiredPage(data: TokenExpiredPageData): string {
                 📧 Reenviar Email de Verificación
               </button>
             </form>
-            <a href="${appUrl}/login" class="button button-secondary">
+            <a href="${frontendUrl}/login" class="button button-secondary">
               Volver al Login
             </a>
           </div>

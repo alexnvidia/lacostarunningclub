@@ -33,6 +33,7 @@ model User {
   resetPasswordExpires     DateTime?            @map("reset_password_expires")
   bmcEmail                 String?              @map("bmc_email")
   avatarUrl                String?              @map("avatar_url")
+  photoConsent             Boolean              @default(false) @map("photo_consent")
   sessions                 Session[]
   addresses                Address[]
   productReviews           ProductReview[]
@@ -550,11 +551,13 @@ model Subscription {
   lastPaymentDate DateTime? @map("last_payment_date")
   provider        String    @default("buymeacoffee")
   externalId      String?   @map("external_id")
+  cancelAtPeriodEnd Boolean? @default(false) @map("cancel_at_period_end")
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  webhookEvents BmcWebhookEvent[]
+  user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  webhookEvents       BmcWebhookEvent[]
+  stripeWebhookEvents StripeWebhookEvent[]
 
   @@map("subscriptions")
 }
@@ -585,4 +588,17 @@ model BmcWebhookEvent {
 
   @@index([eventId])
   @@map("bmc_webhook_events")
+}
+
+model StripeWebhookEvent {
+  id             String        @id @default(uuid())
+  eventId        String        @unique @map("event_id")    // ID externo de Stripe — clave de idempotencia
+  eventType      String        @map("event_type")          // ej. "checkout.session.completed"
+  subscriptionId String?       @map("subscription_id")
+  processedAt    DateTime      @default(now()) @map("processed_at")
+
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  @@index([eventId])
+  @@map("stripe_webhook_events")
 }

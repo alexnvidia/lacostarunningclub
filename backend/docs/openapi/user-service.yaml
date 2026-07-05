@@ -7,7 +7,7 @@ info:
     name: LCRC Tech Team
 
 servers:
-  - url: http://localhost:3002/api
+  - url: http://localhost:3002
     description: Local development
 
 tags:
@@ -260,6 +260,9 @@ components:
           format: date-time
         email_verified:
           type: boolean
+        photo_consent:
+          type: boolean
+          description: Consent to publish user photos/images on the website
         subscription:
           $ref: '#/components/schemas/UserSubscription'
         rewards:
@@ -350,6 +353,9 @@ components:
         phone:
           type: string
           pattern: '^\+?[1-9]\d{1,14}$'
+        photo_consent:
+          type: boolean
+          description: Consent to publish user photos/images on the website
 
     Error:
       type: object
