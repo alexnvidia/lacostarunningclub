@@ -6,14 +6,35 @@ import api from '@/lib/api'
 import { queryKeys } from '@/lib/query-keys'
 import { formatDate } from '@/lib/utils'
 
-// Ubicaciones estáticas (se mantienen locales si no se pasan a Cloudinary)
-import locFuengirola from '@/assets/carousel/loc-fuengirola.webp'
-import locTorreon from '@/assets/carousel/loc-torreon.jpg'
-
 // Obtener imágenes del carrusel desde las variables de entorno
 const carouselImagesEnv = (import.meta.env.VITE_CLOUDINARY_CAROUSEL_IMAGES as string) || 'people.jpg,staff.jpg,paseo.jpg';
 const carouselFilenames: string[] = carouselImagesEnv.split(',').map((v: string) => v.trim()).filter(Boolean);
 const CLOUDINARY_CLOUD_NAME = (import.meta.env.VITE_CLOUDINARY_CLOUD_NAME as string) || 'tu_cloud_name';
+
+interface Location {
+    href: string
+    img: string
+    alt: string
+    title: string
+    desc: string
+}
+
+const LOCATIONS: Location[] = (() => {
+    try {
+        const raw = import.meta.env.VITE_LOCATIONS as string | undefined
+        return raw ? JSON.parse(raw) : []
+    } catch {
+        return []
+    }
+})()
+
+const CURRENT_LOCATION_INDEX = (() => {
+    const raw = import.meta.env.VITE_CURRENT_LOCATION_INDEX as string | undefined
+    return raw ? parseInt(raw, 10) : -1
+})()
+
+const SOCIAL_RUN_TEXT = (import.meta.env.VITE_SOCIAL_RUN_TEXT as string | undefined) ||
+    'El social run se realiza un domingo sí y otro no, normalmente a las 8:00. Confirmar horarios por los canales oficiales de Instagram y WhatsApp.'
 
 interface SlideData {
     src: string;
@@ -240,6 +261,9 @@ export default function Home() {
 
     const results = resultsData?.results ?? []
 
+    const performanceCrewSchedule = import.meta.env.VITE_PERFORMANCE_CREW_SCHEDULE || 'Cada Lunes';
+    const performanceCrewDescription = import.meta.env.VITE_PERFORMANCE_CREW_DESCRIPTION || 'Sesiones de técnica y carrera cada miércoles para mejorar eficiencia, economía y velocidad. Orientado a todos los niveles con enfoque técnico y progresivo: calentamiento, drills, bloques de velocidad/ritmo y vuelta a la calma.';
+
     const difficultyColor = {
         beginner: 'text-green-400',
         intermediate: 'text-yellow-400',
@@ -339,28 +363,13 @@ export default function Home() {
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        {[
-                            {
-                                href: 'https://www.google.com/maps/search/?api=1&query=Paseo%20Mar%C3%ADtimo%20Fuengirola%20La%20Peseta',
-                                img: locFuengirola,
-                                alt: 'Paseo Marítimo de Fuengirola, zona La Peseta',
-                                title: 'Paseo Marítimo (La Peseta)',
-                                desc: 'Punto clásico en Fuengirola con trazado llano junto al mar.',
-                            },
-                            {
-                                href: 'https://www.google.com/maps/search/?api=1&query=El%20Torre%C3%B3n%20La%20Cala%20de%20Mijas',
-                                img: locTorreon,
-                                alt: 'El Torreón en La Cala de Mijas',
-                                title: 'El Torreón (La Cala de Mijas)',
-                                desc: 'Salida habitual hacia el paseo litoral, con vistas abiertas.',
-                            },
-                        ].map(loc => (
+                        {LOCATIONS.map((loc, index) => (
                             <a
                                 key={loc.title}
                                 href={loc.href}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="group rounded-2xl overflow-hidden transition-all hover:scale-[1.01]"
+                                className="group relative rounded-2xl overflow-hidden transition-all hover:scale-[1.01]"
                                 style={{
                                     background: 'var(--t-bg2)',
                                     border: '1px solid var(--t-border)',
@@ -368,6 +377,11 @@ export default function Home() {
                                 onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--t-accent)')}
                                 onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--t-border)')}
                             >
+                                {index === CURRENT_LOCATION_INDEX && (
+                                    <span className="absolute top-2 right-2 text-xs bg-[var(--t-accent)] text-white px-2 py-0.5 rounded-full font-medium z-10">
+                                        Punto de encuentro
+                                    </span>
+                                )}
                                 <div style={{ height: 220, overflow: 'hidden' }}>
                                     <img
                                         src={loc.img}
@@ -394,8 +408,7 @@ export default function Home() {
                     </div>
 
                     <p className="mt-8 text-sm text-center" style={{ color: 'var(--t-fg-dimmed)' }}>
-                        El social run se realiza un domingo sí y otro no, normalmente a las 8:00.
-                        Confirmar horarios por los canales oficiales de Instagram y WhatsApp.
+                        {SOCIAL_RUN_TEXT}
                     </p>
                 </section>
 
@@ -409,13 +422,13 @@ export default function Home() {
                                     style={{ background: 'color-mix(in srgb, var(--t-accent) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--t-accent) 20%, transparent)' }}
                                 >
                                     <Timer className="w-3.5 h-3.5" style={{ color: 'var(--t-accent)' }} />
-                                    <span className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--t-accent)' }}>Cada Lunes</span>
+                                    <span className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--t-accent)' }}>{performanceCrewSchedule}</span>
                                 </div>
                                 <h2 className="text-3xl sm:text-4xl font-black mb-3" style={{ color: 'var(--t-fg)' }}>
                                     Performance <span style={{ color: 'var(--t-accent)' }}>Crew</span>
                                 </h2>
                                 <p className="leading-relaxed max-w-lg" style={{ color: 'var(--t-fg-muted)' }}>
-                                    Sesiones de técnica y carrera cada miércoles para mejorar eficiencia, economía y velocidad. Orientado a todos los niveles con enfoque técnico y progresivo: calentamiento, drills, bloques de velocidad/ritmo y vuelta a la calma.
+                                    {performanceCrewDescription}
                                 </p>
                             </div>
                             <div className="shrink-0">
