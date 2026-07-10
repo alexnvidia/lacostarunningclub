@@ -263,6 +263,8 @@ export default function Home() {
 
     const performanceCrewSchedule = import.meta.env.VITE_PERFORMANCE_CREW_SCHEDULE || 'Cada Lunes';
     const performanceCrewDescription = import.meta.env.VITE_PERFORMANCE_CREW_DESCRIPTION || 'Sesiones de técnica y carrera cada miércoles para mejorar eficiencia, economía y velocidad. Orientado a todos los niveles con enfoque técnico y progresivo: calentamiento, drills, bloques de velocidad/ritmo y vuelta a la calma.';
+    const performanceCrewLocationName = import.meta.env.VITE_PERFORMANCE_CREW_LOCATION_NAME as string | undefined;
+    const performanceCrewLocationHref = import.meta.env.VITE_PERFORMANCE_CREW_LOCATION_HREF as string | undefined;
 
     const difficultyColor = {
         beginner: 'text-green-400',
@@ -334,7 +336,7 @@ export default function Home() {
                 </section>
 
                 {/* ── STATS STRIP ── */}
-                <section style={{ background: 'var(--t-bg2)', borderTop: '1px solid var(--t-border)', borderBottom: '1px solid var(--t-border)' }}>
+                <section style={{ background: 'var(--t-bg2)', borderTop: '1px solid var(--t-border)', borderBottom: '1px solid var(--t-border)' }} hidden>
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                         <div className="grid grid-cols-3 gap-4 text-center">
                             {[
@@ -417,12 +419,26 @@ export default function Home() {
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
                         <div className="flex flex-col sm:flex-row items-center justify-between gap-8">
                             <div className="flex-1">
-                                <div
-                                    className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-4"
-                                    style={{ background: 'color-mix(in srgb, var(--t-accent) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--t-accent) 20%, transparent)' }}
-                                >
-                                    <Timer className="w-3.5 h-3.5" style={{ color: 'var(--t-accent)' }} />
-                                    <span className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--t-accent)' }}>{performanceCrewSchedule}</span>
+                                <div className="flex flex-wrap items-center gap-2 mb-4">
+                                    <div
+                                        className="inline-flex items-center gap-2 rounded-full px-4 py-1.5"
+                                        style={{ background: 'color-mix(in srgb, var(--t-accent) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--t-accent) 20%, transparent)' }}
+                                    >
+                                        <Timer className="w-3.5 h-3.5" style={{ color: 'var(--t-accent)' }} />
+                                        <span className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--t-accent)' }}>{performanceCrewSchedule}</span>
+                                    </div>
+                                    {performanceCrewLocationName && performanceCrewLocationHref && (
+                                        <a
+                                            href={performanceCrewLocationHref}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 hover:scale-[1.02] transition-transform"
+                                            style={{ background: 'color-mix(in srgb, var(--t-accent2) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--t-accent2) 20%, transparent)' }}
+                                        >
+                                            <MapPin className="w-3.5 h-3.5" style={{ color: 'var(--t-accent2)' }} />
+                                            <span className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--t-accent2)' }}>{performanceCrewLocationName}</span>
+                                        </a>
+                                    )}
                                 </div>
                                 <h2 className="text-3xl sm:text-4xl font-black mb-3" style={{ color: 'var(--t-fg)' }}>
                                     Performance <span style={{ color: 'var(--t-accent)' }}>Crew</span>

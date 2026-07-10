@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Clock, Map, Upload, Plus, X, Trophy, Lock, Pencil, Trash2, Save, Loader2, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react'
+import { Clock, Map, Upload, Plus, X, Trophy, Zap, Pencil, Trash2, Save, Loader2, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react'
 import { useAuthStore } from '@/store/auth.store'
 import api from '@/lib/api'
 import { queryKeys } from '@/lib/query-keys'
@@ -310,12 +310,34 @@ export default function Performance() {
                 <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-3xl p-10 shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--t-accent)]/5 rounded-full blur-3xl pointer-events-none" />
                     <div className="w-20 h-20 bg-[var(--t-accent)]/10 border border-[var(--t-accent)]/20 rounded-full flex items-center justify-center mx-auto mb-6 relative z-10">
-                        <Lock className="w-8 h-8 text-[var(--t-accent)]" />
+                        <Zap className="w-8 h-8 text-[var(--t-accent)]" />
                     </div>
                     <h1 className="text-3xl font-black text-[var(--t-fg)] mb-4 relative z-10">Contenido Exclusivo LCRC</h1>
-                    <p className="text-[var(--t-fg-muted)] mb-8 max-w-lg mx-auto leading-relaxed relative z-10">
-                        La zona de Performance, los rankings y entrenamientos del club están reservados solo para los miembros con suscripción activa.
-                    </p>
+                    <div className="mb-8 mt-2 w-full max-w-md mx-auto relative z-10">
+                        <p className="text-var(--t-fg-muted) mb-4 leading-relaxed text-left">
+                            Con tu suscripción activa desbloqueas:
+                        </p>
+
+                        <ul className="space-y-3 text-sm sm:text-base text-var(--t-fg-muted) text-left">
+                            <li className="flex items-start gap-3">
+                                <span className="mt-1 h-2 w-2 rounded-full bg-[var(--t-accent)] shrink-0" />
+                                <span>Acceso a la zona de Performance del club.</span>
+                            </li>
+                            <li className="flex items-start gap-3">
+                                <span className="mt-1 h-2 w-2 rounded-full bg-[var(--t-accent)] shrink-0" />
+                                <span>Workouts semanales publicados por el club.</span>
+                            </li>
+                            <li className="flex items-start gap-3">
+                                <span className="mt-1 h-2 w-2 rounded-full bg-[var(--t-accent)] shrink-0" />
+                                <span>Rankings y seguimiento de resultados.</span>
+                            </li>
+                            <li className="flex items-start gap-3">
+                                <span className="mt-1 h-2 w-2 rounded-full bg-[var(--t-accent)] shrink-0" />
+                                <span>Acceso al contenido exclusivo para miembros.</span>
+                            </li>
+                        </ul>
+                    </div>
+
                     <div className="flex flex-col items-center justify-center gap-4 relative z-10">
                         <SubscriptionCTA className="w-full sm:w-auto" />
                     </div>

@@ -15,7 +15,9 @@ const ThemeContext = createContext<ThemeContextValue>({
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const [theme, setTheme] = useState<Theme>(() => {
         const saved = localStorage.getItem('lcrc-theme') as Theme | null
-        return saved === 'light' ? 'light' : 'dark'
+        if (saved === 'light' || saved === 'dark') return saved
+        const envDefault = import.meta.env.VITE_DEFAULT_THEME as string | undefined
+        return envDefault === 'light' ? 'light' : 'dark'
     })
 
     useEffect(() => {
