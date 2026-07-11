@@ -643,9 +643,30 @@ function SubscriptionJourney({
                     <Zap className="w-6 h-6 text-[var(--t-accent)]" />
                 </div>
                 <h2 className="text-2xl font-black text-[var(--t-fg)] mb-3 relative z-10">Contenido Exclusivo LCRC</h2>
-                <p className="text-[var(--t-fg-muted)] mb-6 max-w-md mx-auto leading-relaxed relative z-10 text-sm">
-                    La zona de Performance, los rankings y entrenamientos del club están reservados solo para los miembros con suscripción activa.
-                </p>
+                <div className="mb-8 mt-2 w-full max-w-md mx-auto relative z-10">
+                    <p className="text-var(--t-fg-muted) mb-4 leading-relaxed text-left">
+                        Con tu suscripción activa desbloqueas:
+                    </p>
+
+                    <ul className="space-y-3 text-sm sm:text-base text-var(--t-fg-muted) text-left">
+                        <li className="flex items-start gap-3">
+                            <span className="mt-1 h-2 w-2 rounded-full bg-[var(--t-accent)] shrink-0" />
+                            <span>Acceso a la zona de Performance del club.</span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                            <span className="mt-1 h-2 w-2 rounded-full bg-[var(--t-accent)] shrink-0" />
+                            <span>Workouts semanales publicados por el club.</span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                            <span className="mt-1 h-2 w-2 rounded-full bg-[var(--t-accent)] shrink-0" />
+                            <span>Rankings y seguimiento de resultados.</span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                            <span className="mt-1 h-2 w-2 rounded-full bg-[var(--t-accent)] shrink-0" />
+                            <span>Acceso al contenido exclusivo para miembros.</span>
+                        </li>
+                    </ul>
+                </div>
                 <div className="flex flex-col items-center justify-center gap-4 relative z-10">
                     <SubscriptionCTA className="w-full sm:w-auto" />
                 </div>
