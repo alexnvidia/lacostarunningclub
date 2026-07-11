@@ -15,6 +15,8 @@ type BillingCycle = 'monthly' | 'yearly'
 
 const PRICE_MONTHLY = import.meta.env.VITE_STRIPE_PRICE_MONTHLY as string | undefined
 const PRICE_YEARLY = import.meta.env.VITE_STRIPE_PRICE_YEARLY as string | undefined
+const PRICE_MONTHLY_LABEL = import.meta.env.VITE_STRIPE_PRICE_MONTHLY_LABEL || '10 € / month'
+const PRICE_YEARLY_LABEL = import.meta.env.VITE_STRIPE_PRICE_YEARLY_LABEL || '99 € / year'
 
 interface CheckoutSessionResponse {
     sessionId: string
@@ -63,10 +65,8 @@ export default function SubscriptionCTA({ className }: SubscriptionCTAProps) {
                 >
                     <div className="flex items-center justify-between mb-1">
                         <span className="font-semibold text-[var(--t-fg)]">LCRC Pass Monthly</span>
-                        {selectedCycle === 'monthly' && (
-                            <span className="w-2 h-2 rounded-full bg-[var(--t-accent)]" />
-                        )}
                     </div>
+                    <p className="text-sm text-[var(--t-fg-muted)] mt-1">{PRICE_MONTHLY_LABEL}</p>
                 </button>
 
                 {/* Yearly */}
@@ -81,36 +81,36 @@ export default function SubscriptionCTA({ className }: SubscriptionCTAProps) {
                 >
                     <div className="flex items-center justify-between mb-1">
                         <span className="font-semibold text-[var(--t-fg)]">LCRC Pass Yearly</span>
-                        {selectedCycle === 'yearly' && (
-                            <span className="w-2 h-2 rounded-full bg-[var(--t-accent)]" />
-                        )}
                     </div>
+                    <p className="text-sm text-[var(--t-fg-muted)] mt-1">{PRICE_YEARLY_LABEL}</p>
                 </button>
             </div>
 
             {/* CTA Button */}
-            <button
-                type="button"
-                disabled={checkoutMutation.isPending || isMissingEnv}
-                onClick={() => {
-                    if (!selectedPriceId) return
-                    checkoutMutation.mutate(selectedPriceId)
-                }}
-                className={`w-full sm:w-auto flex items-center justify-center gap-2 font-bold py-3.5 px-8 rounded-xl transition-all hover:-translate-y-1 shadow-lg ${
-                    isMissingEnv
-                        ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
-                        : 'bg-[var(--t-accent)] hover:bg-[var(--t-accent-hover)] text-white shadow-[var(--t-accent)]/20'
-                }`}
-            >
-                {checkoutMutation.isPending ? (
-                    <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Redirigiendo...
-                    </>
-                ) : (
-                    <>Suscribirme a LCRC Pass</>
-                )}
-            </button>
+            <div className="flex justify-center mt-6">
+                <button
+                    type="button"
+                    disabled={checkoutMutation.isPending || isMissingEnv}
+                    onClick={() => {
+                        if (!selectedPriceId) return
+                        checkoutMutation.mutate(selectedPriceId)
+                    }}
+                    className={`w-full sm:w-auto flex items-center justify-center gap-2 font-bold py-3.5 px-8 rounded-xl transition-all hover:-translate-y-1 shadow-lg ${
+                        isMissingEnv
+                            ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
+                            : 'bg-[var(--t-accent)] hover:bg-[var(--t-accent-hover)] text-white shadow-[var(--t-accent)]/20'
+                    }`}
+                >
+                    {checkoutMutation.isPending ? (
+                        <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Redirigiendo...
+                        </>
+                    ) : (
+                        <>Suscribirme a LCRC Pass</>
+                    )}
+                </button>
+            </div>
 
             {/* Error / Missing env message */}
             {isMissingEnv && (

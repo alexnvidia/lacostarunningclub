@@ -12,6 +12,8 @@ const HANDLED_EVENTS: Stripe.Event.Type[] = [
     'customer.subscription.updated',
     'customer.subscription.deleted',
     'invoice.payment_succeeded',
+    'charge.succeeded',
+    'charge.refunded',
 ];
 
 // ─────────────────────────────────────────────
@@ -163,6 +165,10 @@ export const stripeWebhookHandler = async (req: Request, res: Response): Promise
             await handleSubscriptionChange(event, stripe);
         } else if (event.type === 'invoice.payment_succeeded') {
             await handleInvoicePaymentSucceeded(event, stripe);
+        } else if (event.type === 'charge.succeeded') {
+            await handleChargeSucceeded(event, stripe);
+        } else if (event.type === 'charge.refunded') {
+            await handleChargeRefunded(event, stripe);
         }
 
         res.status(200).json({ received: true, processed: true });
@@ -171,6 +177,242 @@ export const stripeWebhookHandler = async (req: Request, res: Response): Promise
         res.status(500).json({ error: 'Internal error processing webhook' });
     }
 };
+
+// ─────────────────────────────────────────────
+// Store charge → subscription mapping.
+// Used by both charge.succeeded and as fallback in charge.refunded.
+// Idempotent via chargeId unique constraint.
+// ─────────────────────────────────────────────
+async function storeSubscriptionCharge(chargeId: string, stripeSubId: string, amount: number): Promise<void> {
+    await (prisma as any).subscriptionCharge.upsert({
+        where: { chargeId },
+        update: { subscriptionId: stripeSubId, amount },
+        create: { chargeId, subscriptionId: stripeSubId, amount },
+    });
+    console.log(`📝 Stored charge mapping: ${chargeId} → subscription ${stripeSubId}`);
+}
+
+// ─────────────────────────────────────────────
+// Store charge mapping AND tag PaymentIntent metadata for fast-path resolution.
+// Called from both checkout completion and invoice payment succeeded flows.
+// ─────────────────────────────────────────────
+async function mapChargeAndTagPaymentIntent(
+    piId: string,
+    chargeId: string,
+    amount: number,
+    appSubscriptionId: string,
+    stripeSubId: string,
+    stripe: Stripe
+): Promise<void> {
+    await storeSubscriptionCharge(chargeId, stripeSubId, amount);
+
+    try {
+        await stripe.paymentIntents.update(piId, {
+            metadata: { appSubscriptionId },
+        });
+    } catch (err) {
+        console.warn(
+            `⚠️ could not tag PaymentIntent ${piId} with appSubscriptionId — will rely on fallback resolution`,
+            err
+        );
+    }
+}
+
+// ─────────────────────────────────────────────
+// Resolve the Stripe subscription ID from a charge object.
+// In Dahlia API (2026+):
+//   - charge.invoice         → removed
+//   - payment_intent.invoice → removed
+//   - invoices.list({payment_intent}) → removed
+//   - invoice.subscription   → removed from event payload
+//
+// Strategy: charge.customer → subscriptions.list → verify via latest_invoice
+// ─────────────────────────────────────────────
+async function resolveSubscriptionFromCharge(charge: any, stripe: Stripe): Promise<string | null> {
+    // ── Fast path: PaymentIntent metadata ──────────────────────
+    if (charge.payment_intent && typeof charge.payment_intent === 'string') {
+        try {
+            const pi = await stripe.paymentIntents.retrieve(charge.payment_intent) as any;
+            const appSubscriptionId = pi.metadata?.appSubscriptionId;
+            if (appSubscriptionId) {
+                const dbSub = await prisma.subscription.findUnique({
+                    where: { id: appSubscriptionId },
+                });
+                if (dbSub?.externalId) {
+                    console.log(`✅ Resolved subscription ${dbSub.externalId} via metadata (fast path)`);
+                    return dbSub.externalId;
+                }
+            }
+        } catch (err) {
+            console.warn(`⚠️ Could not retrieve PaymentIntent ${charge.payment_intent} for metadata`, err);
+        }
+    }
+
+    // ── Fallback: customer → subscriptions.list ────────────────
+    if (!charge.customer || typeof charge.customer !== 'string') return null;
+
+    try {
+        const subs = await stripe.subscriptions.list({ customer: charge.customer, limit: 5, status: 'all' }) as any;
+
+        for (const sub of subs.data ?? []) {
+            const known = await prisma.subscription.findFirst({
+                where: { externalId: sub.id, provider: 'stripe' },
+            });
+            if (known) {
+                console.log(`✅ Resolved subscription ${sub.id} via DB lookup (fallback)`);
+                return sub.id;
+            }
+
+            if (!sub.latest_invoice) continue;
+            const invId = typeof sub.latest_invoice === 'string' ? sub.latest_invoice : sub.latest_invoice.id;
+            try {
+                const inv = await stripe.invoices.retrieve(invId) as any;
+                const payments = inv.payments ?? [];
+                for (const entry of payments) {
+                    const payment = entry.payment;
+                    if (!payment || payment.type !== 'payment_intent') continue;
+                    const piId = typeof payment.payment_intent === 'string'
+                        ? payment.payment_intent
+                        : payment.payment_intent?.id ?? null;
+                    if (piId === charge.payment_intent) {
+                        console.log(`✅ Resolved subscription ${sub.id} via invoice verification (fallback)`);
+                        return sub.id;
+                    }
+                }
+            } catch {
+                // skip
+            }
+        }
+    } catch (err) {
+        console.warn(`⚠️ resolveSubscriptionFromCharge — subscriptions.list failed for customer ${charge.customer}`, err);
+    }
+
+    return null;
+}
+
+// ─────────────────────────────────────────────
+// Handler: charge.succeeded
+// Stores charge → subscription mapping for future refund resolution.
+// In Basil API, charge.invoice and payment_intent.invoice are removed,
+// so we resolve via invoices.list({payment_intent}) instead.
+// ─────────────────────────────────────────────
+async function handleChargeSucceeded(event: Stripe.Event, stripe: Stripe): Promise<void> {
+    const charge = event.data.object as any;
+
+    const existing = await (prisma as any).subscriptionCharge.findUnique({
+        where: { chargeId: charge.id },
+    });
+    if (existing) {
+        console.log(`⏭️  charge.succeeded — charge=${charge.id}, mapping already exists, skipping`);
+        await registerStripeEvent(event.id, event.type);
+        return;
+    }
+
+    const stripeSubId = await resolveSubscriptionFromCharge(charge, stripe);
+    if (stripeSubId) {
+        await storeSubscriptionCharge(charge.id, stripeSubId, charge.amount);
+
+        const dbSub = await prisma.subscription.findFirst({
+            where: { externalId: stripeSubId, provider: 'stripe' },
+        });
+        await registerStripeEvent(event.id, event.type, dbSub?.id);
+
+        console.log(`✅ charge.succeeded — stored mapping for charge ${charge.id} → sub ${stripeSubId}`);
+    } else {
+        console.log(`⏭️  charge.succeeded — charge=${charge.id}, could not resolve subscription, skipping`);
+        await registerStripeEvent(event.id, event.type);
+    }
+}
+
+// ─────────────────────────────────────────────
+// Helper: upsert SubscriptionCharge row and deactivate subscription
+// ─────────────────────────────────────────────
+async function deactivateSubscriptionForCharge(stripeSubId: string): Promise<void> {
+    const dbSub = await prisma.subscription.findFirst({
+        where: { externalId: stripeSubId },
+    });
+
+    if (!dbSub) {
+        console.log(`⏭️  deactivateSubscriptionForCharge — no local subscription found for ${stripeSubId}, skipping`);
+        return;
+    }
+
+    if (dbSub.status === 'INACTIVE' || (dbSub as any).refundedAt) {
+        console.log(`⏭️  deactivateSubscriptionForCharge — subscription ${dbSub.id} already inactive/refunded, skipping`);
+        return;
+    }
+
+    await upsertSubscription({
+        userId: dbSub.userId,
+        status: 'INACTIVE',
+        cancelAtPeriodEnd: false,
+        refundedAt: new Date(),
+    });
+
+    console.log(`✅ deactivateSubscriptionForCharge — subscription ${dbSub.id} deactivated`);
+}
+
+// ─────────────────────────────────────────────
+// Handler: charge.refunded
+// Looks up subscription via SubscriptionCharge table (fast path).
+// Falls back to API resolution if mapping not found (transition period).
+// Updates refundedAmount/refundedAt on the mapping row.
+// Partial refunds are silently ignored.
+// ─────────────────────────────────────────────
+async function handleChargeRefunded(event: Stripe.Event, stripe: Stripe): Promise<void> {
+    const eventCharge = event.data.object as any;
+
+    // Retrieve the full charge from the API for accurate amount_refunded
+    const charge = await stripe.charges.retrieve(eventCharge.id) as any;
+
+    // Skip partial refunds — only full refunds deactivate the subscription
+    if (!charge.refunded || charge.amount_refunded < charge.amount) {
+        // Still update refundedAmount on the mapping row for tracking
+        const sc = await (prisma as any).subscriptionCharge.findUnique({
+            where: { chargeId: charge.id },
+        });
+        if (sc) {
+            await (prisma as any).subscriptionCharge.update({
+                where: { chargeId: charge.id },
+                data: { refundedAmount: charge.amount_refunded, refundedAt: null },
+            });
+        }
+        console.log(`⏭️  charge.refunded — partial refund (${charge.amount_refunded}/${charge.amount}), skipping deactivation`);
+        await registerStripeEvent(event.id, event.type);
+        return;
+    }
+
+    // ── Fast path: look up via our mapping table ──────
+    let sc = await (prisma as any).subscriptionCharge.findUnique({
+        where: { chargeId: charge.id },
+    });
+
+    // ── Fallback path: resolve via API ────────────────
+    if (!sc) {
+        console.log(`⚠️  charge.refunded — charge=${charge.id}, no local mapping, attempting API resolution`);
+        const stripeSubId = await resolveSubscriptionFromCharge(charge, stripe);
+        if (stripeSubId) {
+            await storeSubscriptionCharge(charge.id, stripeSubId, charge.amount);
+            sc = { chargeId: charge.id, subscriptionId: stripeSubId };
+        }
+    }
+
+    if (!sc) {
+        console.log(`⏭️  charge.refunded — charge=${charge.id}, could not resolve subscription, skipping`);
+        await registerStripeEvent(event.id, event.type);
+        return;
+    }
+
+    // Update refund tracking on the mapping row
+    await (prisma as any).subscriptionCharge.update({
+        where: { chargeId: charge.id },
+        data: { refundedAmount: charge.amount_refunded, refundedAt: new Date() },
+    });
+
+    console.log(`💰 charge.refunded — full refund for subscription ${sc.subscriptionId}, deactivating`);
+    await deactivateSubscriptionForCharge(sc.subscriptionId);
+    await registerStripeEvent(event.id, event.type);
+}
 
 // ─────────────────────────────────────────────
 // Handler: checkout.session.completed
@@ -332,17 +574,71 @@ async function upsertStripeSubscription(params: {
 
     console.log(`✅ Stripe webhook: subscription created/updated for user ${userId} → ${stripeStatus}`);
     await registerStripeEvent(eventId, eventType, subscription.id);
+
+    // Tag PaymentIntent metadata for fast-path resolution
+    if (session.subscription && typeof session.subscription === 'string') {
+        try {
+            const stripeSub = await stripe.subscriptions.retrieve(session.subscription);
+            if (stripeSub.latest_invoice) {
+                const invId = typeof stripeSub.latest_invoice === 'string'
+                    ? stripeSub.latest_invoice
+                    : stripeSub.latest_invoice.id;
+                const inv = await stripe.invoices.retrieve(invId) as any;
+                const payments = inv.payments ?? [];
+                for (const entry of payments) {
+                    const payment = entry.payment;
+                    if (!payment || payment.type !== 'payment_intent') continue;
+                    const piId = typeof payment.payment_intent === 'string'
+                        ? payment.payment_intent
+                        : payment.payment_intent?.id ?? null;
+                    if (!piId) continue;
+
+                    const pi = await stripe.paymentIntents.retrieve(piId) as any;
+                    const chargeId = pi.latest_charge ?? undefined;
+                    if (chargeId) {
+                        await mapChargeAndTagPaymentIntent(
+                            piId, chargeId, pi.amount_received ?? pi.amount,
+                            subscription.id, stripeSub.id, stripe
+                        );
+                    }
+                }
+            }
+        } catch (err) {
+            console.warn(`⚠️ Could not tag PaymentIntent metadata for session ${session.id}`, err);
+        }
+    }
 }
 
 // ─────────────────────────────────────────────
 // Handler: invoice.payment_succeeded
+// In Dahlia API, invoice.subscription is removed from the event payload,
+// so we retrieve the full invoice from the API.
 // ─────────────────────────────────────────────
 async function handleInvoicePaymentSucceeded(event: Stripe.Event, stripe: Stripe): Promise<void> {
-    const invoice = event.data.object as any;
-    const subscriptionId = invoice.subscription;
+    const eventInvoice = event.data.object as any;
+    console.log(`💳 invoice.payment_succeeded — invoice=${eventInvoice.id}`);
+
+    // Retrieve the full invoice from API — event payload may omit fields
+    let invoice: any;
+    try {
+        invoice = await stripe.invoices.retrieve(eventInvoice.id) as any;
+    } catch (err) {
+        console.warn(`⚠️  invoice.payment_succeeded — could not retrieve invoice ${eventInvoice.id}`, err);
+        await registerStripeEvent(event.id, event.type);
+        return;
+    }
+
+    let subscriptionId = invoice.subscription;
+
+    // Fallback: resolve subscription via invoice.customer
+    if (!subscriptionId || typeof subscriptionId !== 'string') {
+        console.log(`📝 invoice.payment_succeeded — invoice ${invoice.id} has no subscription field, resolving via customer`);
+        const subs = await stripe.subscriptions.list({ customer: invoice.customer, limit: 1, status: 'all' }) as any;
+        subscriptionId = subs.data?.[0]?.id ?? null;
+    }
 
     if (!subscriptionId || typeof subscriptionId !== 'string') {
-        console.log(`📝 Stripe webhook: invoice.payment_succeeded — no subscription in invoice ${invoice.id}`);
+        console.log(`📝 Stripe webhook: invoice.payment_succeeded — no subscription resolved for invoice ${invoice.id}`);
         await registerStripeEvent(event.id, event.type);
         return;
     }
@@ -402,4 +698,33 @@ async function handleInvoicePaymentSucceeded(event: Stripe.Event, stripe: Stripe
 
     console.log(`✅ Stripe webhook: subscription payment succeeded for user ${resolvedUserId} → ${status}`);
     await registerStripeEvent(event.id, event.type, subscription.id);
+
+    // Store charge → subscription mappings and tag PaymentIntent metadata
+    if (invoice.payments && Array.isArray(invoice.payments)) {
+        for (const entry of invoice.payments) {
+            const payment = entry.payment;
+            if (!payment) continue;
+
+            let piId: string | null = null;
+            if (payment.type === 'payment_intent' && payment.payment_intent) {
+                piId = typeof payment.payment_intent === 'string'
+                    ? payment.payment_intent
+                    : payment.payment_intent.id ?? null;
+            }
+            if (!piId) continue;
+
+            try {
+                const pi = await stripe.paymentIntents.retrieve(piId) as any;
+                const chargeId: string | undefined = pi.latest_charge ?? undefined;
+                if (chargeId) {
+                    await mapChargeAndTagPaymentIntent(
+                        piId, chargeId, pi.amount_received ?? pi.amount,
+                        subscription.id, stripeSub.id, stripe
+                    );
+                }
+            } catch (err) {
+                console.warn(`⚠️  invoice.payment_succeeded — could not process payment_intent ${piId}`, err);
+            }
+        }
+    }
 }

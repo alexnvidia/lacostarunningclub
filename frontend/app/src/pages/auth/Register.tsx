@@ -13,13 +13,19 @@ const registerSchema = z.object({
     last_name: z.string().optional(),
     email: z.string().email('Email inválido'),
     password: z.string().min(8, 'Mínimo 8 caracteres'),
+    confirm_password: z.string().min(8, 'Mínimo 8 caracteres'),
     phone: z.string().optional(),
+    phone_prefix: z.string().optional(),
     photo_consent: z.boolean().optional(),
+}).refine((data) => data.password === data.confirm_password, {
+    message: "Las contraseñas no coinciden",
+    path: ["confirm_password"],
 })
-type RegisterForm = z.infer<typeof registerSchema>
+type RegisterForm = z.input<typeof registerSchema>
 
 export default function Registro() {
     const [showPassword, setShowPassword] = useState(false)
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false)
     const navigate = useNavigate()
     const { login } = useAuthStore()
 
@@ -28,8 +34,17 @@ export default function Registro() {
     })
 
     const registerMutation = useMutation({
-        mutationFn: (data: RegisterForm) =>
-            api.post('/api/auth/register', data).then(r => r.data),
+        mutationFn: (data: RegisterForm) => {
+            const payload = {
+                first_name: data.first_name,
+                last_name: data.last_name,
+                email: data.email,
+                password: data.password,
+                phone: data.phone?.trim() ? `${data.phone_prefix || '+34'}${data.phone.trim()}` : undefined,
+                photo_consent: data.photo_consent,
+            }
+            return api.post('/api/auth/register', payload).then(r => r.data)
+        },
         onSuccess: (data) => {
             login(data.token, data.refresh_token, {
                 id: data.user.id,
@@ -90,8 +105,37 @@ export default function Registro() {
                         </div>
 
                         <div>
+                            <label htmlFor="confirm_password" className="block text-sm font-medium text-[var(--t-fg)] mb-1.5">Confirmar contraseña *</label>
+                            <div className="relative">
+                                <input {...register('confirm_password')} id="confirm_password" type={showConfirmPassword ? 'text' : 'password'} autoComplete="new-password" placeholder="Repite la contraseña" className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] focus:border-[var(--t-accent)] rounded-lg px-4 py-3 pr-10 text-[var(--t-fg)] placeholder-[var(--t-fg-dimmed)] outline-none text-sm transition-colors" />
+                                <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--t-fg-dimmed)]">
+                                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </button>
+                            </div>
+                            {errors.confirm_password && <p className="text-[var(--t-accent)] text-xs mt-1">{errors.confirm_password.message}</p>}
+                        </div>
+
+                        <div>
                             <label htmlFor="phone" className="block text-sm font-medium text-[var(--t-fg)] mb-1.5">Teléfono</label>
-                            <input {...register('phone')} id="phone" type="tel" autoComplete="tel" placeholder="+34 600 000 000" className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] focus:border-[var(--t-accent)] rounded-lg px-4 py-3 text-[var(--t-fg)] placeholder-[var(--t-fg-dimmed)] outline-none text-sm transition-colors" />
+                            <div className="flex gap-2">
+                                <select
+                                    {...register('phone_prefix')}
+                                    id="phone_prefix"
+                                    className="bg-[var(--t-bg)] border border-[var(--t-border)] focus:border-[var(--t-accent)] rounded-lg px-3 py-3 text-[var(--t-fg)] outline-none text-sm transition-colors"
+                                >
+                                    <option value="+34">🇪🇸 +34</option>
+                                    <option value="+1">🇺🇸 +1</option>
+                                    <option value="+44">🇬🇧 +44</option>
+                                    <option value="+33">🇫🇷 +33</option>
+                                    <option value="+49">🇩🇪 +49</option>
+                                    <option value="+39">🇮🇹 +39</option>
+                                    <option value="+351">🇵🇹 +351</option>
+                                    <option value="+41">🇨🇭 +41</option>
+                                    <option value="+32">🇧🇪 +32</option>
+                                    <option value="+31">🇳🇱 +31</option>
+                                </select>
+                                <input {...register('phone')} id="phone" type="tel" autoComplete="tel" placeholder="600 000 000" className="flex-1 bg-[var(--t-bg)] border border-[var(--t-border)] focus:border-[var(--t-accent)] rounded-lg px-4 py-3 text-[var(--t-fg)] placeholder-[var(--t-fg-dimmed)] outline-none text-sm transition-colors" />
+                            </div>
                         </div>
 
                         <label className="flex items-start gap-3 cursor-pointer group">

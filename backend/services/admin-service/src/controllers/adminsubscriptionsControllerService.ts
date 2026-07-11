@@ -12,10 +12,11 @@ export interface UpsertSubscriptionInput {
     externalId?: string;
     lastPaymentDate?: Date;
     cancelAtPeriodEnd?: boolean;
+    refundedAt?: Date | null;
 }
 
 export const upsertSubscription = async (input: UpsertSubscriptionInput) => {
-    const { userId, status, startDate, endDate, externalId, lastPaymentDate, cancelAtPeriodEnd } = input;
+    const { userId, status, startDate, endDate, externalId, lastPaymentDate, cancelAtPeriodEnd, refundedAt } = input;
 
     return prisma.subscription.upsert({
         where: { userId },
@@ -27,6 +28,7 @@ export const upsertSubscription = async (input: UpsertSubscriptionInput) => {
             externalId: externalId ?? undefined,
             lastPaymentDate: lastPaymentDate ?? undefined,
             cancelAtPeriodEnd: cancelAtPeriodEnd ?? undefined,
+            ...(refundedAt !== undefined && { refundedAt }),
         },
         create: {
             userId,
@@ -36,6 +38,7 @@ export const upsertSubscription = async (input: UpsertSubscriptionInput) => {
             externalId: externalId ?? undefined,
             lastPaymentDate: lastPaymentDate ?? undefined,
             cancelAtPeriodEnd: cancelAtPeriodEnd ?? false,
+            refundedAt: refundedAt ?? undefined,
             provider: 'buymeacoffee',
         },
     });

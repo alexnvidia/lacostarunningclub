@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import gsap from 'gsap'
+import { cssVar } from '@/lib/theme-css'
 
 interface UserReward {
     milestone_months: number
@@ -49,9 +50,9 @@ export function VerticalTimeline({ progressRatio, rewards }: Props) {
                 const innerCircle = node.querySelector('.inner')
                 const iconPath = node.querySelector('.icon')
                 
-                if (outerCircle) gsap.to(outerCircle, { stroke: '#f4a261', fill: '#f4a261', fillOpacity: 0.1, duration: 0.4 })
-                if (innerCircle) gsap.to(innerCircle, { fill: '#f4a261', opacity: 1, duration: 0.4 })
-                if (iconPath) gsap.to(iconPath, { stroke: '#1a1a1a', fill: '#f4a261', duration: 0.4 })
+                if (outerCircle) gsap.to(outerCircle, { stroke: cssVar('--t-accent2'), fill: cssVar('--t-accent2'), fillOpacity: 0.1, duration: 0.4 })
+                if (innerCircle) gsap.to(innerCircle, { fill: cssVar('--t-accent2'), opacity: 1, duration: 0.4 })
+                if (iconPath) gsap.to(iconPath, { stroke: cssVar('--t-bg'), fill: cssVar('--t-accent2'), duration: 0.4 })
                 
                 // Pop animation
                 gsap.fromTo(node, { scale: 1.5 }, { scale: 1, duration: 0.5, ease: 'back.out(2)' })
@@ -65,33 +66,33 @@ export function VerticalTimeline({ progressRatio, rewards }: Props) {
             <div className="w-20 shrink-0 relative">
                 <svg viewBox="0 0 60 400" className="absolute inset-0 w-full h-full overflow-visible">
                     {/* Background Line */}
-                    <line x1="30" y1="20" x2="30" y2="380" stroke="#2a2a2a" strokeWidth="4" strokeLinecap="round" />
+                    <line x1="30" y1="20" x2="30" y2="380" stroke="var(--t-border)" strokeWidth="4" strokeLinecap="round" />
                     
                     {/* Active Progress Line */}
                     <line 
                         ref={progressLineRef}
                         x1="30" y1="20" x2="30" y2="20" 
-                        stroke="#e63946" strokeWidth="4" strokeLinecap="round" 
+                        stroke="var(--t-accent)" strokeWidth="4" strokeLinecap="round" 
                     />
 
                     {/* Node 1: 3 Months */}
                     <g ref={el => { nodeRefs.current[0] = el }} transform="translate(30, 110)" style={{ transformOrigin: '30px 110px' }}>
-                        <circle className="outer" cx="0" cy="0" r="10" fill="#1a1a1a" stroke="#2a2a2a" strokeWidth="3" />
-                        <circle className="inner" cx="0" cy="0" r="5" fill="#2a2a2a" opacity="1" />
+                        <circle className="outer" cx="0" cy="0" r="10" fill="var(--t-bg2)" stroke="var(--t-border)" strokeWidth="3" />
+                        <circle className="inner" cx="0" cy="0" r="5" fill="var(--t-border)" opacity="1" />
                     </g>
 
                     {/* Node 2: 6 Months */}
                     <g ref={el => { nodeRefs.current[1] = el }} transform="translate(30, 200)" style={{ transformOrigin: '30px 200px' }}>
-                        <circle className="outer" cx="0" cy="0" r="10" fill="#1a1a1a" stroke="#2a2a2a" strokeWidth="3" />
-                        <circle className="inner" cx="0" cy="0" r="5" fill="#2a2a2a" opacity="1" />
+                        <circle className="outer" cx="0" cy="0" r="10" fill="var(--t-bg2)" stroke="var(--t-border)" strokeWidth="3" />
+                        <circle className="inner" cx="0" cy="0" r="5" fill="var(--t-border)" opacity="1" />
                     </g>
 
                     {/* Node 3: 12 Months (Final trophy) */}
                     <g ref={el => { nodeRefs.current[2] = el }} transform="translate(30, 380)" style={{ transformOrigin: '30px 380px' }}>
-                        <circle className="outer" cx="0" cy="0" r="14" fill="#1a1a1a" stroke="#2a2a2a" strokeWidth="3" />
+                        <circle className="outer" cx="0" cy="0" r="14" fill="var(--t-bg2)" stroke="var(--t-border)" strokeWidth="3" />
                         <path className="icon" 
                             d="M-5,-4 L-5,1 Q-5,5 0,5 Q5,5 5,1 L5,-4 Z M-3,5 L-3,8 L3,8 L3,5 M-5,8 L5,8 M-5,-2 C-8,-2 -8,2 -5,2 M5,-2 C8,-2 8,2 5,2" 
-                            fill="none" stroke="#2a2a2a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" 
+                            fill="none" stroke="var(--t-border)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" 
                         />
                     </g>
                 </svg>

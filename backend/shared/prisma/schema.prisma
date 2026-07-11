@@ -552,6 +552,7 @@ model Subscription {
   provider        String    @default("buymeacoffee")
   externalId      String?   @map("external_id")
   cancelAtPeriodEnd Boolean? @default(false) @map("cancel_at_period_end")
+  refundedAt      DateTime? @map("refunded_at")
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
@@ -601,4 +602,18 @@ model StripeWebhookEvent {
 
   @@index([eventId])
   @@map("stripe_webhook_events")
+}
+
+model SubscriptionCharge {
+  id             String    @id @default(uuid())
+  chargeId       String    @unique @map("charge_id")     // Stripe charge ID
+  subscriptionId String    @map("subscription_id")       // Stripe subscription ID
+  amount         Int       @map("amount")                 // original charge amount in cents
+  refundedAmount Int       @default(0) @map("refunded_amount")
+  refundedAt     DateTime? @map("refunded_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  @@index([chargeId])
+  @@index([subscriptionId])
+  @@map("subscription_charges")
 }

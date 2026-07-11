@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { User, Save, CheckCircle, Lock, Gift, Award, Calendar, Camera, X, AlertCircle, XCircle } from 'lucide-react'
+import { User, Save, CheckCircle, Lock, Gift, Award, Calendar, Camera, X, AlertCircle, XCircle, Zap } from 'lucide-react'
 import { useState, useRef, useCallback } from 'react'
 import api from '@/lib/api'
 import { queryKeys } from '@/lib/query-keys'
@@ -404,12 +404,34 @@ function SubscriptionJourneyLegacy({
             <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-3xl p-8 text-center relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--t-accent)]/5 rounded-full blur-3xl pointer-events-none" />
                 <div className="w-16 h-16 bg-[var(--t-accent)]/10 border border-[var(--t-accent)]/20 rounded-full flex items-center justify-center mx-auto mb-4 relative z-10">
-                    <Lock className="w-6 h-6 text-[var(--t-accent)]" />
+                    <Zap className="w-6 h-6 text-[var(--t-accent)]" />
                 </div>
                 <h2 className="text-2xl font-black text-[var(--t-fg)] mb-3 relative z-10">Contenido Exclusivo LCRC</h2>
-                <p className="text-[var(--t-fg-muted)] mb-6 max-w-md mx-auto leading-relaxed relative z-10 text-sm">
-                    La zona de Performance, los rankings y entrenamientos del club están reservados solo para los miembros con suscripción activa.
-                </p>
+                <div className="mb-8 mt-2 w-full max-w-md mx-auto relative z-10">
+                    <p className="text-var(--t-fg-muted) mb-4 leading-relaxed text-left">
+                        Con tu suscripción activa desbloqueas:
+                    </p>
+
+                    <ul className="space-y-3 text-sm sm:text-base text-var(--t-fg-muted) text-left">
+                        <li className="flex items-start gap-3">
+                            <span className="mt-1 h-2 w-2 rounded-full bg-[var(--t-accent)] shrink-0" />
+                            <span>Acceso a la zona de Performance del club.</span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                            <span className="mt-1 h-2 w-2 rounded-full bg-[var(--t-accent)] shrink-0" />
+                            <span>Workouts semanales publicados por el club.</span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                            <span className="mt-1 h-2 w-2 rounded-full bg-[var(--t-accent)] shrink-0" />
+                            <span>Rankings y seguimiento de resultados.</span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                            <span className="mt-1 h-2 w-2 rounded-full bg-[var(--t-accent)] shrink-0" />
+                            <span>Acceso al contenido exclusivo para miembros.</span>
+                        </li>
+                    </ul>
+                </div>
+
                 <div className="flex flex-col items-center justify-center gap-4 relative z-10">
                     <SubscriptionCTA className="w-full sm:w-auto" />
                 </div>
@@ -434,146 +456,146 @@ function SubscriptionJourneyLegacy({
 
     return (
         <>
-        <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-2xl p-6">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-3">
-                    <Award className="w-5 h-5 text-[var(--t-accent2)]" />
-                    <h2 className="text-[var(--t-fg)] font-bold text-lg">Mi suscripción</h2>
+            <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-2xl p-6">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-5">
+                    <div className="flex items-center gap-3">
+                        <Award className="w-5 h-5 text-[var(--t-accent2)]" />
+                        <h2 className="text-[var(--t-fg)] font-bold text-lg">Mi suscripción</h2>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs bg-[var(--t-accent2)]/10 text-[var(--t-accent2)] border border-[var(--t-accent2)]/20 px-3 py-1 rounded-full font-medium">
+                            ⭐ Activa
+                        </span>
+                        {subscription.status === 'ACTIVE' && !subscription?.cancel_at_period_end && (
+                            <button
+                                id="cancel-subscription-btn-legacy"
+                                onClick={() => setShowCancelDialog(true)}
+                                className="text-xs text-red-400 hover:text-red-300 border border-red-400/30 hover:border-red-400/60 px-3 py-1 rounded-full transition-colors"
+                            >
+                                Cancelar
+                            </button>
+                        )}
+                    </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    <span className="text-xs bg-[var(--t-accent2)]/10 text-[var(--t-accent2)] border border-[var(--t-accent2)]/20 px-3 py-1 rounded-full font-medium">
-                        ⭐ Activa
-                    </span>
-                    {subscription.status === 'ACTIVE' && !subscription?.cancel_at_period_end && (
-                        <button
-                            id="cancel-subscription-btn-legacy"
-                            onClick={() => setShowCancelDialog(true)}
-                            className="text-xs text-red-400 hover:text-red-300 border border-red-400/30 hover:border-red-400/60 px-3 py-1 rounded-full transition-colors"
-                        >
-                            Cancelar
-                        </button>
+
+                {/* Post-cancel feedback banner */}
+                {(cancelSuccess || subscription?.cancel_at_period_end) && (
+                    <div className="flex items-start gap-3 bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-5 text-sm text-amber-300">
+                        <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                        <span>
+                            Tu suscripción se cancelará al final del período actual
+                            {subscription.end_date ? ` (${formatDate(subscription.end_date)})` : ''}.
+                            {' '}Puedes seguir disfrutando de todos los beneficios hasta entonces.
+                        </span>
+                    </div>
+                )}
+
+                {/* Stats row */}
+                <div className="flex flex-wrap gap-4 mb-5">
+                    {activeSince && (
+                        <div className="flex items-center gap-2 text-sm text-[var(--t-fg-muted)]">
+                            <Calendar className="w-4 h-4 text-[var(--t-fg-dimmed)]" />
+                            <span>Miembro desde <span className="text-[var(--t-fg)] font-medium">{activeSince}</span></span>
+                        </div>
                     )}
+                    <div className="flex items-center gap-2 text-sm text-[var(--t-fg-muted)]">
+                        <CheckCircle className="w-4 h-4 text-green-400" />
+                        <span>
+                            <span className="text-[var(--t-fg)] font-medium">{monthsActive}</span>
+                            {' '}mes{monthsActive !== 1 ? 'es' : ''} activo{monthsActive !== 1 ? 's' : ''}
+                        </span>
+                    </div>
+                    {subscription.end_date && (
+                        <div className="flex items-center gap-2 text-sm text-[var(--t-fg-muted)]">
+                            <Calendar className="w-4 h-4 text-[var(--t-fg-dimmed)]" />
+                            <span>Próxima renovación{' '}<span className="text-[var(--t-fg)] font-medium">{formatDate(subscription.end_date)}</span></span>
+                        </div>
+                    )}
+                </div>
+
+                {/* Progress bar */}
+                <div className="mb-1 flex justify-between text-xs text-[var(--t-fg-dimmed)]">
+                    <span>Inicio</span>
+                    <span>1 año</span>
+                </div>
+                <div className="relative h-2 bg-[var(--t-bg)] rounded-full mb-1 overflow-hidden">
+                    <div
+                        className="h-full bg-gradient-to-r from-[#e63946] to-[#f4a261] rounded-full transition-all duration-700"
+                        style={{ width: `${progressPct}%` }}
+                    />
+                    {MILESTONES.map(m => (
+                        <div
+                            key={m}
+                            className="absolute top-0 bottom-0 w-px bg-[#2a2a2a]"
+                            style={{ left: `${(m / 12) * 100}%` }}
+                        />
+                    ))}
+                </div>
+                <div className="flex justify-between text-xs text-[var(--t-fg-dimmed)] mb-6 px-px">
+                    {MILESTONES.map(m => (
+                        <span key={m} style={{ width: '25%', textAlign: 'center' }}>
+                            {m}m
+                        </span>
+                    ))}
+                </div>
+
+                {/* Milestone cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {filledRewards.map(reward => (
+                        <MilestoneCard
+                            key={reward.milestone_months}
+                            reward={reward}
+                            monthsActive={monthsActive}
+                            onClaim={(m) => claimMutation.mutate(m)}
+                            isClaiming={claimingMilestone === reward.milestone_months && claimMutation.isPending}
+                        />
+                    ))}
                 </div>
             </div>
 
-            {/* Post-cancel feedback banner */}
-            {(cancelSuccess || subscription?.cancel_at_period_end) && (
-                <div className="flex items-start gap-3 bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-5 text-sm text-amber-300">
-                    <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                    <span>
-                        Tu suscripción se cancelará al final del período actual
-                        {subscription.end_date ? ` (${formatDate(subscription.end_date)})` : ''}.
-                        {' '}Puedes seguir disfrutando de todos los beneficios hasta entonces.
-                    </span>
+            {/* Cancel confirmation dialog */}
+            {showCancelDialog && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                    <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-2xl p-6 max-w-sm w-full mx-4 space-y-4 shadow-2xl">
+                        <div className="flex items-start justify-between">
+                            <h3 className="font-bold text-[var(--t-fg)] text-lg">¿Cancelar suscripción?</h3>
+                            <button onClick={() => setShowCancelDialog(false)} className="text-[var(--t-fg-dimmed)] hover:text-[var(--t-fg)] transition-colors">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <p className="text-sm text-[var(--t-fg-muted)] leading-relaxed">
+                            Puedes seguir usando tu suscripción hasta el final del período actual
+                            {subscription.end_date ? ` (${formatDate(subscription.end_date)})` : ''}.
+                            {' '}Después no se realizará ningún cargo más.
+                        </p>
+                        {cancelMutation.isError && (
+                            <p className="text-xs text-red-400">No se pudo cancelar la suscripción. Inténtalo de nuevo.</p>
+                        )}
+                        <div className="flex gap-3 justify-end pt-1">
+                            <button
+                                onClick={() => setShowCancelDialog(false)}
+                                className="text-sm px-4 py-2 rounded-lg border border-[var(--t-border)] text-[var(--t-fg-muted)] hover:text-[var(--t-fg)] transition-colors"
+                            >
+                                Mantener suscripción
+                            </button>
+                            <button
+                                id="confirm-cancel-subscription-btn-legacy"
+                                onClick={() => cancelMutation.mutate()}
+                                disabled={cancelMutation.isPending}
+                                className="text-sm px-4 py-2 rounded-lg bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 disabled:opacity-50 transition-colors flex items-center gap-2"
+                            >
+                                {cancelMutation.isPending ? (
+                                    <div className="w-3.5 h-3.5 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" />
+                                ) : (
+                                    <XCircle className="w-3.5 h-3.5" />
+                                )}
+                                Sí, cancelar
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
-
-            {/* Stats row */}
-            <div className="flex flex-wrap gap-4 mb-5">
-                {activeSince && (
-                    <div className="flex items-center gap-2 text-sm text-[var(--t-fg-muted)]">
-                        <Calendar className="w-4 h-4 text-[var(--t-fg-dimmed)]" />
-                        <span>Miembro desde <span className="text-[var(--t-fg)] font-medium">{activeSince}</span></span>
-                    </div>
-                )}
-                <div className="flex items-center gap-2 text-sm text-[var(--t-fg-muted)]">
-                    <CheckCircle className="w-4 h-4 text-green-400" />
-                    <span>
-                        <span className="text-[var(--t-fg)] font-medium">{monthsActive}</span>
-                        {' '}mes{monthsActive !== 1 ? 'es' : ''} activo{monthsActive !== 1 ? 's' : ''}
-                    </span>
-                </div>
-                {subscription.end_date && (
-                    <div className="flex items-center gap-2 text-sm text-[var(--t-fg-muted)]">
-                        <Calendar className="w-4 h-4 text-[var(--t-fg-dimmed)]" />
-                        <span>Próxima renovación{' '}<span className="text-[var(--t-fg)] font-medium">{formatDate(subscription.end_date)}</span></span>
-                    </div>
-                )}
-            </div>
-
-            {/* Progress bar */}
-            <div className="mb-1 flex justify-between text-xs text-[var(--t-fg-dimmed)]">
-                <span>Inicio</span>
-                <span>1 año</span>
-            </div>
-            <div className="relative h-2 bg-[var(--t-bg)] rounded-full mb-1 overflow-hidden">
-                <div
-                    className="h-full bg-gradient-to-r from-[#e63946] to-[#f4a261] rounded-full transition-all duration-700"
-                    style={{ width: `${progressPct}%` }}
-                />
-                {MILESTONES.map(m => (
-                    <div
-                        key={m}
-                        className="absolute top-0 bottom-0 w-px bg-[#2a2a2a]"
-                        style={{ left: `${(m / 12) * 100}%` }}
-                    />
-                ))}
-            </div>
-            <div className="flex justify-between text-xs text-[var(--t-fg-dimmed)] mb-6 px-px">
-                {MILESTONES.map(m => (
-                    <span key={m} style={{ width: '25%', textAlign: 'center' }}>
-                        {m}m
-                    </span>
-                ))}
-            </div>
-
-            {/* Milestone cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {filledRewards.map(reward => (
-                    <MilestoneCard
-                        key={reward.milestone_months}
-                        reward={reward}
-                        monthsActive={monthsActive}
-                        onClaim={(m) => claimMutation.mutate(m)}
-                        isClaiming={claimingMilestone === reward.milestone_months && claimMutation.isPending}
-                    />
-                ))}
-            </div>
-        </div>
-
-        {/* Cancel confirmation dialog */}
-        {showCancelDialog && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-                <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-2xl p-6 max-w-sm w-full mx-4 space-y-4 shadow-2xl">
-                    <div className="flex items-start justify-between">
-                        <h3 className="font-bold text-[var(--t-fg)] text-lg">¿Cancelar suscripción?</h3>
-                        <button onClick={() => setShowCancelDialog(false)} className="text-[var(--t-fg-dimmed)] hover:text-[var(--t-fg)] transition-colors">
-                            <X className="w-5 h-5" />
-                        </button>
-                    </div>
-                    <p className="text-sm text-[var(--t-fg-muted)] leading-relaxed">
-                        Puedes seguir usando tu suscripción hasta el final del período actual
-                        {subscription.end_date ? ` (${formatDate(subscription.end_date)})` : ''}.
-                        {' '}Después no se realizará ningún cargo más.
-                    </p>
-                    {cancelMutation.isError && (
-                        <p className="text-xs text-red-400">No se pudo cancelar la suscripción. Inténtalo de nuevo.</p>
-                    )}
-                    <div className="flex gap-3 justify-end pt-1">
-                        <button
-                            onClick={() => setShowCancelDialog(false)}
-                            className="text-sm px-4 py-2 rounded-lg border border-[var(--t-border)] text-[var(--t-fg-muted)] hover:text-[var(--t-fg)] transition-colors"
-                        >
-                            Mantener suscripción
-                        </button>
-                        <button
-                            id="confirm-cancel-subscription-btn-legacy"
-                            onClick={() => cancelMutation.mutate()}
-                            disabled={cancelMutation.isPending}
-                            className="text-sm px-4 py-2 rounded-lg bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 disabled:opacity-50 transition-colors flex items-center gap-2"
-                        >
-                            {cancelMutation.isPending ? (
-                                <div className="w-3.5 h-3.5 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" />
-                            ) : (
-                                <XCircle className="w-3.5 h-3.5" />
-                            )}
-                            Sí, cancelar
-                        </button>
-                    </div>
-                </div>
-            </div>
-        )}
         </>
     )
 }
@@ -618,7 +640,7 @@ function SubscriptionJourney({
             <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-3xl p-8 text-center relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--t-accent)]/5 rounded-full blur-3xl pointer-events-none" />
                 <div className="w-16 h-16 bg-[var(--t-accent)]/10 border border-[var(--t-accent)]/20 rounded-full flex items-center justify-center mx-auto mb-4 relative z-10">
-                    <Lock className="w-6 h-6 text-[var(--t-accent)]" />
+                    <Zap className="w-6 h-6 text-[var(--t-accent)]" />
                 </div>
                 <h2 className="text-2xl font-black text-[var(--t-fg)] mb-3 relative z-10">Contenido Exclusivo LCRC</h2>
                 <p className="text-[var(--t-fg-muted)] mb-6 max-w-md mx-auto leading-relaxed relative z-10 text-sm">
@@ -653,142 +675,142 @@ function SubscriptionJourney({
 
     return (
         <>
-        <AnimationErrorBoundary fallback={legacyFallback}>
-            <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-2xl overflow-hidden">
-                {/* Header */}
-                <div className="flex items-center justify-between px-6 pt-6 pb-4">
-                    <div className="flex items-center gap-3">
-                        <Award className="w-5 h-5 text-[var(--t-accent2)]" />
-                        <h2 className="text-[var(--t-fg)] font-bold text-lg">Mi suscripción</h2>
+            <AnimationErrorBoundary fallback={legacyFallback}>
+                <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-2xl overflow-hidden">
+                    {/* Header */}
+                    <div className="flex items-center justify-between px-6 pt-6 pb-4">
+                        <div className="flex items-center gap-3">
+                            <Award className="w-5 h-5 text-[var(--t-accent2)]" />
+                            <h2 className="text-[var(--t-fg)] font-bold text-lg">Mi suscripción</h2>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs bg-[var(--t-accent2)]/10 text-[var(--t-accent2)] border border-[var(--t-accent2)]/20 px-3 py-1 rounded-full font-medium">
+                                ⭐ Activa
+                            </span>
+                            {subscription.status === 'ACTIVE' && !subscription?.cancel_at_period_end && (
+                                <button
+                                    id="cancel-subscription-btn"
+                                    onClick={() => setShowCancelDialog(true)}
+                                    className="text-xs text-red-400 hover:text-red-300 border border-red-400/30 hover:border-red-400/60 px-3 py-1 rounded-full transition-colors"
+                                >
+                                    Cancelar
+                                </button>
+                            )}
+                        </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <span className="text-xs bg-[var(--t-accent2)]/10 text-[var(--t-accent2)] border border-[var(--t-accent2)]/20 px-3 py-1 rounded-full font-medium">
-                            ⭐ Activa
-                        </span>
-                        {subscription.status === 'ACTIVE' && !subscription?.cancel_at_period_end && (
-                            <button
-                                id="cancel-subscription-btn"
-                                onClick={() => setShowCancelDialog(true)}
-                                className="text-xs text-red-400 hover:text-red-300 border border-red-400/30 hover:border-red-400/60 px-3 py-1 rounded-full transition-colors"
-                            >
-                                Cancelar
-                            </button>
+
+                    {/* Post-cancel feedback banner */}
+                    {(cancelSuccess || subscription?.cancel_at_period_end) && (
+                        <div className="flex items-start gap-3 bg-amber-500/10 border border-amber-500/20 rounded-xl mx-6 mb-2 p-4 text-sm text-amber-300">
+                            <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                            <span>
+                                Tu suscripción se cancelará al final del período actual
+                                {subscription.end_date ? ` (${formatDate(subscription.end_date)})` : ''}.
+                                {' '}Puedes seguir disfrutando de todos los beneficios hasta entonces.
+                            </span>
+                        </div>
+                    )}
+
+                    {/* Stats row */}
+                    <div className="flex flex-wrap gap-4 px-6 pb-4">
+                        {activeSince && (
+                            <div className="flex items-center gap-2 text-sm text-[var(--t-fg-muted)]">
+                                <Calendar className="w-4 h-4 text-[var(--t-fg-dimmed)]" />
+                                <span>Miembro desde <span className="text-[var(--t-fg)] font-medium">{activeSince}</span></span>
+                            </div>
+                        )}
+                        <div className="flex items-center gap-2 text-sm text-[var(--t-fg-muted)]">
+                            <CheckCircle className="w-4 h-4 text-green-400" />
+                            <span>
+                                <span className="text-[var(--t-fg)] font-medium">{monthsActive}</span>
+                                {' '}mes{monthsActive !== 1 ? 'es' : ''} activo{monthsActive !== 1 ? 's' : ''}
+                            </span>
+                        </div>
+                        {subscription.end_date && (
+                            <div className="flex items-center gap-2 text-sm text-[var(--t-fg-muted)]">
+                                <Calendar className="w-4 h-4 text-[var(--t-fg-dimmed)]" />
+                                <span>Próxima renovación{' '}<span className="text-[var(--t-fg)] font-medium">{formatDate(subscription.end_date)}</span></span>
+                            </div>
                         )}
                     </div>
+
+                    {/* Animated Scene */}
+                    <LcrcPassScene
+                        progressRatio={progressRatio}
+                        isCompleted={isCompleted}
+                        onCompleted={() => {
+                            const yearReward = filledRewards.find(r => r.milestone_months === 12)
+                            if (!yearReward?.claimed) {
+                                setShowRewardModal(true)
+                            }
+                        }}
+                    />
+
+                    {/* Vertical Timeline */}
+                    <div className="px-6 pb-4">
+                        <VerticalTimeline progressRatio={progressRatio} rewards={filledRewards} />
+                    </div>
+
+                    {/* Milestone Cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 px-6 pb-6">
+                        {filledRewards.map(reward => (
+                            <MilestoneCard
+                                key={reward.milestone_months}
+                                reward={reward}
+                                monthsActive={monthsActive}
+                                onClaim={(m) => claimMutation.mutate(m)}
+                                isClaiming={claimingMilestone === reward.milestone_months && claimMutation.isPending}
+                            />
+                        ))}
+                    </div>
                 </div>
 
-                {/* Post-cancel feedback banner */}
-                {(cancelSuccess || subscription?.cancel_at_period_end) && (
-                    <div className="flex items-start gap-3 bg-amber-500/10 border border-amber-500/20 rounded-xl mx-6 mb-2 p-4 text-sm text-amber-300">
-                        <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                        <span>
-                            Tu suscripción se cancelará al final del período actual
+                {/* Reward Modal */}
+                <RewardModal isOpen={showRewardModal} onClose={() => setShowRewardModal(false)} />
+            </AnimationErrorBoundary>
+
+            {/* Cancel confirmation dialog */}
+            {showCancelDialog && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                    <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-2xl p-6 max-w-sm w-full mx-4 space-y-4 shadow-2xl">
+                        <div className="flex items-start justify-between">
+                            <h3 className="font-bold text-[var(--t-fg)] text-lg">¿Cancelar suscripción?</h3>
+                            <button onClick={() => setShowCancelDialog(false)} className="text-[var(--t-fg-dimmed)] hover:text-[var(--t-fg)] transition-colors">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <p className="text-sm text-[var(--t-fg-muted)] leading-relaxed">
+                            Puedes seguir usando tu suscripción hasta el final del período actual
                             {subscription.end_date ? ` (${formatDate(subscription.end_date)})` : ''}.
-                            {' '}Puedes seguir disfrutando de todos los beneficios hasta entonces.
-                        </span>
-                    </div>
-                )}
-
-                {/* Stats row */}
-                <div className="flex flex-wrap gap-4 px-6 pb-4">
-                    {activeSince && (
-                        <div className="flex items-center gap-2 text-sm text-[var(--t-fg-muted)]">
-                            <Calendar className="w-4 h-4 text-[var(--t-fg-dimmed)]" />
-                            <span>Miembro desde <span className="text-[var(--t-fg)] font-medium">{activeSince}</span></span>
+                            {' '}Después no se realizará ningún cargo más.
+                        </p>
+                        {cancelMutation.isError && (
+                            <p className="text-xs text-red-400">No se pudo cancelar la suscripción. Inténtalo de nuevo.</p>
+                        )}
+                        <div className="flex gap-3 justify-end pt-1">
+                            <button
+                                onClick={() => setShowCancelDialog(false)}
+                                className="text-sm px-4 py-2 rounded-lg border border-[var(--t-border)] text-[var(--t-fg-muted)] hover:text-[var(--t-fg)] transition-colors"
+                            >
+                                Mantener suscripción
+                            </button>
+                            <button
+                                id="confirm-cancel-subscription-btn"
+                                onClick={() => cancelMutation.mutate()}
+                                disabled={cancelMutation.isPending}
+                                className="text-sm px-4 py-2 rounded-lg bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 disabled:opacity-50 transition-colors flex items-center gap-2"
+                            >
+                                {cancelMutation.isPending ? (
+                                    <div className="w-3.5 h-3.5 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" />
+                                ) : (
+                                    <XCircle className="w-3.5 h-3.5" />
+                                )}
+                                Sí, cancelar
+                            </button>
                         </div>
-                    )}
-                    <div className="flex items-center gap-2 text-sm text-[var(--t-fg-muted)]">
-                        <CheckCircle className="w-4 h-4 text-green-400" />
-                        <span>
-                            <span className="text-[var(--t-fg)] font-medium">{monthsActive}</span>
-                            {' '}mes{monthsActive !== 1 ? 'es' : ''} activo{monthsActive !== 1 ? 's' : ''}
-                        </span>
-                    </div>
-                    {subscription.end_date && (
-                        <div className="flex items-center gap-2 text-sm text-[var(--t-fg-muted)]">
-                            <Calendar className="w-4 h-4 text-[var(--t-fg-dimmed)]" />
-                            <span>Próxima renovación{' '}<span className="text-[var(--t-fg)] font-medium">{formatDate(subscription.end_date)}</span></span>
-                        </div>
-                    )}
-                </div>
-
-                {/* Animated Scene */}
-                <LcrcPassScene
-                    progressRatio={progressRatio}
-                    isCompleted={isCompleted}
-                    onCompleted={() => {
-                        const yearReward = filledRewards.find(r => r.milestone_months === 12)
-                        if (!yearReward?.claimed) {
-                            setShowRewardModal(true)
-                        }
-                    }}
-                />
-
-                {/* Vertical Timeline */}
-                <div className="px-6 pb-4">
-                    <VerticalTimeline progressRatio={progressRatio} rewards={filledRewards} />
-                </div>
-
-                {/* Milestone Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 px-6 pb-6">
-                    {filledRewards.map(reward => (
-                        <MilestoneCard
-                            key={reward.milestone_months}
-                            reward={reward}
-                            monthsActive={monthsActive}
-                            onClaim={(m) => claimMutation.mutate(m)}
-                            isClaiming={claimingMilestone === reward.milestone_months && claimMutation.isPending}
-                        />
-                    ))}
-                </div>
-            </div>
-
-            {/* Reward Modal */}
-            <RewardModal isOpen={showRewardModal} onClose={() => setShowRewardModal(false)} />
-        </AnimationErrorBoundary>
-
-        {/* Cancel confirmation dialog */}
-        {showCancelDialog && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-                <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-2xl p-6 max-w-sm w-full mx-4 space-y-4 shadow-2xl">
-                    <div className="flex items-start justify-between">
-                        <h3 className="font-bold text-[var(--t-fg)] text-lg">¿Cancelar suscripción?</h3>
-                        <button onClick={() => setShowCancelDialog(false)} className="text-[var(--t-fg-dimmed)] hover:text-[var(--t-fg)] transition-colors">
-                            <X className="w-5 h-5" />
-                        </button>
-                    </div>
-                    <p className="text-sm text-[var(--t-fg-muted)] leading-relaxed">
-                        Puedes seguir usando tu suscripción hasta el final del período actual
-                        {subscription.end_date ? ` (${formatDate(subscription.end_date)})` : ''}.
-                        {' '}Después no se realizará ningún cargo más.
-                    </p>
-                    {cancelMutation.isError && (
-                        <p className="text-xs text-red-400">No se pudo cancelar la suscripción. Inténtalo de nuevo.</p>
-                    )}
-                    <div className="flex gap-3 justify-end pt-1">
-                        <button
-                            onClick={() => setShowCancelDialog(false)}
-                            className="text-sm px-4 py-2 rounded-lg border border-[var(--t-border)] text-[var(--t-fg-muted)] hover:text-[var(--t-fg)] transition-colors"
-                        >
-                            Mantener suscripción
-                        </button>
-                        <button
-                            id="confirm-cancel-subscription-btn"
-                            onClick={() => cancelMutation.mutate()}
-                            disabled={cancelMutation.isPending}
-                            className="text-sm px-4 py-2 rounded-lg bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 disabled:opacity-50 transition-colors flex items-center gap-2"
-                        >
-                            {cancelMutation.isPending ? (
-                                <div className="w-3.5 h-3.5 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" />
-                            ) : (
-                                <XCircle className="w-3.5 h-3.5" />
-                            )}
-                            Sí, cancelar
-                        </button>
                     </div>
                 </div>
-            </div>
-        )}
+            )}
         </>
     )
 }

@@ -83,16 +83,41 @@ export const cancelSubscription = async (req: Request, res: Response, _next: Nex
         });
 
         if (!dbSub || !dbSub.externalId) {
-            res.status(400).json({ error: 'No active Stripe subscription found for this user' });
+            res.status(400).json({ error: 'No active subscription found for this user' });
+            return;
+        }
+
+        // Non-Stripe subscription (legacy BMC) → cancel locally only
+        if (!dbSub.externalId.startsWith('sub_')) {
+            await prisma.subscription.update({
+                where: { userId: user.id },
+                data: { status: 'INACTIVE', cancelAtPeriodEnd: true },
+            });
+            console.log(`✅ Non-Stripe subscription ${dbSub.externalId} cancelled locally`);
+            res.status(200).json({ message: 'Suscripción cancelada', localOnly: true });
             return;
         }
 
         const stripe = new Stripe(stripeSecretKey);
 
         // Cancel the subscription at the period end
-        const stripeSub = await stripe.subscriptions.update(dbSub.externalId, {
-            cancel_at_period_end: true,
-        });
+        let stripeSub;
+        try {
+            stripeSub = await stripe.subscriptions.update(dbSub.externalId, {
+                cancel_at_period_end: true,
+            });
+        } catch (stripeErr: any) {
+            if (stripeErr.code === 'resource_missing') {
+                console.warn(`⚠️ Stripe subscription ${dbSub.externalId} not found, cancelling locally`);
+                await prisma.subscription.update({
+                    where: { userId: user.id },
+                    data: { status: 'INACTIVE', cancelAtPeriodEnd: true },
+                });
+                res.status(200).json({ message: 'Suscripción cancelada localmente (la suscripción no existe en Stripe)', localOnly: true });
+                return;
+            }
+            throw stripeErr;
+        }
 
         // Persist cancel_at_period_end in local DB
         await prisma.subscription.update({
