@@ -69,8 +69,31 @@ const MILESTONES = [3, 6, 9, 12]
 const MILESTONE_META: Record<number, { label: string; emoji: string; gift: string }> = {
     3: { label: '3 meses', emoji: '🎽', gift: 'Camiseta exclusiva LCRC' },
     6: { label: '6 meses', emoji: '🧢', gift: 'Gorra de corredor LCRC' },
-    9: { label: '9 meses', emoji: '🎒', gift: 'Mochila de trail running' },
-    12: { label: '1 año', emoji: '🏅', gift: 'Medalla de oro aniversario' },
+    9: { label: '9 meses', emoji: '🎁', gift: 'Sorpresa LCRC' },
+    12: { label: '1 año', emoji: '🎁', gift: 'Sorpresa LCRC' },
+}
+
+const MILESTONE_EMOJI_OVERRIDES: Record<number, string> = (() => {
+    try {
+        const raw = import.meta.env.VITE_MILESTONE_EMOJI_OVERRIDES as string | undefined
+        return raw ? JSON.parse(raw) : {}
+    } catch { return {} }
+})()
+
+const MILESTONE_GIFT_OVERRIDES: Record<number, string> = (() => {
+    try {
+        const raw = import.meta.env.VITE_MILESTONE_GIFT_OVERRIDES as string | undefined
+        return raw ? JSON.parse(raw) : {}
+    } catch { return {} }
+})()
+
+function getMilestoneMeta(m: number) {
+    const base = MILESTONE_META[m]
+    return {
+        ...base,
+        emoji: MILESTONE_EMOJI_OVERRIDES[m] ?? base.emoji,
+        gift: MILESTONE_GIFT_OVERRIDES[m] ?? base.gift,
+    }
 }
 
 // ── Helper: convert image to WebP via canvas ───────────────────────────────────
@@ -306,7 +329,7 @@ function MilestoneCard({
     onClaim: (milestone: number) => void
     isClaiming: boolean
 }) {
-    const meta = MILESTONE_META[reward.milestone_months]
+    const meta = getMilestoneMeta(reward.milestone_months)
     const isNext = !reward.unlocked && monthsActive < reward.milestone_months
     const remaining = reward.milestone_months - monthsActive
 
