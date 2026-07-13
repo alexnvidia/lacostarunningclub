@@ -24,10 +24,10 @@ export function RewardModal({ isOpen, onClose }: Props) {
                 {/* Glow ring */}
                 <div className="absolute -inset-px rounded-2xl bg-gradient-to-b from-[#f4a261]/20 to-transparent pointer-events-none" />
 
-                <div className="text-6xl mb-4 select-none">🏆</div>
+                <div className="text-6xl mb-4 select-none">🎁</div>
                 <h2 className="text-[var(--t-fg)] font-black text-2xl mb-2">¡Premio Desbloqueado!</h2>
                 <p className="text-[var(--t-fg-muted)] text-sm mb-1">Has completado un año en La Costa Running Club.</p>
-                <p className="text-[var(--t-accent2)] font-semibold text-sm mb-6">Medalla de oro aniversario 🏅</p>
+                <p className="text-[var(--t-accent2)] font-semibold text-sm mb-6">¡Sorpresa! Disfruta de tu regalo.</p>
 
                 <button
                     id="reward-modal-close"

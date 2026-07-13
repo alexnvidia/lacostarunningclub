@@ -14,6 +14,7 @@ interface Props {
 }
 
 const MILESTONES = [3, 6, 12]
+const MILESTONE_12_ICON = (import.meta.env.VITE_MILESTONE_12_ICON as string) || 'gift'
 
 export function VerticalTimeline({ progressRatio, rewards }: Props) {
     const progressLineRef = useRef<SVGLineElement>(null)
@@ -91,7 +92,10 @@ export function VerticalTimeline({ progressRatio, rewards }: Props) {
                     <g ref={el => { nodeRefs.current[2] = el }} transform="translate(30, 380)" style={{ transformOrigin: '30px 380px' }}>
                         <circle className="outer" cx="0" cy="0" r="14" fill="var(--t-bg2)" stroke="var(--t-border)" strokeWidth="3" />
                         <path className="icon" 
-                            d="M-5,-4 L-5,1 Q-5,5 0,5 Q5,5 5,1 L5,-4 Z M-3,5 L-3,8 L3,8 L3,5 M-5,8 L5,8 M-5,-2 C-8,-2 -8,2 -5,2 M5,-2 C8,-2 8,2 5,2" 
+                            d={MILESTONE_12_ICON === 'trophy'
+                                ? "M-5,-4 L-5,1 Q-5,5 0,5 Q5,5 5,1 L5,-4 Z M-3,5 L-3,8 L3,8 L3,5 M-5,8 L5,8 M-5,-2 C-8,-2 -8,2 -5,2 M5,-2 C8,-2 8,2 5,2"
+                                : "M-7,-2 L-7,2 Q-7,5 0,5 Q7,5 7,2 L7,-2 Z M0,-7 L0,5 M-5,-7 L5,-7 M-4,-4 L4,-4"
+                            }
                             fill="none" stroke="var(--t-border)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" 
                         />
                     </g>
@@ -110,7 +114,7 @@ export function VerticalTimeline({ progressRatio, rewards }: Props) {
                 </div>
                 <div className="absolute flex flex-col justify-center" style={{ top: '365px', height: '24px' }}>
                     <span className="text-[var(--t-accent2)]">1 Año en LCRC</span>
-                    <span className="text-xs text-[var(--t-accent2)]/70 font-normal">Medalla aniversario</span>
+                    <span className="text-xs text-[var(--t-accent2)]/70 font-normal">Sorpresa LCRC</span>
                 </div>
             </div>
         </div>
