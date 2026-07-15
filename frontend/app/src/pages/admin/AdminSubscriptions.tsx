@@ -261,8 +261,8 @@ export default function AdminSubscriptions() {
             {/* List */}
             <div className="bg-[var(--t-bg2)] border border-[var(--t-border)] rounded-2xl">
                 {/* Header row — added Rewards column */}
-                <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_40px] gap-4 px-6 py-3 border-b border-[var(--t-border)] text-xs text-[var(--t-fg-dimmed)] uppercase tracking-wider">
-                    <span>User ID</span><span>Estado</span><span>Inicio</span><span>Proveedor</span><span>Ext. ID</span>
+                <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_40px] gap-4 px-6 py-3 border-b border-[var(--t-border)] text-xs text-[var(--t-fg-dimmed)] uppercase tracking-wider">
+                    <span>User ID</span><span>Estado</span><span>Inicio</span><span>Fin</span><span>Proveedor</span><span>Ext. ID</span>
                     <span title="Rewards"><Trophy className="w-3.5 h-3.5" /></span>
                 </div>
 
@@ -275,12 +275,13 @@ export default function AdminSubscriptions() {
                 ) : (
                     <div className="divide-y divide-[var(--t-border)]">
                         {data!.subscriptions.map(sub => (
-                            <div key={sub.id} className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_40px] gap-4 items-center px-6 py-4">
+                            <div key={sub.id} className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_40px] gap-4 items-center px-6 py-4">
                                 <p className="text-[var(--t-fg-muted)] text-xs truncate font-mono">{sub.user_id}</p>
                                 <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium w-fit ${STATUS_COLORS[sub.status] ?? 'bg-gray-500/10 text-[var(--t-fg-muted)]'}`}>
                                     {sub.status}
                                 </span>
                                 <p className="text-[var(--t-fg-muted)] text-xs">{formatDateTime(sub.start_date)}</p>
+                                <p className="text-[var(--t-fg-muted)] text-xs">{sub.end_date ? formatDateTime(sub.end_date) : '—'}</p>
                                 <p className="text-[var(--t-fg-muted)] text-xs capitalize">{sub.provider}</p>
                                 <p className="text-[var(--t-fg-dimmed)] text-xs font-mono truncate">{sub.external_id ?? '—'}</p>
                                 {/* Rewards badge */}
