@@ -78,6 +78,7 @@ export const getProfile = async (req: Request, res: Response, next: NextFunction
         status: user.subscription.status,
         active_since: user.subscription.startDate,
         months_active: monthsActive,
+        end_date: user.subscription.endDate,
         cancel_at_period_end: user.subscription.cancelAtPeriodEnd,
       } : null,
       rewards: rewardsStatus

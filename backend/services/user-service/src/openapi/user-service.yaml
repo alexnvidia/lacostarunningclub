@@ -310,6 +310,12 @@ components:
           format: date-time
         months_active:
           type: integer
+        end_date:
+          type: string
+          format: date-time
+          nullable: true
+        cancel_at_period_end:
+          type: boolean
 
     UserReward:
       type: object
